@@ -1,7 +1,184 @@
-import { useState } from 'react';
-import { useParams } from 'react-router';
-import { useFleet } from '../app/context';
-import { Button, Form, Notice, PageHead, Panel, Tabs } from '../components/ui';
-import { useEditors } from './editors';
-import { date, number } from '../lib/format';
-export function SettingsPage(){const {tab='terms'}=useParams();const {s,run}=useFleet(),edit=useEditors();const [saved,setSaved]=useState(false);return <><PageHead title="Nastavení" subtitle="Provozní pravidla, servisní šablony a CCS karty."/><div className="panel"><Tabs base="/settings" selected={tab} items={[["terms","Termíny a servis"],["plans","Servisní plány"],["cards","CCS karty"]]}/><div className="detail-body">{tab==='terms'&&<><Notice>Prahy nastavte podle skutečné firemní politiky. Bez pravidla není naplánováno odesílání e-mailů. Kontakty slouží připraveným komunikačním požadavkům.</Notice><Form key={JSON.stringify(s.settings)} fields={[{key:'managerEmail',label:'E-mail fleet manažera',type:'email'},{key:'daysBefore',label:'Dny před termínem (čárkou)',help:'Například 30, 14, 7 — pouze návrh k nastavení.'},{key:'kmBefore',label:'Km před servisní hranicí',type:'number',help:'Například 500 km — pouze návrh k nastavení.'}]} initial={{...s.settings,daysBefore:s.settings.daysBefore?.join(', ')||''}} onSubmit={async v=>{const days=String(v.daysBefore).trim()?String(v.daysBefore).split(',').map(x=>Number(x.trim())):null;await run({type:'settings',data:{managerEmail:String(v.managerEmail),daysBefore:days,kmBefore:v.kmBefore as number|null}});setSaved(true);}}/>{saved&&<Notice>Provozní nastavení uloženo.</Notice>}<div className="section-actions"><h2>Nasmlouvané externí servisy</h2><Button primary onClick={()=>edit('services')}>Přidat servisní kontakt</Button></div>{s.services.length?s.services.map(x=><div className="list-item" key={x.id}><div><strong>{x.name}</strong><small>{x.email||'E-mail chybí'} · {x.phone} · {x.address}</small></div><Button onClick={()=>edit('services',x)}>Upravit kontakt</Button></div>):<p className="muted">Zatím není založen žádný servisní kontakt.</p>}</>}{tab==='plans'&&<><div className="section-actions"><Button primary onClick={()=>edit('templates')}>Přidat šablonu</Button></div><Notice>Šablony obsahují pouze vámi doložené intervaly. Existující individuální plány se při změně šablony nepřepisují.</Notice>{s.templates.map(t=><Panel key={t.id} title={t.name} action={<Button onClick={()=>edit('templates',t)}>Upravit šablonu</Button>}><p>{t.category}</p>{t.items.map(i=><div className="list-item" key={i.id}><strong>{i.name}</strong><span>{number(i.intervalKm,'km')} / {number(i.intervalMonths,'měsíců')}</span></div>)}</Panel>)}</>}{tab==='cards'&&<><div className="section-actions"><Button primary onClick={()=>edit('cards',undefined,{active:true})}>Přidat CCS kartu</Button></div>{s.cards.map(c=><Panel key={c.id} title={c.number} action={<Button onClick={()=>edit('cards',c)}>Upravit kartu</Button>}><p>{c.active?'Aktivní':'Neaktivní'} · Tolerance: {c.toleranceMinor===null?'Není nastavena':number(c.toleranceMinor/100,'Kč včetně')}</p>{c.bindings.map((b,i)=><div className="list-item" key={i}><strong>{s.vehicles.find(v=>v.id===b.vehicleId)?.spz}</strong><span>{date(b.from)} — {b.to?date(b.to):'Trvá'}</span></div>)}</Panel>)}</>}</div></div></>;}
+import { useState } from "react";
+import { useParams } from "react-router";
+import { useFleet } from "../app/context";
+import { Button, Form, Notice, PageHead, Panel, Tabs } from "../components/ui";
+import { useEditors } from "./editors";
+import { date, number } from "../lib/format";
+export function SettingsPage() {
+  const { tab = "terms" } = useParams();
+  const { s, run } = useFleet(),
+    edit = useEditors();
+  const [saved, setSaved] = useState(false);
+  return (
+    <>
+      <PageHead
+        title="Nastavení"
+        subtitle="Provozní pravidla, servisní šablony a CCS karty."
+      />
+      <div className="panel">
+        <Tabs
+          base="/settings"
+          selected={tab}
+          items={[
+            ["terms", "Termíny a servis"],
+            ["plans", "Servisní plány"],
+            ["cards", "CCS karty"],
+          ]}
+        />
+        <div className="detail-body">
+          {tab === "terms" && (
+            <>
+              <Notice>
+                Prahy nastavte podle skutečné firemní politiky. Bez pravidla
+                není naplánováno odesílání e-mailů. Kontakty slouží připraveným
+                komunikačním požadavkům.
+              </Notice>
+              <Form
+                key={JSON.stringify(s.settings)}
+                fields={[
+                  {
+                    key: "managerEmail",
+                    label: "E-mail fleet manažera",
+                    type: "email",
+                  },
+                  {
+                    key: "daysBefore",
+                    label: "Dny před termínem (čárkou)",
+                    help: "Například 30, 14, 7 — pouze návrh k nastavení.",
+                  },
+                  {
+                    key: "kmBefore",
+                    label: "Km před servisní hranicí",
+                    type: "number",
+                    help: "Například 500 km — pouze návrh k nastavení.",
+                  },
+                ]}
+                initial={{
+                  ...s.settings,
+                  daysBefore: s.settings.daysBefore?.join(", ") || "",
+                }}
+                onSubmit={async (v) => {
+                  const days = String(v.daysBefore).trim()
+                    ? String(v.daysBefore)
+                        .split(",")
+                        .map((x) => Number(x.trim()))
+                    : null;
+                  await run({
+                    type: "settings",
+                    data: {
+                      managerEmail: String(v.managerEmail),
+                      daysBefore: days,
+                      kmBefore: v.kmBefore as number | null,
+                    },
+                  });
+                  setSaved(true);
+                }}
+              />
+              {saved && <Notice>Provozní nastavení uloženo.</Notice>}
+              <div className="section-actions">
+                <h2>Nasmlouvané externí servisy</h2>
+                <Button primary onClick={() => edit("services")}>
+                  Přidat servisní kontakt
+                </Button>
+              </div>
+              {s.services.length ? (
+                s.services.map((x) => (
+                  <div className="list-item" key={x.id}>
+                    <div>
+                      <strong>{x.name}</strong>
+                      <small>
+                        {x.email || "E-mail chybí"} · {x.phone} · {x.address}
+                      </small>
+                    </div>
+                    <Button onClick={() => edit("services", x)}>
+                      Upravit kontakt
+                    </Button>
+                  </div>
+                ))
+              ) : (
+                <p className="muted">
+                  Zatím není založen žádný servisní kontakt.
+                </p>
+              )}
+            </>
+          )}
+          {tab === "plans" && (
+            <>
+              <div className="section-actions">
+                <Button primary onClick={() => edit("templates")}>
+                  Přidat šablonu
+                </Button>
+              </div>
+              <Notice>
+                Šablony obsahují pouze vámi doložené intervaly. Existující
+                individuální plány se při změně šablony nepřepisují.
+              </Notice>
+              {s.templates.map((t) => (
+                <Panel
+                  key={t.id}
+                  title={t.name}
+                  action={
+                    <Button onClick={() => edit("templates", t)}>
+                      Upravit šablonu
+                    </Button>
+                  }
+                >
+                  <p>{t.category}</p>
+                  {t.items.map((i) => (
+                    <div className="list-item" key={i.id}>
+                      <strong>{i.name}</strong>
+                      <span>
+                        {number(i.intervalKm, "km")} /{" "}
+                        {number(i.intervalMonths, "měsíců")}
+                      </span>
+                    </div>
+                  ))}
+                </Panel>
+              ))}
+            </>
+          )}
+          {tab === "cards" && (
+            <>
+              <div className="section-actions">
+                <Button
+                  primary
+                  onClick={() => edit("cards", undefined, { active: true })}
+                >
+                  Přidat CCS kartu
+                </Button>
+              </div>
+              {s.cards.map((c) => (
+                <Panel
+                  key={c.id}
+                  title={c.number}
+                  action={
+                    <Button onClick={() => edit("cards", c)}>
+                      Upravit kartu
+                    </Button>
+                  }
+                >
+                  <p>
+                    {c.active ? "Aktivní" : "Neaktivní"} · Tolerance:{" "}
+                    {c.toleranceMinor === null
+                      ? "Není nastavena"
+                      : number(c.toleranceMinor / 100, "Kč včetně")}
+                  </p>
+                  {c.bindings.map((b, i) => (
+                    <div className="list-item" key={i}>
+                      <strong>
+                        {s.vehicles.find((v) => v.id === b.vehicleId)?.spz}
+                      </strong>
+                      <span>
+                        {date(b.from)} — {b.to ? date(b.to) : "Trvá"}
+                      </span>
+                    </div>
+                  ))}
+                </Panel>
+              ))}
+            </>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}

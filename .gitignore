@@ -11,3 +11,4 @@ uploads/
 backups/
 *.idb
 *.log
+*.tsbuildinfo

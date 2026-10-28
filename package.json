@@ -1,6 +1,40 @@
 {
-  "name": "fleetcare", "private": true, "version": "1.0.0", "type": "module",
-  "scripts": {"dev":"vite --host 127.0.0.1", "build":"tsc -b && vite build", "typecheck":"tsc -b", "lint":"eslint src tests", "test":"vitest run", "preview":"vite preview --host 127.0.0.1"},
-  "dependencies": {"react":"19.2.0","react-dom":"19.2.0","react-router":"7.9.4","@tanstack/react-query":"5.90.5","dexie":"4.2.1","zod":"4.1.12","lucide-react":"0.468.0","exceljs":"4.4.0","pdfmake":"0.2.20"},
-  "devDependencies": {"typescript":"5.9.3","vite":"7.1.12","@vitejs/plugin-react":"5.0.4","vitest":"3.2.4","fake-indexeddb":"6.2.4","@types/react":"19.2.2","@types/react-dom":"19.2.2","@types/pdfmake":"0.2.12","eslint":"9.38.0","typescript-eslint":"8.46.2"}
+  "name": "fleetcare",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "format": "prettier --write src tests scripts docs *.json *.ts *.js README.md",
+    "contracts": "vite-node scripts/generate-contracts.ts",
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc -b && vite build",
+    "typecheck": "tsc -b",
+    "lint": "eslint src tests",
+    "test": "vitest run",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "5.90.5",
+    "dexie": "4.2.1",
+    "exceljs": "4.4.0",
+    "lucide-react": "0.468.0",
+    "pdfmake": "0.2.20",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "react-router": "7.9.4",
+    "zod": "4.1.12"
+  },
+  "devDependencies": {
+    "@types/pdfmake": "0.2.12",
+    "@types/react": "19.2.2",
+    "@types/react-dom": "19.2.2",
+    "@vitejs/plugin-react": "5.0.4",
+    "eslint": "9.38.0",
+    "fake-indexeddb": "6.2.4",
+    "prettier": "3.6.2",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.46.2",
+    "vite": "7.1.12",
+    "vitest": "3.2.4"
+  }
 }

@@ -1,0 +1,4 @@
+docs/openapi.json
+docs/events.schema.json
+node_modules
+dist

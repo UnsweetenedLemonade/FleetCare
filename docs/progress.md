@@ -18,5 +18,7 @@
 - Kontroly: produkční build a lint prošly; 19 doménových / IndexedDB testů prošlo.
 - Spuštěno na 127.0.0.1:5173. Desktop prázdného dashboardu vizuálně ověřen; v izolovaném prohlížeči ručně vytvořeno QA vozidlo, ověřena desetinná čárka.
 - Remote potvrzen: https://github.com/jakubhunal/FleetCare. Push `main` a `prototype-reference` uspěl.
-- Následuje: HTTP kontraktní testy, doplnění konzistence a asynchronních stavů, úplné scénáře řidiče a příloh, tablet/mobil, integrační dokumentace.
+- Dokončeno: HTTP kontraktní testy, konzistence a asynchronní stavy, vlastní jízda, skutečný upload/náhled/smazání, desktop/tablet/mobil, PDF a XLSX včetně kontroly vykreslení a typů buněk.
+- Aktuální kontroly: 31 testů prošlo, typecheck/lint/build prošly. API chyby 409/429 a síťová chyba ověřeny bez lokálního fallbacku. Technické předání v docs/ je hotové.
+- Následuje: čistá instalace z lockfile, čistý tag a push, teprve potom izolovaná demo větev a její vizuální kontrola.
 - Žádná ostrá služba není připojena. Demo větev zatím neexistuje.
