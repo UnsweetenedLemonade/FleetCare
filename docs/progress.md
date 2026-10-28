@@ -1,5 +1,7 @@
 # FleetCare — stav předání
 
+- Role se přepíná pod logem v levé navigaci, na mobilu v otevřeném menu. Vyhledávání zachovává chování i pozici s maximální šířkou 800 px. Jednotný chevron všech běžných selectů je 14 px od pravého okraje, text má vyhrazených 44 px; nativní ovládání a režim vysokého kontrastu zůstávají zachované.
+
 - Hlavička: odstraněny drobečky a text Zobrazit jako. Vyhledávání přímo v inputu přes celou dostupnou šířku, výsledky pod polem bez dialogu, lupa/Enter a podmíněný křížek. Přepínání rolí zachováno v řádku kontextu pod hlavičkou. Escape, šipky a Tab podporují ovládání bez myši; změna stránky/role resetuje hledání.
 - Kontrola nové hlavičky: typecheck, lint, 36 testů a build prošly. Produkční náhled ověřen na desktopu i 390px mobilu: přímé psaní bez dialogu, odeslání lupou, prázdný výsledek, podmíněný křížek, vyčištění a Escape; mobil bez vodorovného přetečení. Po pushnutí ověřit navíc skutečné výsledky nad demo daty a Pages verzi.
 
