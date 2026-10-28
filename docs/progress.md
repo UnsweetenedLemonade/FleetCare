@@ -20,5 +20,6 @@
 - Remote potvrzen: https://github.com/jakubhunal/FleetCare. Push `main` a `prototype-reference` uspěl.
 - Dokončeno: HTTP kontraktní testy, konzistence a asynchronní stavy, vlastní jízda, skutečný upload/náhled/smazání, desktop/tablet/mobil, PDF a XLSX včetně kontroly vykreslení a typů buněk.
 - Aktuální kontroly: 31 testů prošlo, typecheck/lint/build prošly. API chyby 409/429 a síťová chyba ověřeny bez lokálního fallbacku. Technické předání v docs/ je hotové.
-- Následuje: čistá instalace z lockfile, čistý tag a push, teprve potom izolovaná demo větev a její vizuální kontrola.
+- Čistý samostatný klon a instalace z lockfile prošly, včetně 31 testů, buildu, lintu, typechecku, kontroly bundlu a smluv beze změny.
+- Následuje: čistý tag a push, teprve potom izolovaná demo větev a její vizuální kontrola.
 - Žádná ostrá služba není připojena. Demo větev zatím neexistuje.

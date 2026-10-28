@@ -3,6 +3,7 @@
 ## Automatické kontroly
 
 - Strict TypeScript: prošel.
+- Čistý samostatný klon: `npm ci --offline` z uzamčených závislostí, typecheck, lint, 31 testů, build a kontrola čistého bundlu prošly. Regenerace smluv nevytvořila rozdíl. Ověřeno v plné cestě Windows; první pokus se zkrácenou TEMP cestou nebyl považován za úspěšné ověření.
 - ESLint: prošel.
 - Vitest: 31 testů v pěti souborech, prošly. HTTP testy použily dočasný skutečný Node server na 127.0.0.1.
 - Produkční Vite build: prošel. Knihovny PDF, fonty a ExcelJS se načítají až při exportu; Vite upozorňuje na velikost těchto exportních balíků. Nejde o chybu buildu.
