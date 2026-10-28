@@ -3,7 +3,6 @@ import { Link, useParams } from "react-router";
 import {
   Truck,
   UserPlus,
-  Plus,
   Upload,
   Pencil,
   Pause,
