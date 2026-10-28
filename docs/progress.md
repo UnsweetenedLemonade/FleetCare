@@ -1,27 +1,10 @@
-# FleetCare — průběh
+# FleetCare — stav předání
 
-## Dokončeno
-- Přečteno závazné zadání; rozebrán původní kód, obrazovky a mobilní UI řidiče.
-- Původní prototyp zachován v commitu a tagu `prototype-reference`.
-- Ověřeny obě dodané kopie: žádný GitHub remote. Dotaz na cílovou URL odeslán; lokální práce pokračuje.
-
-## Etapy
-1. React / strict TypeScript / Vite, doménové modely, IndexedDB, HTTP port, role a sdílené UI.
-2. Evidence vozidel a řidičů, vazby, skutečné přílohy a servisní plány.
-3. Zakázky, jízdy, závady, náklady, termíny, reporty a exporty.
-4. Testy pravidel a HTTP, spuštění a desktop/tablet/mobil QA, dokumentace předání, čistý commit.
-5. Až potom samostatná demo větev se seedem a izolovanou DB.
-
-## Kontroly a další krok
-- Referenční aplikace skutečně spuštěna a otevřena v prohlížeči.
-- První funkční průchod všech hlavních oblastí je implementovaný. React + strict TypeScript, doménové validace, lokální transakce, role, CRUD povolených záznamů, skutečné soubory, exportní knihovny.
-- Kontroly: produkční build a lint prošly; 19 doménových / IndexedDB testů prošlo.
-- Spuštěno na 127.0.0.1:5173. Desktop prázdného dashboardu vizuálně ověřen; v izolovaném prohlížeči ručně vytvořeno QA vozidlo, ověřena desetinná čárka.
-- Remote potvrzen: https://github.com/jakubhunal/FleetCare. Push `main` a `prototype-reference` uspěl.
-- Dokončeno: HTTP kontraktní testy, konzistence a asynchronní stavy, vlastní jízda, skutečný upload/náhled/smazání, desktop/tablet/mobil, PDF a XLSX včetně kontroly vykreslení a typů buněk.
-- Aktuální kontroly: 31 testů prošlo, typecheck/lint/build prošly. API chyby 409/429 a síťová chyba ověřeny bez lokálního fallbacku. Technické předání v docs/ je hotové.
-- Čistý samostatný klon a instalace z lockfile prošly, včetně 31 testů, buildu, lintu, typechecku, kontroly bundlu a smluv beze změny.
-- Následuje: čistý tag a push, teprve potom izolovaná demo větev a její vizuální kontrola.
-- Žádná ostrá služba není připojena. Čistý tag `fe-clean-v1` byl pushnut před založením demo větve.
-- V demo větvi: izolovaný seed a namespace, 32 testů prošlo. Vizuálně ověřeno přiřazení rezervy, CCS rozhodnutí, reporty a mobilní řidič. Podrobnosti v docs/demo-review.md (pouze demo větev).
-- Společné opravy po review: oddělené filtry více tabulek, předvyplnění uloženého přiřazení, zachované čtyři hlavní akce řidiče a omezení cenových originálů. Main má 32 úspěšných testů.
+- GitHub: https://github.com/jakubhunal/FleetCare. Čistá větev main; oddělená codex/demo-review. Původní prototyp je v prototype-reference.
+- Hotový FE: evidence, role, vazby, validace, IndexedDB a Blob, dokumenty, jízdy, servis, CCS, termíny/plány, reporty, PDF/XLSX a implementovaný HTTP klient. Dokumentace předání je v docs/.
+- Čistý základ fe-clean-v1 byl ověřen a pushnut před založením demo větve. Společné opravy vznikly nejprve v main a jsou přenášeny do demo větve. Seed není v main ani jeho buildu.
+- Main: 34 testů; demo má navíc test idempotentního seedu (35 celkem). Typecheck, lint a produkční build jsou součástí ověřování. Instalace z lockfile byla samostatně ověřena v čistém klonu.
+- UI ověřeno na desktopu/tabletu/mobilu: prázdný start, perzistence vozidla/řidiče/přidělení, vlastní jízda, skutečné soubory a smazání, hledání, klávesnice, PDF rendering a XLSX typy. Demo: přiřazení rezervy, CCS rozhodnutí, reportové filtry, čtyři hlavní mobilní akce a oddělené filtry tabulek. Konzole kontrolovaných produkčních pohledů bez chyb.
+- Poslední oprava: české kalendářní datum pro období; jízdy přes měsíční hranici se bez přesného rozdělení km nezahrnují do jmenovatele. Zakázka je časově zařazená jedinou poslední objednanou zastávkou.
+- Další krok zadavatele: připomínky k demo větvi podle docs/review-workflow.md. Vzhled není označen za schválený bez jeho vyjádření.
+- Další krok kolegů: DB/gateway, ověřená identita a oprávnění, soukromé soubory, Make/OCR/e-maily a integrační akceptace podle docs/backend-handover.md. Žádná ostrá služba není předstíraná.
