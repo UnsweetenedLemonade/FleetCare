@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { Plus, Upload, FileText } from "lucide-react";
+import { Plus, Upload, FileText, Pencil } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
   Back,
@@ -577,7 +577,10 @@ export function ExpensePage() {
         title={e.description}
         subtitle={`${e.category} · ${e.kind}`}
         actions={
-          <Button onClick={() => edit("expenses", e)}>Upravit výdaj</Button>
+          <Button onClick={() => edit("expenses", e)}>
+            <Pencil size={17} />
+            Upravit
+          </Button>
         }
       />
       <Panel>
