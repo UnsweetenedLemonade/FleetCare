@@ -46,3 +46,5 @@
 ### Následná funkční kontrola na žádost uživatele
 
 Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build prošly. Dotčené obrazovky prošly kontrolami Chromium desktop/mobil. Navíc ověřena persistence úpravy servisního plánu, skutečný upload a stažení pojištění a import/otevření/stažení originálního CCS PDF. Výsledek a omezení jsou v `docs/verification.md`; nebyla nutná oprava aplikačního kódu. Záznam ověření je uložen na stejné pracovní větvi.
+
+- A1: Move order assignment into a suitable-candidates dialog — typecheck a lint prošly.

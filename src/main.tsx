@@ -23,7 +23,6 @@ import {
   VehiclesPage,
 } from "./features/fleet";
 import {
-  AssignmentPage,
   FaultPage,
   FaultsPage,
   OrderPage,
@@ -105,7 +104,6 @@ function App() {
               <Route path="/drivers" element={<DriversPage />} />
               <Route path="/drivers/:id/:tab?" element={<DriverPage />} />
               <Route path="/orders" element={<OrdersPage />} />
-              <Route path="/orders/:id/assign" element={<AssignmentPage />} />
               <Route path="/trips" element={<TripsPage />} />
               <Route path="/faults" element={<FaultsPage />} />
               <Route path="/costs/:tab?" element={<CostsPage />} />

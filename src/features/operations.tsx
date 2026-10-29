@@ -1,5 +1,5 @@
 import { dateKey } from "../lib/format";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { Download, Pencil, Send, Square } from "lucide-react";
 import { useFleet } from "../app/context";
@@ -19,12 +19,7 @@ import {
 import { DocumentList } from "./documents";
 import { useEditors } from "./editors";
 import { DRef, FaultTable, OrderTable, TripsTable, VRef } from "./tables";
-import {
-  a6Due,
-  activeAssignment,
-  orderWindow,
-  suitability,
-} from "../domain/rules";
+import { a6Due, activeAssignment, suitability } from "../domain/rules";
 import { date, localTime, money, number, toUtc } from "../lib/format";
 import { ExportDialog } from "./reports";
 export function OrdersPage() {
@@ -49,7 +44,7 @@ export function OrdersPage() {
 }
 export function OrderPage() {
   const { id, tab = "overview" } = useParams();
-  const { s, actor } = useFleet(),
+  const { s, actor, show } = useFleet(),
     edit = useEditors();
   const o = s.orders.find((o) => o.id === id);
   if (!o)
@@ -74,9 +69,12 @@ export function OrderPage() {
                 <Pencil size={17} />
                 Doplnit / upravit údaje
               </Button>
-              <Link className="btn primary" to={`/orders/${o.id}/assign`}>
+              <Button
+                primary
+                onClick={() => show(<OrderAssignmentDialog orderId={o.id} />)}
+              >
                 Přiřadit vozidlo a řidiče
-              </Link>
+              </Button>
             </>
           )
         }
@@ -160,148 +158,86 @@ export function OrderPage() {
     </>
   );
 }
-export function AssignmentPage() {
-  const { id } = useParams();
-  const { s, actor, run } = useFleet();
-  const o = s.orders.find((o) => o.id === id);
-  const [vehicleId, setVehicle] = useState(o?.vehicleId || ""),
-    [driverId, setDriver] = useState(o?.driverId || ""),
-    [error, setError] = useState(""),
-    [busy, setBusy] = useState(false);
-  useEffect(() => {
-    setVehicle(o?.vehicleId || "");
-    setDriver(o?.driverId || "");
-    setError("");
-  }, [o?.id]);
-  if (!o || actor.role === "Řidič")
-    return <Empty title="Přiřazení není dostupné" />;
-  const v = s.vehicles.find((v) => v.id === vehicleId) || null;
-  const vs = s.vehicles.map((vehicle) => ({
-      vehicle,
-      result: suitability(s, o, vehicle, null),
-    })),
-    ds = s.drivers.map((driver) => ({
-      driver,
-      result: suitability(s, o, v, driver),
-    }));
-  const w = orderWindow(o);
+export function OrderAssignmentDialog({ orderId }: { orderId: string }) {
+  const { s, actor, run, close } = useFleet();
+  const o = s.orders.find((o) => o.id === orderId);
+  const [vehicleId, setVehicle] = useState(o?.vehicleId || "");
+  const [driverId, setDriver] = useState(o?.driverId || "");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+  if (!o || actor.role === "Řidič") return null;
+  const vehicle = s.vehicles.find((v) => v.id === vehicleId) || null;
+  const vehicles = s.vehicles.filter(
+    (v) => suitability(s, o, v, null).state === "Vhodné",
+  );
+  const drivers = vehicle
+    ? s.drivers.filter((d) => suitability(s, o, vehicle, d).state === "Vhodné")
+    : [];
+  const valid =
+    vehicles.some((v) => v.id === vehicleId) &&
+    drivers.some((d) => d.id === driverId);
   return (
-    <>
-      <Back to={`/orders/${o.id}`}>{o.number}</Back>
-      <PageHead
-        title="Přiřadit vozidlo a řidiče"
-        subtitle={`${o.number} · ${date(w.from, true)} — ${date(w.to, true)}`}
-      />
-      <Notice>
-        Vhodnost vychází z doložených kapacit, platností, časových oken a
-        servisních blokací. Neznámé údaje vyžadují doplnění. Provozní rezerva je
-        povolený kandidát.
-      </Notice>
-      <div className="two-columns">
-        <Panel title="Vozidlo">
-          <h3>Vhodní kandidáti</h3>
-          {vs
-            .filter((x) => x.result.state === "Vhodné")
-            .map(({ vehicle, result }) => (
-              <label
-                className={
-                  "candidate " + (vehicleId === vehicle.id ? "selected" : "")
-                }
-                key={vehicle.id}
-              >
+    <Dialog
+      title="Přiřadit vozidlo a řidiče"
+      onClose={close}
+      dirty={
+        vehicleId !== (o.vehicleId || "") || driverId !== (o.driverId || "")
+      }
+    >
+      <div className="dialog-body">
+        <div className="two-columns">
+          <Panel title="Vozidlo">
+            {vehicles.map((v) => (
+              <label className="candidate" key={v.id}>
                 <input
                   type="radio"
                   name="vehicle"
-                  value={vehicle.id}
-                  checked={vehicleId === vehicle.id}
+                  checked={vehicleId === v.id}
                   onChange={() => {
-                    setVehicle(vehicle.id);
+                    setVehicle(v.id);
                     setDriver("");
                   }}
                 />
                 <span>
                   <strong>
-                    {vehicle.spz} · {vehicle.model}
+                    {v.spz} · {v.model}
                   </strong>
                   <small>
-                    {number(vehicle.capacityKg, "kg")} ·{" "}
-                    {number(vehicle.volumeM3, "m³")} ·{" "}
-                    {number(vehicle.pallets, "palet")}
-                    {vehicle.reserve ? " · Rezerva" : ""}
-                  </small>
-                  <small>
-                    Zakázka {date(w.from, true)}–{date(w.to, true)} bez známé
-                    kolize
+                    {number(v.capacityKg, "kg")} · {number(v.volumeM3, "m³")}
                   </small>
                 </span>
-                <Badge value={result.state} />
               </label>
             ))}
-          {!vs.some((x) => x.result.state === "Vhodné") && (
-            <p className="muted">Žádné doloženě vhodné vozidlo.</p>
-          )}
-          <h3 className="section-title">Nevhodní a nevyhodnotitelní</h3>
-          {vs
-            .filter((x) => x.result.state !== "Vhodné")
-            .map(({ vehicle, result }) => (
-              <div className="candidate" key={vehicle.id}>
-                <div>
-                  <strong>
-                    {vehicle.spz} · {vehicle.model}
-                  </strong>
-                  <p>{result.reasons.join(" · ")}</p>
-                </div>
-                <Badge value={result.state} />
-              </div>
-            ))}
-        </Panel>
-        <Panel title="Řidič zakázky">
-          <h3>Vhodní kandidáti</h3>
-          {ds
-            .filter((x) => x.result.state === "Vhodné")
-            .map(({ driver, result }) => (
-              <label
-                className={
-                  "candidate " + (driverId === driver.id ? "selected" : "")
-                }
-                key={driver.id}
-              >
+            {!vehicles.length && (
+              <p className="muted">Žádné doloženě vhodné vozidlo.</p>
+            )}
+          </Panel>
+          <Panel title="Řidič zakázky">
+            {drivers.map((d) => (
+              <label className="candidate" key={d.id}>
                 <input
                   type="radio"
                   name="driver"
-                  checked={driverId === driver.id}
-                  onChange={() => setDriver(driver.id)}
+                  checked={driverId === d.id}
+                  onChange={() => setDriver(d.id)}
                 />
-                <span>
-                  <strong>{driver.name}</strong>
-                  <small>{driver.licences.map((x) => x.name).join(", ")}</small>
-                  <small>
-                    {date(w.from, true)}–{date(w.to, true)} bez známé kolize
-                  </small>
-                </span>
-                <Badge value={result.state} />
+                <strong>{d.name}</strong>
               </label>
             ))}
-          {!ds.some((x) => x.result.state === "Vhodné") && (
-            <p className="muted">Žádný doloženě vhodný řidič.</p>
-          )}
-          <h3 className="section-title">Nevhodní a nevyhodnotitelní</h3>
-          {ds
-            .filter((x) => x.result.state !== "Vhodné")
-            .map(({ driver, result }) => (
-              <div className="candidate" key={driver.id}>
-                <div>
-                  <strong>{driver.name}</strong>
-                  <p>{result.reasons.join(" · ")}</p>
-                </div>
-                <Badge value={result.state} />
-              </div>
-            ))}
-          <Notice>Trvalé svěření vozidla se přiřazením zakázky nemění.</Notice>
-          {error && <Notice error>{error}</Notice>}
+            {!drivers.length && (
+              <p className="muted">
+                {vehicle
+                  ? "Žádný doloženě vhodný řidič."
+                  : "Nejprve vyberte vozidlo."}
+              </p>
+            )}
+          </Panel>
+        </div>
+        {error && <Notice error>{error}</Notice>}
+        <div className="form-actions">
           <Button
             primary
-            disabled={!vehicleId || !driverId || busy}
+            disabled={!valid || busy}
             onClick={async () => {
               setBusy(true);
               try {
@@ -312,7 +248,7 @@ export function AssignmentPage() {
                   vehicleId,
                   driverId,
                 });
-                setError("");
+                close();
               } catch (e) {
                 setError(e instanceof Error ? e.message : "Přiřazení selhalo.");
               } finally {
@@ -322,14 +258,9 @@ export function AssignmentPage() {
           >
             {busy ? "Ukládání…" : "Uložit přiřazení"}
           </Button>
-          {o.vehicleId && (
-            <p>
-              Uloženo: <VRef id={o.vehicleId} /> · <DRef id={o.driverId} />
-            </p>
-          )}
-        </Panel>
+        </div>
       </div>
-    </>
+    </Dialog>
   );
 }
 export function TripsPage() {
