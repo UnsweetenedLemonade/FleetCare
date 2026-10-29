@@ -63,7 +63,7 @@ export function OrderPage() {
             <>
               <Button onClick={() => edit("orders", o)}>
                 <Pencil size={17} />
-                Doplnit / upravit údaje
+                Upravit údaje
               </Button>
               <Button
                 primary
@@ -356,7 +356,7 @@ export function TripPage() {
                 )}
                 {t.state === "Probíhá"
                   ? "Ukončit jízdu"
-                  : "Doplnit / opravit údaje"}
+                  : "Upravit údaje"}
               </Button>
             )}
             {actor.role !== "Řidič" &&

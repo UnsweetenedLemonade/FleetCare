@@ -590,7 +590,7 @@ export function ExportDialog({
               }
             }}
           >
-            {busy ? "Připravuji soubor…" : "Stáhnout " + format.toUpperCase()}
+            {busy ? "Připravuji soubor…" : "Stáhnout"}
           </Button>
         </div>
         <p className="muted">

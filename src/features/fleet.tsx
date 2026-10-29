@@ -118,7 +118,7 @@ export function VehiclePage() {
             <>
               <Button onClick={() => edit("vehicles", v)}>
                 <Pencil size={17} />
-                Upravit vozidlo
+                Upravit informace o vozidle
               </Button>
             </>
           )
