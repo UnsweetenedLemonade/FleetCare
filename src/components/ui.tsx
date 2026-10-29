@@ -692,25 +692,21 @@ export function DataTable<T extends { id: string }>({
                 ))}
               </tr>
             ))}
-            {!filtered.length && (
-              <tr>
-                <td colSpan={columns.length}>
-                  <Empty
-                    title={
-                      rows.length ? emptyText : "Evidence je zatím prázdná"
-                    }
-                    text={
-                      rows.length
-                        ? "Změňte hledání nebo filtry."
-                        : "Uložené záznamy se zobrazí zde."
-                    }
-                  />
-                </td>
-              </tr>
-            )}
           </tbody>
         </table>
       </div>
+      {!filtered.length && (
+        <div className="table-empty">
+          <Empty
+            title={rows.length ? emptyText : "Evidence je zatím prázdná"}
+            text={
+              rows.length
+                ? "Změňte hledání nebo filtry."
+                : "Uložené záznamy se zobrazí zde."
+            }
+          />
+        </div>
+      )}
       <div className="pagination">
         <span>
           {filtered.length
