@@ -600,6 +600,9 @@ export function EntityEditor({
         ? record.qualifications
         : []) as Driver["qualifications"],
     );
+  const [templateId, setTemplateId] = useState(
+    record && "templateId" in record ? String(record.templateId || "") : "",
+  );
   const [items, setItems] = useState(
     (record && "items" in record
       ? record.items
@@ -709,6 +712,7 @@ export function EntityEditor({
             }
             if (collection === "templates" || collection === "plans")
               values.items = items;
+            if (collection === "plans") values.templateId = templateId || null;
             if (collection === "orders") values.stops = stops;
             if (collection === "expenses") {
               values.kind = record && "kind" in record ? record.kind : "Výdaj";
@@ -749,6 +753,39 @@ export function EntityEditor({
                 onChange={change(setQualifications)}
               />
             </>
+          )}
+          {collection === "plans" && (
+            <label>
+              Šablona
+              <select
+                value={templateId}
+                onChange={(e) => {
+                  setDirty(true);
+                  setTemplateId(e.target.value);
+                  const template = s.templates.find(
+                    (t) => t.id === e.target.value,
+                  );
+                  if (template)
+                    setItems(
+                      template.items.map((i) => ({
+                        ...i,
+                        id: crypto.randomUUID(),
+                      })),
+                    );
+                }}
+              >
+                <option value="">Individuální plán</option>
+                {s.templates.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+              <small>
+                Výběr šablony předvyplní úkony. Změny se uloží až potvrzením
+                formuláře.
+              </small>
+            </label>
           )}
           {(collection === "templates" || collection === "plans") && (
             <PlanItems value={items} onChange={change(setItems)} />

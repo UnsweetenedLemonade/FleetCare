@@ -7,6 +7,7 @@ import {
   Badge,
   Button,
   DataGrid,
+  DataTable,
   Dialog,
   Empty,
   Form,
@@ -353,67 +354,75 @@ function ServicePlan({ vehicle }: { vehicle: Vehicle }) {
   const { s } = useFleet(),
     edit = useEditors();
   const p = s.plans.find((p) => p.vehicleId === vehicle.id);
-  const [template, setTemplate] = useState("");
   return (
     <>
       <Notice>
         Šablona předvyplní individuální plán. Změna globální šablony tento plán
         sama nepřepíše.
       </Notice>
-      <div className="section-actions">
-        <label>
-          Šablona
-          <select
-            value={template}
-            onChange={(e) => setTemplate(e.target.value)}
-          >
-            <option value="">Vyberte šablonu…</option>
-            {s.templates.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        {p ? (
-          <Button primary onClick={() => edit("plans", p)}>
-            Upravit individuální plán
-          </Button>
-        ) : (
-          <Button
-            primary
-            onClick={() => edit("plans", undefined, { vehicleId: vehicle.id })}
-          >
+      {!p?.items.length && (
+        <div className="section-actions">
+          <Button onClick={() => edit("plans", p, { vehicleId: vehicle.id })}>
             Vytvořit individuální plán
           </Button>
-        )}
-      </div>
-      {p?.items.length ? (
-        p.items.map((i) => (
-          <div className="list-item" key={i.id}>
-            <div>
-              <strong>{i.name}</strong>
-              <small>
-                Interval {number(i.intervalKm, "km")} /{" "}
-                {number(i.intervalMonths, "měsíců")}
-              </small>
-              <small>
-                Poslední provedení: {date(i.lastDate)} ·{" "}
-                {number(i.lastKm, "km")}
-              </small>
-            </div>
-            <div>
-              Další: {date(i.nextDate)}
-              <small>{number(i.nextKm, "km")}</small>
-            </div>
-          </div>
-        ))
-      ) : (
-        <Empty
-          title="Servisní plán není vyplněn"
-          text="Přiřaďte vlastní šablonu nebo vytvořte individuální plán. Intervaly výrobce nejsou předvyplněny."
-        />
+        </div>
       )}
+      <DataTable
+        rows={p?.items || []}
+        search={(i) => i.name}
+        columns={[
+          {
+            key: "name",
+            label: "Úkon",
+            sort: (i) => i.name,
+            render: (i) => <strong>{i.name}</strong>,
+          },
+          {
+            key: "interval",
+            label: "Interval km / měsíců",
+            render: (i) => (
+              <>
+                {number(i.intervalKm, "km")} /{" "}
+                {number(i.intervalMonths, "měsíců")}
+              </>
+            ),
+          },
+          {
+            key: "last",
+            label: "Poslední provedení",
+            sort: (i) => i.lastDate,
+            render: (i) => (
+              <>
+                {date(i.lastDate)}
+                <small>{number(i.lastKm, "km")}</small>
+              </>
+            ),
+          },
+          {
+            key: "next",
+            label: "Další termín / hranice",
+            sort: (i) => i.nextDate,
+            render: (i) => (
+              <>
+                {date(i.nextDate)}
+                <small>{number(i.nextKm, "km")}</small>
+              </>
+            ),
+          },
+          {
+            key: "actions",
+            label: "Akce",
+            render: (i) => (
+              <Button
+                aria-label={`Upravit individuální plán · ${i.name}`}
+                onClick={() => edit("plans", p)}
+              >
+                <Pencil size={16} />
+              </Button>
+            ),
+          },
+        ]}
+      />
     </>
   );
 }

@@ -52,3 +52,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A2: Simplify fuel detail and show one action for CCS differences — typecheck a lint prošly.
 
 - A3: Add shared document editing deletion download and type filters — typecheck a lint prošly.
+
+- A4: Present vehicle service plans in a table with dialog-only templates — typecheck a lint prošly.
