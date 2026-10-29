@@ -15,10 +15,12 @@ import {
   Button,
   Dialog,
   Field,
+  FilePicker,
   Form,
   Notice,
   type FieldSpec,
 } from "../components/ui";
+import { validateUpload } from "../data/uploads";
 import { localTime, toUtc, today } from "../lib/format";
 const options = (items: readonly string[]): [string, string][] =>
   items.map((x) => [x, x]);
@@ -600,7 +602,11 @@ export function EntityEditor({
   defaults?: Record<string, unknown>;
   startTrip?: boolean;
 }) {
-  const { s, actor, run, close } = useFleet();
+  const { s, actor, run, upload, close } = useFleet();
+  const [attachment, setAttachment] = useState<File[]>([]);
+  const [savedExpenseVehicle, setSavedExpenseVehicle] = useState<string | null>(
+    null,
+  );
   const [dirty, setDirty] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const data: Record<string, unknown> = { ...record, ...defaults };
@@ -757,6 +763,32 @@ export function EntityEditor({
               values.caseReference = "FC-" + key;
               values.driverId = actor.driverId;
             }
+            if (collection === "expenses" && !record) {
+              const vehicleId = savedExpenseVehicle || String(values.vehicleId);
+              const input = {
+                ownerType: "expense" as const,
+                ownerId: key,
+                vehicleId,
+                type: "Příloha" as const,
+                files: attachment,
+                idempotencyKey: key + "-attachment",
+              };
+              if (attachment.length) validateUpload(input);
+              if (!savedExpenseVehicle) {
+                await run(
+                  {
+                    type: "save",
+                    collection: "expenses",
+                    data: { ...values, id: key },
+                  },
+                  key,
+                );
+                setSavedExpenseVehicle(vehicleId);
+              }
+              if (attachment.length) await upload(input);
+              close();
+              return;
+            }
             if (startTrip) await run({ type: "trip.start", data: values }, key);
             else
               await run(
@@ -772,6 +804,25 @@ export function EntityEditor({
             close();
           }}
         >
+          {collection === "expenses" && !record && (
+            <>
+              <FilePicker
+                files={attachment}
+                onChange={(files) => {
+                  setAttachment(files);
+                  setDirty(true);
+                }}
+                label="Přidat přílohu"
+              />
+              {savedExpenseVehicle && (
+                <Notice>
+                  Výdaj je uložen. Pokud nahrání přílohy selhalo, zopakujte
+                  uložení; nový výdaj nevznikne. Údaje výdaje lze poté upravit v
+                  jeho detailu.
+                </Notice>
+              )}
+            </>
+          )}
           {collection === "drivers" && (
             <>
               <Entitlements

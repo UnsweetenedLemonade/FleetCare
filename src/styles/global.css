@@ -1880,3 +1880,28 @@ textarea[aria-invalid="true"] {
   width: 100%;
   color: #b3261e;
 }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  min-height: 0 !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0 !important;
+}
+.file-picker {
+  margin: 16px 0;
+}
+.file-picker .upload-zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.selected-files {
+  overflow-wrap: anywhere;
+}

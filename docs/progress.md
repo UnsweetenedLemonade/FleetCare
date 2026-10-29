@@ -60,3 +60,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A6: Use assignment tables with history and vehicle identifiers — typecheck a lint prošly.
 
 - A7: Show accessible field-specific validation including repeated service items — typecheck a lint prošly.
+
+- A8: Upload an expense attachment directly from its creation form — typecheck a lint prošly.

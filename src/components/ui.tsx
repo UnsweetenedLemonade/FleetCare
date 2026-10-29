@@ -838,3 +838,53 @@ export function ValidatedForm({
     </FieldErrors.Provider>
   );
 }
+
+export function FilePicker({
+  files,
+  onChange,
+  label = "Vybrat soubory",
+  accept = "application/pdf,image/jpeg,image/png",
+  multiple = true,
+}: {
+  files: File[];
+  onChange: (files: File[]) => void;
+  label?: string;
+  accept?: string;
+  multiple?: boolean;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div className="file-picker">
+      <div
+        className="upload-zone"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const next = Array.from(e.dataTransfer.files);
+          onChange(multiple ? next : next.slice(0, 1));
+        }}
+      >
+        <span>Přetáhněte sem soubor nebo jej vyberte.</span>
+        <Button onClick={() => ref.current?.click()}>{label}</Button>
+        <input
+          ref={ref}
+          className="visually-hidden"
+          aria-label={label}
+          type="file"
+          accept={accept}
+          multiple={multiple}
+          onChange={(e) => onChange(Array.from(e.target.files || []))}
+        />
+      </div>
+      {!!files.length && (
+        <ul className="selected-files">
+          {files.map((f, i) => (
+            <li key={`${f.name}-${i}`}>
+              {f.name} · {Math.ceil(f.size / 1024)} kB
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
