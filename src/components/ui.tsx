@@ -344,10 +344,6 @@ export function Form({
     setErrors({});
     setFailure("");
     const invalid = nativeFieldErrors(e.currentTarget);
-    if (Object.keys(invalid).length) {
-      setErrors(invalid);
-      return;
-    }
     const fd = new FormData(e.currentTarget);
     const values: Record<string, unknown> = {};
     try {
@@ -359,10 +355,14 @@ export function Form({
             ? Number(raw.replace(/\s/g, "").replace(",", "."))
             : null;
           if (n !== null && !Number.isFinite(n))
-            throw new DomainError("Zadejte platné číslo.", f.key);
+            invalid[f.key] = "Zadejte platné číslo.";
           values[f.key] =
             f.type === "money" && n !== null ? Math.round(n * 100) : n;
         } else values[f.key] = raw;
+      }
+      if (Object.keys(invalid).length) {
+        setErrors(invalid);
+        return;
       }
       setPending(true);
       await onSubmit(values);
@@ -889,6 +889,8 @@ export function FilePicker({
   accept = "application/pdf,image/jpeg,image/png",
   multiple = true,
   camera = false,
+  name = "files",
+  error,
 }: {
   files: File[];
   onChange: (files: File[]) => void;
@@ -896,7 +898,12 @@ export function FilePicker({
   accept?: string;
   multiple?: boolean;
   camera?: boolean;
+  name?: string;
+  error?: string;
 }) {
+  const errors = useContext(FieldErrors);
+  const id = useId();
+  const failure = error || errors[name];
   const ref = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   return (
@@ -914,6 +921,9 @@ export function FilePicker({
         <Button onClick={() => ref.current?.click()}>{label}</Button>
         <input
           ref={ref}
+          name={name}
+          aria-invalid={!!failure}
+          aria-describedby={failure ? `${id}-error` : undefined}
           className="visually-hidden"
           aria-label={label}
           type="file"
@@ -937,6 +947,11 @@ export function FilePicker({
             onChange={(e) => onChange(Array.from(e.target.files || []))}
           />
         </>
+      )}
+      {failure && (
+        <small className="field-error" id={`${id}-error`} role="alert">
+          {failure}
+        </small>
       )}
       {!!files.length && (
         <ul className="selected-files">

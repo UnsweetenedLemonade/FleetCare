@@ -112,3 +112,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A7 follow-up: Preserve API field errors and surface unmapped validation failures — typecheck a lint prošly.
 
 - Keep empty-table messages fully visible on small screens — typecheck a lint prošly.
+
+- A7 follow-up: Collect numeric errors and validate attachments before saving — typecheck a lint prošly.

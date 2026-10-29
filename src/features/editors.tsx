@@ -20,6 +20,7 @@ import {
   Notice,
   type FieldSpec,
 } from "../components/ui";
+import { DomainError } from "../domain/rules";
 import { validateUpload } from "../data/uploads";
 import { localTime, toUtc, today } from "../lib/format";
 const options = (items: readonly string[]): [string, string][] =>
@@ -768,7 +769,16 @@ export function EntityEditor({
                 files: attachment,
                 idempotencyKey: key + "-attachment",
               };
-              if (attachment.length) validateUpload(input);
+              if (attachment.length) {
+                try {
+                  validateUpload(input);
+                } catch (e) {
+                  throw new DomainError(
+                    e instanceof Error ? e.message : "Neplatná příloha.",
+                    "files",
+                  );
+                }
+              }
               if (!savedExpenseVehicle) {
                 await run(
                   {

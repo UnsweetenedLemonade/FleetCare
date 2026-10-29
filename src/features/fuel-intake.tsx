@@ -1,3 +1,5 @@
+import { validateUpload } from "../data/uploads";
+import { DomainError } from "../domain/rules";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useFleet } from "../app/context";
@@ -51,7 +53,20 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
           }}
           submit="Uložit účtenku"
           onSubmit={async (values) => {
-            if (!files.length) throw new Error("Vyberte účtenku.");
+            try {
+              validateUpload({
+                ownerType: "fuel",
+                ownerId: id,
+                type: "Účtenka",
+                files,
+                idempotencyKey: id + "-file",
+              });
+            } catch (e) {
+              throw new DomainError(
+                e instanceof Error ? e.message : "Vyberte účtenku.",
+                "files",
+              );
+            }
             await run(
               {
                 type: "save",
