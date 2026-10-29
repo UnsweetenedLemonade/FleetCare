@@ -66,3 +66,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A9: Set global body text to 16px and minimum small text to 14px — typecheck a lint prošly.
 
 - B1: Share table toolbars and consistent history switches — typecheck a lint prošly.
+
+- B2: Use a shared add-method dropdown for vehicles and fuel — typecheck a lint prošly.

@@ -16,7 +16,14 @@ import {
   type FormEvent,
 } from "react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
-import { ArrowLeft, ArrowRight, Inbox, X, Search } from "lucide-react";
+import {
+  ArrowLeft,
+  ArrowRight,
+  Inbox,
+  X,
+  Search,
+  ChevronDown,
+} from "lucide-react";
 import { z } from "zod";
 import { DomainError } from "../domain/rules";
 import { normalize } from "../lib/format";
@@ -27,6 +34,7 @@ export function Button({
   danger = false,
   ...props
 }: ButtonHTMLAttributes<HTMLButtonElement> & {
+  ref?: React.Ref<HTMLButtonElement>;
   primary?: boolean;
   danger?: boolean;
 }) {
@@ -884,6 +892,71 @@ export function FilePicker({
             </li>
           ))}
         </ul>
+      )}
+    </div>
+  );
+}
+
+export type AddChoice = { label: string; action: () => void; icon?: ReactNode };
+export function ChoiceButton({
+  label,
+  icon,
+  choices,
+}: {
+  label: string;
+  icon?: ReactNode;
+  choices: AddChoice[];
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const trigger = useRef<HTMLButtonElement>(null);
+  const id = useId();
+  useEffect(() => {
+    if (!open) return;
+    const outside = (e: PointerEvent) => {
+      if (!ref.current?.contains(e.target as Node)) setOpen(false);
+    };
+    const escape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setOpen(false);
+        trigger.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("pointerdown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [open]);
+  return (
+    <div className="choice-button" ref={ref}>
+      <Button
+        ref={trigger}
+        primary
+        aria-expanded={open}
+        aria-controls={id}
+        onClick={() => setOpen(!open)}
+      >
+        {icon}
+        {label}
+        <ChevronDown size={17} />
+      </Button>
+      {open && (
+        <div id={id} className="choice-menu" role="group" aria-label={label}>
+          {choices.map((c) => (
+            <Button
+              key={c.label}
+              onClick={() => {
+                setOpen(false);
+                c.action();
+              }}
+            >
+              {c.icon}
+              {c.label}
+            </Button>
+          ))}
+        </div>
       )}
     </div>
   );

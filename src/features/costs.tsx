@@ -6,6 +6,7 @@ import {
   Back,
   Badge,
   Button,
+  ChoiceButton,
   DataGrid,
   DataTable,
   Dialog,
@@ -20,10 +21,11 @@ import { useEditors } from "./editors";
 import { DocumentList, useUpload } from "./documents";
 import { DRef, FuelTable, VRef } from "./tables";
 import { date, money, number } from "../lib/format";
+import { FuelIntakeDialog } from "./fuel-intake";
 import { ReportsPage } from "./reports";
 export function CostsPage() {
   const { tab = "fuel" } = useParams();
-  const { s } = useFleet(),
+  const { s, show } = useFleet(),
     edit = useEditors(),
     upload = useUpload();
   return (
@@ -33,12 +35,17 @@ export function CostsPage() {
         subtitle="Doložené výdaje, tankování a souvislosti CCS podkladů."
         actions={
           tab === "fuel" ? (
-            <>
-              <Button primary onClick={() => edit("fuels")}>
-                <Plus size={17} />
-                Zadat tankování
-              </Button>
-            </>
+            <ChoiceButton
+              label="Zadat tankování"
+              icon={<Plus size={17} />}
+              choices={[
+                { label: "Manuálně", action: () => edit("fuels") },
+                {
+                  label: "Nahrát účtenku",
+                  action: () => show(<FuelIntakeDialog />),
+                },
+              ]}
+            />
           ) : tab === "statements" ? (
             <Button
               primary
