@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { Plus, Upload } from "lucide-react";
+import { Plus, Upload, FileText } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
   Back,
@@ -334,8 +334,14 @@ export function StatementPage() {
               d.ownerType === "statement" && d.ownerId === x.id && !d.deletedAt,
           )
           .map((d) => (
-            <Link className="btn" key={d.id} to={`/documents/${d.id}`}>
-              {d.name}
+            <Link
+              className="btn"
+              key={d.id}
+              to={`/documents/${d.id}`}
+              title={d.name}
+            >
+              <FileText size={17} />
+              Zobrazit výpis (PDF)
             </Link>
           ))}
       />
