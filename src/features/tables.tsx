@@ -709,6 +709,12 @@ export function DriverOperationsTable({ driverId }: { driverId: string }) {
           options: optionPairs(["Zakázka", "Jízda"]),
           value: (r) => r.type,
         },
+        {
+          key: "state",
+          label: "Všechny stavy",
+          options: optionPairs(Array.from(new Set(rows.map((r) => r.state)))),
+          value: (r) => r.state,
+        },
       ]}
       columns={[
         { key: "type", label: "Typ", render: (r) => <Badge value={r.type} /> },
