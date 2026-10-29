@@ -24,7 +24,7 @@ import { date, money, number } from "../lib/format";
 import { FuelIntakeDialog } from "./fuel-intake";
 import { ReportsPage } from "./reports";
 export function CostsPage() {
-  const { tab = "fuel" } = useParams();
+  const { tab = "overview" } = useParams();
   const { s, show } = useFleet(),
     edit = useEditors(),
     upload = useUpload();
@@ -67,10 +67,10 @@ export function CostsPage() {
           base="/costs"
           selected={tab}
           items={[
+            ["overview", "Přehled nákladů"],
             ["fuel", "Tankování"],
             ["statements", "CCS výpisy"],
             ["expenses", "Ostatní výdaje"],
-            ["overview", "Přehled nákladů"],
           ]}
         />
         <div className="detail-body">

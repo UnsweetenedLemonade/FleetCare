@@ -72,3 +72,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - B3: Use application file pickers for uploads and camera receipts — typecheck a lint prošly.
 
 - B4: Label the CCS PDF action while retaining one transaction table — typecheck a lint prošly.
+
+- B5: Make the cost overview the first and default costs tab — typecheck a lint prošly.
