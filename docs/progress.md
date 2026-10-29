@@ -76,3 +76,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - B5: Make the cost overview the first and default costs tab — typecheck a lint prošly.
 
 - B6: Use a secondary edit action with a pencil on expense details — typecheck a lint prošly.
+
+- B7: Add a single-service Contacts tab and tabular CCS cards — typecheck a lint prošly.

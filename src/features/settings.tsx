@@ -1,7 +1,15 @@
 import { useState } from "react";
 import { useParams } from "react-router";
 import { useFleet } from "../app/context";
-import { Button, Form, Notice, PageHead, Panel, Tabs } from "../components/ui";
+import {
+  Button,
+  DataTable,
+  Form,
+  Notice,
+  PageHead,
+  Panel,
+  Tabs,
+} from "../components/ui";
 import { useEditors } from "./editors";
 import { date, number } from "../lib/format";
 export function SettingsPage() {
@@ -23,6 +31,7 @@ export function SettingsPage() {
             ["terms", "Termíny a servis"],
             ["plans", "Servisní plány"],
             ["cards", "CCS karty"],
+            ["contacts", "Kontakty"],
           ]}
         />
         <div className="detail-body">
@@ -75,31 +84,6 @@ export function SettingsPage() {
                 }}
               />
               {saved && <Notice>Provozní nastavení uloženo.</Notice>}
-              <div className="section-actions">
-                <h2>Nasmlouvané externí servisy</h2>
-                <Button primary onClick={() => edit("services")}>
-                  Přidat servisní kontakt
-                </Button>
-              </div>
-              {s.services.length ? (
-                s.services.map((x) => (
-                  <div className="list-item" key={x.id}>
-                    <div>
-                      <strong>{x.name}</strong>
-                      <small>
-                        {x.email || "E-mail chybí"} · {x.phone} · {x.address}
-                      </small>
-                    </div>
-                    <Button onClick={() => edit("services", x)}>
-                      Upravit kontakt
-                    </Button>
-                  </div>
-                ))
-              ) : (
-                <p className="muted">
-                  Zatím není založen žádný servisní kontakt.
-                </p>
-              )}
             </>
           )}
           {tab === "plans" && (
@@ -137,45 +121,91 @@ export function SettingsPage() {
               ))}
             </>
           )}
+          {tab === "contacts" && (
+            <Panel
+              title="Externí servis"
+              action={
+                <Button
+                  primary={!s.services.length}
+                  onClick={() => edit("services", s.services[0])}
+                >
+                  {s.services.length
+                    ? "Upravit kontakt"
+                    : "Přidat servisní kontakt"}
+                </Button>
+              }
+            >
+              {s.services[0] ? (
+                <>
+                  <h3>{s.services[0].name}</h3>
+                  <p>
+                    {s.services[0].email || "E-mail chybí"} ·{" "}
+                    {s.services[0].phone} · {s.services[0].address}
+                  </p>
+                </>
+              ) : (
+                <p className="muted">
+                  Zatím není založen žádný servisní kontakt.
+                </p>
+              )}
+            </Panel>
+          )}
           {tab === "cards" && (
-            <>
-              <div className="section-actions">
+            <DataTable
+              rows={s.cards}
+              search={(c) => c.number}
+              toolbarActions={
                 <Button
                   primary
                   onClick={() => edit("cards", undefined, { active: true })}
                 >
                   Přidat CCS kartu
                 </Button>
-              </div>
-              {s.cards.map((c) => (
-                <Panel
-                  key={c.id}
-                  title={c.number}
-                  action={
+              }
+              columns={[
+                {
+                  key: "number",
+                  label: "CCS karta",
+                  sort: (c) => c.number,
+                  render: (c) => <strong>{c.number}</strong>,
+                },
+                {
+                  key: "state",
+                  label: "Stav",
+                  render: (c) => (c.active ? "Aktivní" : "Neaktivní"),
+                },
+                {
+                  key: "tolerance",
+                  label: "Tolerance",
+                  sort: (c) => c.toleranceMinor,
+                  render: (c) =>
+                    c.toleranceMinor === null
+                      ? "Není nastavena"
+                      : number(c.toleranceMinor / 100, "Kč včetně"),
+                },
+                {
+                  key: "bindings",
+                  label: "Vozidla / období",
+                  render: (c) =>
+                    c.bindings.map((b, i) => (
+                      <small key={i}>
+                        {s.vehicles.find((v) => v.id === b.vehicleId)?.spz ||
+                          "Vozidlo není dostupné"}{" "}
+                        · {date(b.from)} — {b.to ? date(b.to) : "Trvá"}
+                      </small>
+                    )),
+                },
+                {
+                  key: "actions",
+                  label: "Akce",
+                  render: (c) => (
                     <Button onClick={() => edit("cards", c)}>
                       Upravit kartu
                     </Button>
-                  }
-                >
-                  <p>
-                    {c.active ? "Aktivní" : "Neaktivní"} · Tolerance:{" "}
-                    {c.toleranceMinor === null
-                      ? "Není nastavena"
-                      : number(c.toleranceMinor / 100, "Kč včetně")}
-                  </p>
-                  {c.bindings.map((b, i) => (
-                    <div className="list-item" key={i}>
-                      <strong>
-                        {s.vehicles.find((v) => v.id === b.vehicleId)?.spz}
-                      </strong>
-                      <span>
-                        {date(b.from)} — {b.to ? date(b.to) : "Trvá"}
-                      </span>
-                    </div>
-                  ))}
-                </Panel>
-              ))}
-            </>
+                  ),
+                },
+              ]}
+            />
           )}
         </div>
       </div>
