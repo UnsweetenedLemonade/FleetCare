@@ -42,3 +42,7 @@
 - Zachováno: dokumentové úložiště, datové modely, HTTP klient, historické korekce a API příkazy párování/šablon/komunikace kvůli kompatibilitě. Nastavení, kontakty, rychlé akce, styly, historie, patička a ostatní sdílená místa beze změn. Metodika v samostatných Reportech a upload účtenek v řidičově pracovním prostoru zůstávají.
 - Ověření: lint, typecheck, produkční build a 38 testů; Chromium desktop 1440 px a mobil 390 px, odstranění prvků, jedna tabulka řidiče, dokumenty vozidla, persistence editovaného výdaje. Build nadále hlásí existující upozornění na velké chunky.
 - Omezení: živý HTTP backend, produkční data a Pages nebyly ověřovány ani nasazovány. Další iterace musí rozhodnout o kartě komunikace a doplnit detail termínu. Větev `codex/ux-remove-extra-controls` je určena k revizi a začlenění do main.
+
+### Následná funkční kontrola na žádost uživatele
+
+Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build prošly. Dotčené obrazovky prošly kontrolami Chromium desktop/mobil. Navíc ověřena persistence úpravy servisního plánu, skutečný upload a stažení pojištění a import/otevření/stažení originálního CCS PDF. Výsledek a omezení jsou v `docs/verification.md`; nebyla nutná oprava aplikačního kódu. Záznam ověření je uložen na stejné pracovní větvi.
