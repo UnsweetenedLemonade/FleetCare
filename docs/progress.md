@@ -90,3 +90,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - C1: Remove informational banners while preserving actionable warnings — typecheck a lint prošly.
 
 - C2: Remove the workspace eyebrow from shared page headings — typecheck a lint prošly.
+
+- C3: Remove the shared page footer — typecheck a lint prošly.

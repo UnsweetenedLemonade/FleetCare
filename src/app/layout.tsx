@@ -171,20 +171,6 @@ export function Layout({
         </div>
         <main className="content" id="main" tabIndex={-1}>
           {children}
-          <footer>
-            <span>FleetCare © {new Date().getFullYear()}</span>
-            {import.meta.env.VITE_BUILD_SHA && (
-              <a
-                href={`https://github.com/jakubhunal/FleetCare/commit/${import.meta.env.VITE_BUILD_SHA}`}
-                target="_blank"
-                rel="noreferrer"
-                title="Zdrojový commit nasazené verze"
-              >
-                Verze {import.meta.env.VITE_BUILD_SHA.slice(0, 7)}
-              </a>
-            )}
-            <span>{actor.role} · přepínač kontextu bez přihlášení</span>
-          </footer>
         </main>
       </div>
     </>
