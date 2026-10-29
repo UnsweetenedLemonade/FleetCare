@@ -104,3 +104,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - C8: Place reports before settings in management navigation — typecheck a lint prošly.
 
 - C9: Reserve green buttons for primary page actions — typecheck a lint prošly.
+
+- Test document permissions metadata versions and recipient changes — typecheck a lint prošly.
