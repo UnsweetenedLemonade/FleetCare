@@ -50,3 +50,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A1: Move order assignment into a suitable-candidates dialog — typecheck a lint prošly.
 
 - A2: Simplify fuel detail and show one action for CCS differences — typecheck a lint prošly.
+
+- A3: Add shared document editing deletion download and type filters — typecheck a lint prošly.

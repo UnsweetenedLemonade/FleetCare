@@ -78,6 +78,14 @@ export type Command =
       reason: string;
       version: number;
     }
+  | {
+      type: "document.update";
+      id: string;
+      version: number;
+      name: string;
+      validUntil: string | null;
+      dueAt: string | null;
+    }
   | { type: "document.delete"; id: string }
   | { type: "document.link"; id: string; vehicleId: string };
 export type CommandEnvelope = { command: Command; idempotencyKey: string };

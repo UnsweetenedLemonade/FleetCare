@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
-import { FileText, Upload, Download, Trash2 } from "lucide-react";
+import { FileText, Upload, Download, Trash2, Pencil } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import type { Document } from "../domain/models";
 import {
@@ -10,6 +10,7 @@ import {
   DataTable,
   Dialog,
   Empty,
+  Form,
   Notice,
   PageHead,
 } from "../components/ui";
@@ -224,6 +225,16 @@ export function DocumentList({
         rows={docs}
         path={(d) => `/documents/${d.id}`}
         search={(d) => d.name + " " + d.type}
+        filters={[
+          {
+            key: "type",
+            label: "Všechny typy dokumentů",
+            options: Array.from(new Set(docs.map((d) => d.type))).map(
+              (type) => [type, type],
+            ),
+            value: (d) => d.type,
+          },
+        ]}
         columns={[
           {
             key: "name",
@@ -307,7 +318,7 @@ export function DocumentList({
 }
 export function DocumentPage() {
   const { id } = useParams();
-  const { s, actor, repo, show } = useFleet();
+  const { s, actor, repo, show, close, run } = useFleet();
   const doc = s.documents.find((d) => d.id === id && !d.deletedAt);
   const client = useQueryClient();
   const job = useQuery({
@@ -356,12 +367,42 @@ export function DocumentPage() {
         title={doc.name}
         subtitle={doc.type + " · " + date(doc.uploadedAt)}
         actions={
-          url && (
-            <a className="btn" href={url} download={doc.name}>
-              <Download size={17} />
-              Stáhnout originál
-            </a>
-          )
+          <>
+            {(actor.role !== "Řidič" ||
+              (doc.ownerType === "driver" &&
+                doc.ownerId === actor.driverId)) && (
+              <>
+                <Button onClick={() => show(<EditDocument doc={doc} />)}>
+                  <Pencil size={17} />
+                  Upravit
+                </Button>
+                <Button
+                  danger
+                  onClick={() =>
+                    show(
+                      <Confirm
+                        title="Smazat dokument"
+                        description={`Opravdu smazat dokument „${doc.name}“?`}
+                        onDone={close}
+                        action={() =>
+                          run({ type: "document.delete", id: doc.id })
+                        }
+                      />,
+                    )
+                  }
+                >
+                  <Trash2 size={17} />
+                  Smazat
+                </Button>
+              </>
+            )}
+            {url && (
+              <a className="btn" href={url} download={doc.name}>
+                <Download size={17} />
+                Stáhnout
+              </a>
+            )}
+          </>
         }
       />
       <div className="document-layout">
@@ -476,6 +517,37 @@ function LinkDocument({ id }: { id: string }) {
             Připojit dokument
           </Button>
         </div>
+      </div>
+    </Dialog>
+  );
+}
+
+function EditDocument({ doc }: { doc: Document }) {
+  const { run, close } = useFleet();
+  const [dirty, setDirty] = useState(false);
+  return (
+    <Dialog title="Upravit dokument" onClose={close} dirty={dirty}>
+      <div className="dialog-body">
+        <Form
+          fields={[
+            { key: "name", label: "Název", required: true },
+            { key: "validUntil", label: "Platnost do", type: "date" },
+            { key: "dueAt", label: "Splatnost", type: "date" },
+          ]}
+          initial={doc}
+          onDirty={setDirty}
+          onSubmit={async (v) => {
+            await run({
+              type: "document.update",
+              id: doc.id,
+              version: doc.version,
+              name: String(v.name),
+              validUntil: String(v.validUntil) || null,
+              dueAt: String(v.dueAt) || null,
+            });
+            close();
+          }}
+        />
       </div>
     </Dialog>
   );

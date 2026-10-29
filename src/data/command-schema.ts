@@ -84,6 +84,14 @@ export const commandSchema = z.discriminatedUnion("type", [
     reason: z.string().min(1),
     version: z.number().int().positive(),
   }),
+  z.object({
+    type: z.literal("document.update"),
+    id: z.string(),
+    version: z.number().int().positive(),
+    name: z.string().trim().min(1),
+    validUntil: z.iso.date().nullable(),
+    dueAt: z.iso.date().nullable(),
+  }),
   z.object({ type: z.literal("document.delete"), id: z.string() }),
   z.object({
     type: z.literal("document.link"),
