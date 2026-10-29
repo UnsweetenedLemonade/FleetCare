@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { useFleet } from "../app/context";
 import { Badge, DataTable } from "../components/ui";
@@ -469,10 +470,17 @@ export function TripsTable({ rows }: { rows: Trip[] }) {
     />
   );
 }
-export function FaultTable({ rows }: { rows: Fault[] }) {
+export function FaultTable({
+  rows,
+  toolbarActions,
+}: {
+  rows: Fault[];
+  toolbarActions?: ReactNode;
+}) {
   const { s } = useFleet();
   return (
     <DataTable
+      toolbarActions={toolbarActions}
       prefix="faults."
       rows={rows}
       path={(f) => `/faults/${f.id}`}

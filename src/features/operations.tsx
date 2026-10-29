@@ -11,6 +11,7 @@ import {
   Dialog,
   Empty,
   Form,
+  HistorySwitch,
   Notice,
   PageHead,
   Panel,
@@ -454,16 +455,11 @@ export function FaultsPage() {
           </Button>
         }
       />
-      <label className="switch">
-        <input
-          type="checkbox"
-          checked={historical}
-          onChange={(e) => setHistorical(e.target.checked)}
-        />
-        Zobrazit i historické
-      </label>
       <Panel>
         <FaultTable
+          toolbarActions={
+            <HistorySwitch checked={historical} onChange={setHistorical} />
+          }
           rows={s.faults.filter((f) => historical || f.state !== "Uzavřena")}
         />
       </Panel>

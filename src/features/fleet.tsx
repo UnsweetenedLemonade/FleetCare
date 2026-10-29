@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { Truck, UserPlus, Pencil, Pause, Play } from "lucide-react";
@@ -219,25 +220,31 @@ export function VehiclePage() {
               <Notice>
                 Svěření vozidla a řidič konkrétní zakázky jsou samostatné vazby.
               </Notice>
-              <div className="section-actions">
-                <Button
-                  primary
-                  onClick={() => show(<AssignmentDialog vehicleId={v.id} />)}
-                >
-                  Přiřadit / změnit řidiče
-                </Button>
-                {a && (
-                  <Button
-                    danger
-                    onClick={() =>
-                      show(<AssignmentDialog vehicleId={v.id} end />)
-                    }
-                  >
-                    Ukončit přidělení
-                  </Button>
-                )}
-              </div>
-              <Assignments vehicleId={v.id} />
+              <Assignments
+                vehicleId={v.id}
+                actions={
+                  <>
+                    <Button
+                      primary
+                      onClick={() =>
+                        show(<AssignmentDialog vehicleId={v.id} />)
+                      }
+                    >
+                      Přiřadit / změnit řidiče
+                    </Button>
+                    {a && (
+                      <Button
+                        danger
+                        onClick={() =>
+                          show(<AssignmentDialog vehicleId={v.id} end />)
+                        }
+                      >
+                        Ukončit přidělení
+                      </Button>
+                    )}
+                  </>
+                }
+              />
             </>
           )}
           {!vehicleTabs.some(([key]) => key === tab) && (
@@ -312,9 +319,11 @@ function AssignmentDialog({
 function Assignments({
   vehicleId,
   driverId,
+  actions,
 }: {
   vehicleId?: string;
   driverId?: string;
+  actions?: ReactNode;
 }) {
   const { s } = useFleet();
   const [historical, setHistorical] = useState(false);
@@ -334,7 +343,10 @@ function Assignments({
         return `${v?.spz} ${v?.model} ${s.drivers.find((d) => d.id === a.driverId)?.name} ${a.reason}`;
       }}
       toolbarActions={
-        <HistorySwitch checked={historical} onChange={setHistorical} />
+        <>
+          {actions}
+          <HistorySwitch checked={historical} onChange={setHistorical} />
+        </>
       }
       columns={[
         driverId

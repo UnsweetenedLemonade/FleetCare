@@ -11,6 +11,7 @@ import {
   Dialog,
   Empty,
   Form,
+  HistorySwitch,
   Field,
   ValidatedForm,
   Notice,
@@ -206,23 +207,21 @@ export function DocumentList({
   );
   return (
     <>
-      <div className="section-actions">
-        {add && (
-          <Button primary onClick={() => open(ownerType, ownerId, vehicleId)}>
-            <Upload size={17} />
-            Přidat dokument
-          </Button>
-        )}
-        <Field className="switch">
-          <input
-            type="checkbox"
-            checked={historical}
-            onChange={(e) => setHistorical(e.target.checked)}
-          />
-          Zobrazit i historické
-        </Field>
-      </div>
       <DataTable
+        toolbarActions={
+          <>
+            {add && (
+              <Button
+                primary
+                onClick={() => open(ownerType, ownerId, vehicleId)}
+              >
+                <Upload size={17} />
+                Přidat dokument
+              </Button>
+            )}
+            <HistorySwitch checked={historical} onChange={setHistorical} />
+          </>
+        }
         prefix={`documents-${ownerType}-${ownerId}.`}
         rows={docs}
         path={(d) => `/documents/${d.id}`}
