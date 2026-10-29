@@ -56,3 +56,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A4: Present vehicle service plans in a table with dialog-only templates — typecheck a lint prošly.
 
 - A5: Add deadline details and right-aligned list calendar controls — typecheck a lint prošly.
+
+- A6: Use assignment tables with history and vehicle identifiers — typecheck a lint prošly.

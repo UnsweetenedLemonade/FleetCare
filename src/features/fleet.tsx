@@ -11,6 +11,7 @@ import {
   Dialog,
   Empty,
   Form,
+  HistorySwitch,
   Notice,
   PageHead,
   Panel,
@@ -21,6 +22,7 @@ import { AddVehicleButton } from "./vehicle-intake";
 import { DocumentList } from "./documents";
 import {
   DRef,
+  VRef,
   DriverTable,
   DriverOperationsTable,
   FaultTable,
@@ -226,6 +228,7 @@ export function VehiclePage() {
                 </Button>
                 {a && (
                   <Button
+                    danger
                     onClick={() =>
                       show(<AssignmentDialog vehicleId={v.id} end />)
                     }
@@ -315,39 +318,82 @@ function Assignments({
 }) {
   const { s } = useFleet();
   const [historical, setHistorical] = useState(false);
+  const now = new Date().toISOString();
+  const rows = s.assignments.filter(
+    (a) =>
+      (!vehicleId || a.vehicleId === vehicleId) &&
+      (!driverId || a.driverId === driverId) &&
+      (historical || !a.to || a.to > now),
+  );
   return (
-    <>
-      <label className="switch">
-        <input
-          type="checkbox"
-          checked={historical}
-          onChange={(e) => setHistorical(e.target.checked)}
-        />
-        Zobrazit i historické
-      </label>
-      {s.assignments
-        .filter(
-          (a) =>
-            (!vehicleId || a.vehicleId === vehicleId) &&
-            (!driverId || a.driverId === driverId) &&
-            (historical || !a.to || a.to > new Date().toISOString()),
-        )
-        .map((a) => (
-          <div className="list-item" key={a.id}>
-            <div>
-              <DRef id={a.driverId} />
-              <small>
-                {s.vehicles.find((v) => v.id === a.vehicleId)?.spz} ·{" "}
-                {date(a.from, true)} — {a.to ? date(a.to, true) : "Trvá"}
-              </small>
-            </div>
-            <span>
-              {a.reason}
-              <small>{number(a.odometer, "km")}</small>
-            </span>
-          </div>
-        ))}
-    </>
+    <DataTable
+      rows={rows}
+      prefix={`assignments-${vehicleId || driverId}.`}
+      search={(a) => {
+        const v = s.vehicles.find((v) => v.id === a.vehicleId);
+        return `${v?.spz} ${v?.model} ${s.drivers.find((d) => d.id === a.driverId)?.name} ${a.reason}`;
+      }}
+      toolbarActions={
+        <HistorySwitch checked={historical} onChange={setHistorical} />
+      }
+      columns={[
+        driverId
+          ? {
+              key: "vehicle",
+              label: "SPZ / typ vozidla",
+              sort: (a) =>
+                s.vehicles.find((v) => v.id === a.vehicleId)?.spz || "",
+              render: (a) => (
+                <>
+                  <VRef id={a.vehicleId} />
+                  <small>
+                    {s.vehicles.find((v) => v.id === a.vehicleId)?.category} ·{" "}
+                    {s.vehicles.find((v) => v.id === a.vehicleId)?.model}
+                  </small>
+                </>
+              ),
+            }
+          : {
+              key: "driver",
+              label: "Řidič",
+              sort: (a) =>
+                s.drivers.find((d) => d.id === a.driverId)?.name || "",
+              render: (a) => <DRef id={a.driverId} />,
+            },
+        {
+          key: "period",
+          label: "Období od–do",
+          sort: (a) => a.from,
+          render: (a) => (
+            <>
+              {date(a.from, true)} — {a.to ? date(a.to, true) : "Trvá"}
+            </>
+          ),
+        },
+        {
+          key: "state",
+          label: "Stav",
+          render: (a) => (
+            <Badge
+              value={
+                a.to && a.to <= now
+                  ? "Ukončeno"
+                  : a.from > now
+                    ? "Plánováno"
+                    : "Aktivní"
+              }
+            />
+          ),
+        },
+        {
+          key: "km",
+          label: "Km",
+          sort: (a) => a.odometer,
+          render: (a) => number(a.odometer, "km"),
+        },
+        { key: "reason", label: "Důvod", render: (a) => a.reason },
+      ]}
+    />
   );
 }
 function ServicePlan({ vehicle }: { vehicle: Vehicle }) {
