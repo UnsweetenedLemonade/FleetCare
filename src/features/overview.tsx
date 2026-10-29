@@ -6,6 +6,7 @@ import {
   UserPlus,
   Wrench,
   Receipt,
+  Fuel as FuelIcon,
   Play,
   Square,
   List,
@@ -553,7 +554,7 @@ export function DriverWorkspace() {
               disabled={!v}
               onClick={() => edit("fuels", undefined, defaults)}
             >
-              <Receipt size={26} />
+              <FuelIcon size={26} />
               Zadat tankování
             </Button>
           </div>
@@ -580,51 +581,60 @@ export function DriverWorkspace() {
         </Panel>
       )}
       {tab === "trips" && (
-        <>
-          <div className="section-actions">
-            <Button
-              primary
-              disabled={!v || !!active || d.suspended}
-              onClick={() => edit("trips", undefined, defaults, true)}
-            >
-              Zahájit jízdu
-            </Button>
-          </div>
-          <Panel title="Moje jízdy">
-            <TripsTable rows={s.trips} />
-          </Panel>
-        </>
+        <Panel title="Moje jízdy">
+          <TripsTable
+            rows={s.trips}
+            toolbarActions={
+              <Button
+                primary
+                disabled={!v || !!active || d.suspended}
+                onClick={() => edit("trips", undefined, defaults, true)}
+              >
+                Zahájit jízdu
+              </Button>
+            }
+          />
+        </Panel>
       )}
       {tab === "fault" && (
         <Panel title="Nahlášení závady">
-          <Button
-            primary
-            disabled={!v}
-            onClick={() => edit("faults", undefined, defaults)}
-          >
-            Nahlásit závadu vlastního vozidla
-          </Button>
-          <FaultTable rows={s.faults} />
+          <FaultTable
+            rows={s.faults}
+            toolbarActions={
+              <Button
+                primary
+                disabled={!v}
+                onClick={() => edit("faults", undefined, defaults)}
+              >
+                Nahlásit závadu vlastního vozidla
+              </Button>
+            }
+          />
         </Panel>
       )}
       {tab === "fuel" && (
         <Panel title="Moje tankování">
-          <div className="section-actions">
-            <Button
-              disabled={!v}
-              onClick={() => show(<FuelIntakeDialog vehicleId={v?.id} />)}
-            >
-              Nahrát účtenku
-            </Button>
-            <Button
-              primary
-              disabled={!v}
-              onClick={() => edit("fuels", undefined, defaults)}
-            >
-              Zadat tankování
-            </Button>
-          </div>
-          <FuelTable rows={s.fuels} />
+          <FuelTable
+            rows={s.fuels}
+            toolbarActions={
+              <>
+                <Button
+                  disabled={!v}
+                  onClick={() => show(<FuelIntakeDialog vehicleId={v?.id} />)}
+                >
+                  Nahrát účtenku
+                </Button>
+                <Button
+                  primary
+                  disabled={!v}
+                  onClick={() => edit("fuels", undefined, defaults)}
+                >
+                  <FuelIcon size={17} />
+                  Zadat tankování
+                </Button>
+              </>
+            }
+          />
         </Panel>
       )}
       {tab === "requests" && <DriverTasks />}

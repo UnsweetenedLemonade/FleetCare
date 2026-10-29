@@ -14,7 +14,7 @@ import {
   BarChart3,
   Menu,
   FileText,
-  Receipt,
+  Fuel,
   ClipboardList,
 } from "lucide-react";
 import { useFleet } from "./context";
@@ -38,7 +38,7 @@ const driverNav = [
   ["/my/orders", "Moje zakázky", Package],
   ["/my/trips", "Moje jízdy", Route],
   ["/my/fault", "Nahlásit závadu", Wrench],
-  ["/my/fuel", "Zadat tankování", Receipt],
+  ["/my/fuel", "Zadat tankování", Fuel],
   ["/my/requests", "Moje úkoly", ClipboardList],
   ["/my/documents", "Moje dokumenty", FileText],
 ] as const;

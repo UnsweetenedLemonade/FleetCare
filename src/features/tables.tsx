@@ -342,10 +342,17 @@ export function OrderTable({ rows }: { rows: Order[] }) {
     />
   );
 }
-export function TripsTable({ rows }: { rows: Trip[] }) {
+export function TripsTable({
+  rows,
+  toolbarActions,
+}: {
+  rows: Trip[];
+  toolbarActions?: ReactNode;
+}) {
   const { s } = useFleet();
   return (
     <DataTable
+      toolbarActions={toolbarActions}
       prefix="trips."
       rows={rows}
       path={(t) => `/trips/${t.id}`}
@@ -557,9 +564,16 @@ export function FaultTable({
     />
   );
 }
-export function FuelTable({ rows }: { rows: Records["fuels"][] }) {
+export function FuelTable({
+  rows,
+  toolbarActions,
+}: {
+  rows: Records["fuels"][];
+  toolbarActions?: ReactNode;
+}) {
   return (
     <DataTable
+      toolbarActions={toolbarActions}
       prefix="fuels."
       rows={rows}
       path={(f) => `/fuels/${f.id}`}
