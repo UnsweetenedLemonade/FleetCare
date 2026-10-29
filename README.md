@@ -50,7 +50,9 @@ Restartujte Vite. Neplatná/chybějící služba ukáže chybu; neaktivuje loká
 
 ## Google Sheets na VPS
 
-Pro read-only napojení dodané školní tabulky použijte serverovou bránu `npm run gateway:sheets`. Mapování listů, service account a proměnné pro VPS jsou v [docs/sheets-vps.md](docs/sheets-vps.md). Současná tabulka zatím nepodporuje ukládání změn z aplikace ani souborové přílohy.
+Pro napojení dodané školní tabulky použijte serverovou bránu `npm run gateway:sheets`. Mapování listů, podporované zápisy, service account a proměnné pro VPS jsou v [docs/sheets-vps.md](docs/sheets-vps.md). Současná tabulka zatím nepokrývá všechny části aplikace ani souborové přílohy.
+
+Docker image a celý postup nasazení na VPS jsou popsané v [docs/docker-vps.md](docs/docker-vps.md).
 
 ## Ukázková větev
 

@@ -34,9 +34,9 @@ export class HttpRepository implements Repository {
     private base: string,
     private transport: typeof fetch = fetch,
   ) {
-    if (!/^https?:\/\//.test(base))
+    if (!/^https?:\/\//.test(base) && !base.startsWith("/"))
       throw new DomainError(
-        "API režim vyžaduje platné VITE_API_BASE_URL.",
+        "API režim vyžaduje URL gateway nebo cestu začínající lomítkem.",
         undefined,
         503,
       );

@@ -1,6 +1,7 @@
 # FleetCare — stav předání
 
-- Připraven read-only Node gateway pro školní Google Sheet `FleetCare DB`: mapuje vozidla, řidiče, termíny, jízdy, tankování a e-mail manažera přes Sheets API. Provozní návod k VPS a přesné limity mapování jsou v `docs/sheets-vps.md`. Gateway potřebuje service account sdílený jako čtenář; žádné přihlašovací údaje nejsou v repozitáři. Zápisy a soubory nejsou implementované.
+- Připraven Node gateway pro školní Google Sheet `FleetCare DB`: mapuje podle existujících záhlaví vozidla, řidiče, termíny, jízdy, tankování a vybraná nastavení. Zapisuje do těchto listů, kontroluje změnu řádku před uložením a přijímá idempotency key. Zápisy nepokrytých entit a souborů zůstávají vypnuté, protože v tabulce nemají příslušné listy/sloupce. Konfigurace VPS a přesné limity jsou v `docs/sheets-vps.md`. Service account musí mít v tabulce roli Editor; jeho klíč zůstává mimo repozitář.
+- Přidána Docker Compose konfigurace pro frontend/Nginx a Sheets gateway; návod na přenos pracovního stromu, service-account secret, spuštění a HTTPS proxy je v `docs/docker-vps.md`. Frontend používá relativní `/api/v1` a gateway binduje na Docker síť. Ověřeno typecheck, lint, build, `node --check` a `docker compose config`; image nebyl sestaven ani spuštěn bez VPS credentials.
 
 - Role se přepíná pod logem v levé navigaci, na mobilu v otevřeném menu. Vyhledávání zachovává chování i pozici s maximální šířkou 800 px. Jednotný chevron všech běžných selectů je 14 px od pravého okraje, text má vyhrazených 44 px; nativní ovládání a režim vysokého kontrastu zůstávají zachované.
 
