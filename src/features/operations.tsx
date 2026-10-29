@@ -338,7 +338,7 @@ export function TripPage() {
           <>
             {canEdit && (
               <Button
-                primary
+                primary={t.state === "Probíhá"}
                 onClick={() =>
                   edit(
                     "trips",
@@ -354,9 +354,7 @@ export function TripPage() {
                 ) : (
                   <Pencil size={17} />
                 )}
-                {t.state === "Probíhá"
-                  ? "Ukončit jízdu"
-                  : "Upravit údaje"}
+                {t.state === "Probíhá" ? "Ukončit jízdu" : "Upravit údaje"}
               </Button>
             )}
             {actor.role !== "Řidič" &&
