@@ -178,11 +178,13 @@ export function DocumentList({
   ownerId,
   vehicleId,
   add = true,
+  relatedOwners = [],
 }: {
   ownerType: Document["ownerType"];
   ownerId: string;
   vehicleId?: string;
   add?: boolean;
+  relatedOwners?: { ownerType: Document["ownerType"]; ownerId: string }[];
 }) {
   const { s, show, close, run } = useFleet(),
     open = useUpload();
@@ -191,7 +193,10 @@ export function DocumentList({
     (d) =>
       !d.deletedAt &&
       ((d.ownerType === ownerType && d.ownerId === ownerId) ||
-        (ownerType === "vehicle" && d.vehicleId === ownerId)) &&
+        (ownerType === "vehicle" && d.vehicleId === ownerId) ||
+        relatedOwners.some(
+          (o) => o.ownerType === d.ownerType && o.ownerId === d.ownerId,
+        )) &&
       (historical ||
         !d.validUntil ||
         d.validUntil >= new Date().toISOString().slice(0, 10)),
