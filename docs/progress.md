@@ -118,3 +118,7 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - B1 follow-up: Place list creation actions inside shared table toolbars — typecheck a lint prošly.
 
 - A6 follow-up: Keep status filtering in the merged driver operations table — typecheck a lint prošly.
+
+### Dokončení UX/FE iterace A1–C9
+
+Všechny body nového UX zadání implementovány na `codex/ux-refinements` s jednotlivými commity a pushi. Finální aplikační commit `7fffcfc` prošel 43 testy, typecheckem, lintem, produkčním buildem, kontrolou čistého produktu a kontraktů. Ověřeny desktopové/mobilní scénáře i produkční preview a skutečný export XLSX. Kompletní report je v `docs/ux-refinements.md`, včetně dvou nutných nových příkazů pro metadata dokumentu a příjemce a rozhodnutí o jednom servisním kontaktu. Podmínka zahájení jízdy řidiče zůstává nezměněná. Připraveno k revizi; main ani veřejné demo se v této iteraci neměnily.

@@ -64,3 +64,7 @@ Chromium s izolovanými fiktivními daty, desktop 1440 px a mobil 390 px:
 - CCS: skutečný import syntetického platného PDF přes UI, detail s jedinou tabulkou transakcí, otevření původního dokumentu z nového odkazu, iframe náhled a stažení originálu po reloadu se shodnými bajty. Bez běhových chyb v kontrolovaných dokumentových scénářích.
 
 Nenalezena chyba aplikace v těchto scénářích. Nejde o ověření všech kombinací vstupů ani ostrého HTTP backendu, OCR, e-mailů, Make či veřejného nasazení. Mobilní kontrola použila Chromium s rozměry telefonu, nikoli fyzické zařízení. Zůstává známé chování nového editoru: při uložení starší zakázky s více body trasy se zachová první a poslední bod (viz progress.md).
+
+## 29. 10. 2026 — UX/FE refinements A1–C9
+
+Větev `codex/ux-refinements`, aplikační commit `7fffcfc`: prošly typecheck, lint, 43 testů v 11 souborech, produkční build, kontrola čistého produktu a generování kontraktů bez rozdílu. Chromium desktop 1440 px a mobil 390 px ověřilo nové dialogy, tabulky, historii, konkrétní chyby polí, dokumentové uploady/stažení, přílohu výdaje včetně opakování selhání bez duplicity a řidičův prostor. Produkční preview prošlo založením vozidla, reloadem, přímými SPA cestami a skutečným XLSX exportem. Podrobný report, vlastní rozhodnutí, změny API a hranice ověření jsou v [ux-refinements.md](ux-refinements.md). Nenasazováno; externí integrace nebyly ověřeny.
