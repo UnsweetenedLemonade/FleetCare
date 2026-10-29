@@ -123,7 +123,6 @@ export function PageHead({
   return (
     <div className="page-head">
       <div>
-        <div className="eyebrow">PRACOVNÍ PROSTOR</div>
         <h1>{title}</h1>
         {subtitle && <p>{subtitle}</p>}
       </div>
