@@ -331,6 +331,10 @@ export function Form({
   danger?: boolean;
   onDirty?: (dirty: boolean) => void;
 }) {
+  const formRef = useRef<HTMLFormElement>(null);
+  const hasField = (key: string) =>
+    fields.some((f) => f.key === key) ||
+    !!formRef.current?.elements.namedItem(key);
   const [errors, setErrors] = useState<Record<string, string>>({}),
     [pending, setPending] = useState(false);
   const [failure, setFailure] = useState("");
@@ -369,12 +373,26 @@ export function Form({
         const general: string[] = [];
         for (const issue of error.issues) {
           const key = issue.path.join(".");
-          next[key] = issue.message;
-          if (!key) general.push(issue.message);
+          if (hasField(key)) next[key] = issue.message;
+          else general.push(issue.message);
         }
         setErrors(next);
         if (general.length) setFailure(general.join(" · "));
-      } else if (error instanceof DomainError && error.field)
+      } else if (error instanceof DomainError && error.fieldErrors) {
+        const next: Record<string, string> = {};
+        const general: string[] = [];
+        for (const [key, message] of Object.entries(error.fieldErrors)) {
+          if (hasField(key)) next[key] = message;
+          else general.push(message);
+        }
+        setErrors(next);
+        if (general.length || !Object.keys(next).length)
+          setFailure(general.join(" · ") || error.message);
+      } else if (
+        error instanceof DomainError &&
+        error.field &&
+        hasField(error.field)
+      )
         setErrors({ [error.field]: error.message });
       else
         setFailure(error instanceof Error ? error.message : "Operace selhala.");
@@ -384,7 +402,12 @@ export function Form({
   }
   return (
     <FieldErrors.Provider value={errors}>
-      <form noValidate onSubmit={save} onChange={() => onDirty?.(true)}>
+      <form
+        ref={formRef}
+        noValidate
+        onSubmit={save}
+        onChange={() => onDirty?.(true)}
+      >
         <div className="form-grid">
           {fields.map((f) => {
             const value = initial[f.key] ?? f.initial ?? "";

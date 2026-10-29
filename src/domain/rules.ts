@@ -5,6 +5,7 @@ export class DomainError extends Error {
     message: string,
     public field?: string,
     public status = 422,
+    public fieldErrors?: Record<string, string>,
   ) {
     super(message);
     this.name = "DomainError";
