@@ -28,39 +28,38 @@ export function CostsPage() {
   const { s, show } = useFleet(),
     edit = useEditors(),
     upload = useUpload();
+  const tableActions =
+    tab === "fuel" ? (
+      <ChoiceButton
+        label="Zadat tankování"
+        icon={<Plus size={17} />}
+        choices={[
+          { label: "Manuálně", action: () => edit("fuels") },
+          {
+            label: "Nahrát účtenku",
+            action: () => show(<FuelIntakeDialog />),
+          },
+        ]}
+      />
+    ) : tab === "statements" ? (
+      <Button
+        primary
+        onClick={() => upload("statement", "new", undefined, "CCS výpis")}
+      >
+        <Upload size={17} />
+        Import CCS PDF
+      </Button>
+    ) : tab === "expenses" ? (
+      <Button primary onClick={() => edit("expenses")}>
+        <Plus size={17} />
+        Nový výdaj
+      </Button>
+    ) : null;
   return (
     <>
       <PageHead
         title="Náklady a CCS"
         subtitle="Doložené výdaje, tankování a souvislosti CCS podkladů."
-        actions={
-          tab === "fuel" ? (
-            <ChoiceButton
-              label="Zadat tankování"
-              icon={<Plus size={17} />}
-              choices={[
-                { label: "Manuálně", action: () => edit("fuels") },
-                {
-                  label: "Nahrát účtenku",
-                  action: () => show(<FuelIntakeDialog />),
-                },
-              ]}
-            />
-          ) : tab === "statements" ? (
-            <Button
-              primary
-              onClick={() => upload("statement", "new", undefined, "CCS výpis")}
-            >
-              <Upload size={17} />
-              Import CCS PDF
-            </Button>
-          ) : tab === "expenses" ? (
-            <Button primary onClick={() => edit("expenses")}>
-              <Plus size={17} />
-              Nový výdaj
-            </Button>
-          ) : null
-        }
       />
       <div className="panel">
         <Tabs
@@ -76,12 +75,13 @@ export function CostsPage() {
         <div className="detail-body">
           {tab === "fuel" && (
             <>
-              <FuelTable rows={s.fuels} />
+              <FuelTable rows={s.fuels} toolbarActions={tableActions} />
             </>
           )}
           {tab === "statements" && (
             <>
               <DataTable
+                toolbarActions={tableActions}
                 rows={s.statements}
                 path={(x) => `/statements/${x.id}`}
                 search={(x) => x.name}
@@ -131,6 +131,7 @@ export function CostsPage() {
           )}
           {tab === "expenses" && (
             <DataTable
+              toolbarActions={tableActions}
               rows={s.expenses}
               path={(e) => `/expenses/${e.id}`}
               search={(e) => e.description + " " + e.category}

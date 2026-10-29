@@ -438,16 +438,16 @@ export function FaultsPage() {
       <PageHead
         title="Servis a závady"
         subtitle="Od hlášení po externí opravu a návrat do provozu."
-        actions={
-          <Button primary onClick={() => edit("faults")}>
-            Nahlásit závadu
-          </Button>
-        }
       />
       <Panel>
         <FaultTable
           toolbarActions={
-            <HistorySwitch checked={historical} onChange={setHistorical} />
+            <>
+              <Button primary onClick={() => edit("faults")}>
+                Nahlásit závadu
+              </Button>
+              <HistorySwitch checked={historical} onChange={setHistorical} />
+            </>
           }
           rows={s.faults.filter((f) => historical || f.state !== "Uzavřena")}
         />

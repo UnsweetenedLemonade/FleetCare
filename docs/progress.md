@@ -114,3 +114,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - Keep empty-table messages fully visible on small screens — typecheck a lint prošly.
 
 - A7 follow-up: Collect numeric errors and validate attachments before saving — typecheck a lint prošly.
+
+- B1 follow-up: Place list creation actions inside shared table toolbars — typecheck a lint prošly.

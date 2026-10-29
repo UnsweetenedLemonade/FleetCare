@@ -298,6 +298,11 @@ export function DeadlinesPage() {
           },
         ]}
       />
+
+      <Button primary onClick={() => edit("deadlines")}>
+        <Plus size={17} />
+        Přidat termín
+      </Button>
       <HistorySwitch checked={historical} onChange={setHistorical} />
     </>
   );
@@ -314,12 +319,6 @@ export function DeadlinesPage() {
       <PageHead
         title="Termíny a upozornění"
         subtitle="Platnosti, časové a kilometrové hranice navázané na skutečné podklady."
-        actions={
-          <Button primary onClick={() => edit("deadlines")}>
-            <Plus size={17} />
-            Přidat termín
-          </Button>
-        }
       />
       <Panel>
         {calendar ? (

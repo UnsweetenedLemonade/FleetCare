@@ -1957,3 +1957,8 @@ textarea[aria-invalid="true"] {
 .tabs a:hover {
   text-decoration: none;
 }
+
+/* Keep add-method menus visible when they originate in a table toolbar. */
+.panel:has(.choice-menu) {
+  overflow: visible;
+}

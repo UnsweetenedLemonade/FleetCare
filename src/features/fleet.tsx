@@ -45,10 +45,9 @@ export function VehiclesPage() {
       <PageHead
         title="Vozidla"
         subtitle="Váš vozový park, jeho dostupnost a nejbližší povinnosti."
-        actions={<AddVehicleButton />}
       />
       <Panel>
-        <VehicleTable rows={s.vehicles} />
+        <VehicleTable rows={s.vehicles} toolbarActions={<AddVehicleButton />} />
       </Panel>
       {!!intake.length && (
         <Panel title="STK pro založení vozidla">
@@ -71,15 +70,17 @@ export function DriversPage() {
       <PageHead
         title="Řidiči"
         subtitle="Lidé, oprávnění a dostupnost vašeho týmu."
-        actions={
-          <Button primary onClick={() => edit("drivers")}>
-            <UserPlus size={18} />
-            Přidat řidiče
-          </Button>
-        }
       />
       <Panel>
-        <DriverTable rows={s.drivers} />
+        <DriverTable
+          rows={s.drivers}
+          toolbarActions={
+            <Button primary onClick={() => edit("drivers")}>
+              <UserPlus size={18} />
+              Přidat řidiče
+            </Button>
+          }
+        />
       </Panel>
     </>
   );

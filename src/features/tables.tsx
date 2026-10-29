@@ -37,10 +37,17 @@ export function DRef({ id }: { id: string | null }) {
     <>Nepřiděleno</>
   );
 }
-export function VehicleTable({ rows }: { rows: Vehicle[] }) {
+export function VehicleTable({
+  rows,
+  toolbarActions,
+}: {
+  rows: Vehicle[];
+  toolbarActions?: ReactNode;
+}) {
   const { s } = useFleet();
   return (
     <DataTable
+      toolbarActions={toolbarActions}
       prefix="vehicles."
       rows={rows}
       path={(v) => `/vehicles/${v.id}`}
@@ -152,10 +159,17 @@ export function VehicleTable({ rows }: { rows: Vehicle[] }) {
     />
   );
 }
-export function DriverTable({ rows }: { rows: Driver[] }) {
+export function DriverTable({
+  rows,
+  toolbarActions,
+}: {
+  rows: Driver[];
+  toolbarActions?: ReactNode;
+}) {
   const { s } = useFleet();
   return (
     <DataTable
+      toolbarActions={toolbarActions}
       prefix="drivers."
       rows={rows}
       path={(d) => `/drivers/${d.id}`}
