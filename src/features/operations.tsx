@@ -31,12 +31,7 @@ export function OrdersPage() {
         title="Zakázky"
         subtitle="Přepravy přijaté e-mailem, jejich požadavky a přiřazení."
       />
-      <Notice>
-        Zakázky přicházejí přes připojený příjem objednávek.{" "}
-        {s.orders.length
-          ? "Již přijaté záznamy můžete doplnit a přiřadit."
-          : "Příjem zatím není připojen; evidence čeká na první import."}
-      </Notice>
+
       <Panel>
         <OrderTable rows={s.orders} />
       </Panel>
@@ -143,10 +138,6 @@ export function OrderPage() {
                   </div>
                 </div>
               ))}
-              <Notice>
-                Dokončení zakázky, ukončení jízdy a nahrání dodacího listu jsou
-                samostatné operace.
-              </Notice>
             </>
           ) : (
             <Empty

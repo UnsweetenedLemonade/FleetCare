@@ -76,20 +76,11 @@ export function CostsPage() {
         <div className="detail-body">
           {tab === "fuel" && (
             <>
-              <Notice>
-                Tankování lze uložit i s neúplnými údaji a přiložit účtenku v
-                jeho detailu. Extrakce účtenek zatím není připojena.
-              </Notice>
               <FuelTable rows={s.fuels} />
             </>
           )}
           {tab === "statements" && (
             <>
-              <Notice>
-                Výpisy přicházejí e-mailem. Ruční náhradní vstup uloží
-                originální PDF. Datum přijetí a datum transakcí se evidují
-                odděleně.
-              </Notice>
               <DataTable
                 rows={s.statements}
                 path={(x) => `/statements/${x.id}`}

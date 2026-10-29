@@ -676,12 +676,6 @@ export function EntityEditor({
       onClose={close}
     >
       <div className="dialog-body">
-        {collection === "vehicles" && (
-          <Notice>
-            Neznámou kapacitu ponechte prázdnou. Rezerva může být normálně v
-            provozu.
-          </Notice>
-        )}
         {collection === "faults" && !record && (
           <Notice>
             Hlášení se uloží společně s oddělenými požadavky na komunikaci.

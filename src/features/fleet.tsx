@@ -209,17 +209,10 @@ export function VehiclePage() {
           {tab === "costs" && (
             <>
               <FuelTable rows={s.fuels.filter((f) => f.vehicleId === v.id)} />
-              <Notice>
-                Ostatní výdaje a souhrn nákladů najdete v sekci{" "}
-                <Link to="/costs/expenses">Náklady a CCS</Link>.
-              </Notice>
             </>
           )}
           {tab === "assignments" && (
             <>
-              <Notice>
-                Svěření vozidla a řidič konkrétní zakázky jsou samostatné vazby.
-              </Notice>
               <Assignments
                 vehicleId={v.id}
                 actions={
@@ -414,10 +407,6 @@ function ServicePlan({ vehicle }: { vehicle: Vehicle }) {
   const p = s.plans.find((p) => p.vehicleId === vehicle.id);
   return (
     <>
-      <Notice>
-        Šablona předvyplní individuální plán. Změna globální šablony tento plán
-        sama nepřepíše.
-      </Notice>
       {!p?.items.length && (
         <div className="section-actions">
           <Button onClick={() => edit("plans", p, { vehicleId: vehicle.id })}>

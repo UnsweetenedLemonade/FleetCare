@@ -437,10 +437,6 @@ export function DeadlinesPage() {
           />
         )}
       </Panel>
-      <Notice>
-        E-mailová upozornění provede až připojená automatizace. Bez nastavených
-        pravidel není odesílání naplánováno.
-      </Notice>
     </>
   );
 }

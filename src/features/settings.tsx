@@ -1,11 +1,9 @@
-import { useState } from "react";
 import { useParams } from "react-router";
 import { useFleet } from "../app/context";
 import {
   Button,
   DataTable,
   Form,
-  Notice,
   PageHead,
   Panel,
   Tabs,
@@ -16,7 +14,6 @@ export function SettingsPage() {
   const { tab = "terms" } = useParams();
   const { s, run } = useFleet(),
     edit = useEditors();
-  const [saved, setSaved] = useState(false);
   return (
     <>
       <PageHead
@@ -37,11 +34,6 @@ export function SettingsPage() {
         <div className="detail-body">
           {tab === "terms" && (
             <>
-              <Notice>
-                Prahy nastavte podle skutečné firemní politiky. Bez pravidla
-                není naplánováno odesílání e-mailů. Kontakty slouží připraveným
-                komunikačním požadavkům.
-              </Notice>
               <Form
                 key={JSON.stringify(s.settings)}
                 fields={[
@@ -80,10 +72,8 @@ export function SettingsPage() {
                       kmBefore: v.kmBefore as number | null,
                     },
                   });
-                  setSaved(true);
                 }}
               />
-              {saved && <Notice>Provozní nastavení uloženo.</Notice>}
             </>
           )}
           {tab === "plans" && (
@@ -93,10 +83,7 @@ export function SettingsPage() {
                   Přidat šablonu
                 </Button>
               </div>
-              <Notice>
-                Šablony obsahují pouze vámi doložené intervaly. Existující
-                individuální plány se při změně šablony nepřepisují.
-              </Notice>
+
               {s.templates.map((t) => (
                 <Panel
                   key={t.id}

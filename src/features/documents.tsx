@@ -56,11 +56,6 @@ export function UploadDialog({
       dirty={!!selected.length}
     >
       <div className="dialog-body">
-        <Notice>
-          Originál bude uložen do úložiště. Automatické vytěžení vyžaduje
-          připojenou službu. Pro extrakci platí limit 5 MB, pro běžnou přílohu
-          20 MB.
-        </Notice>
         <ValidatedForm
           onSubmit={async (e) => {
             e.preventDefault();

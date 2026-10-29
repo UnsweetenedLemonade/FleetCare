@@ -86,3 +86,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - B10: Position toast notifications at the top center — typecheck a lint prošly.
 
 - B11: Tabulate driver tasks and align driver table actions — typecheck a lint prošly.
+
+- C1: Remove informational banners while preserving actionable warnings — typecheck a lint prošly.
