@@ -1,5 +1,7 @@
 # FleetCare — stav předání
 
+- Připraven read-only Node gateway pro školní Google Sheet `FleetCare DB`: mapuje vozidla, řidiče, termíny, jízdy, tankování a e-mail manažera přes Sheets API. Provozní návod k VPS a přesné limity mapování jsou v `docs/sheets-vps.md`. Gateway potřebuje service account sdílený jako čtenář; žádné přihlašovací údaje nejsou v repozitáři. Zápisy a soubory nejsou implementované.
+
 - Role se přepíná pod logem v levé navigaci, na mobilu v otevřeném menu. Vyhledávání zachovává chování i pozici s maximální šířkou 800 px. Jednotný chevron všech běžných selectů je 14 px od pravého okraje, text má vyhrazených 44 px; nativní ovládání a režim vysokého kontrastu zůstávají zachované.
 
 - Hlavička: odstraněny drobečky a text Zobrazit jako. Vyhledávání přímo v inputu, výsledky pod polem bez dialogu, lupa/Enter a podmíněný křížek. Escape, šipky a Tab podporují ovládání bez myši; změna stránky/role resetuje hledání. Aktuální umístění role a limit šířky viz výše.
