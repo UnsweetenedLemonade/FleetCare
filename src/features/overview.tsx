@@ -104,6 +104,36 @@ export function Dashboard() {
           )
         }
       />
+      <h2 className="section-title">Rychlé akce</h2>
+      <div className="quick-grid">
+        {[
+          {
+            label: "Přidat vozidlo",
+            icon: Truck,
+            action: addVehicle,
+          },
+          {
+            label: "Přidat řidiče",
+            icon: UserPlus,
+            action: () => edit("drivers"),
+          },
+          {
+            label: "Nahlásit závadu",
+            icon: Wrench,
+            action: () => edit("faults"),
+          },
+          {
+            label: "Zapsat výdaj",
+            icon: Receipt,
+            action: () => edit("expenses"),
+          },
+        ].map((a) => (
+          <button key={a.label} className="quick-action" onClick={a.action}>
+            <a.icon size={23} />
+            <span>{a.label}</span>
+          </button>
+        ))}
+      </div>
       <div className="welcome-strip">
         <span className="status-dot" />
         <span>Přehled vychází z uložených provozních záznamů.</span>
@@ -230,36 +260,6 @@ export function Dashboard() {
             Zobrazit všechny termíny →
           </Link>
         </Panel>
-      </div>
-      <h2 className="section-title">Rychlé akce</h2>
-      <div className="quick-grid">
-        {[
-          {
-            label: "Přidat vozidlo",
-            icon: Truck,
-            action: addVehicle,
-          },
-          {
-            label: "Přidat řidiče",
-            icon: UserPlus,
-            action: () => edit("drivers"),
-          },
-          {
-            label: "Nahlásit závadu",
-            icon: Wrench,
-            action: () => edit("faults"),
-          },
-          {
-            label: "Zapsat výdaj",
-            icon: Receipt,
-            action: () => edit("expenses"),
-          },
-        ].map((a) => (
-          <button key={a.label} className="quick-action" onClick={a.action}>
-            <a.icon size={23} />
-            <span>{a.label}</span>
-          </button>
-        ))}
       </div>
       <Panel
         title="Aktuální přepravy"
