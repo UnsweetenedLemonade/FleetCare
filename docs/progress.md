@@ -62,3 +62,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A7: Show accessible field-specific validation including repeated service items — typecheck a lint prošly.
 
 - A8: Upload an expense attachment directly from its creation form — typecheck a lint prošly.
+
+- A9: Set global body text to 16px and minimum small text to 14px — typecheck a lint prošly.
