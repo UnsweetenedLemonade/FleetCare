@@ -768,8 +768,9 @@ export function ViewToggle({
 const FieldErrors = createContext<Record<string, string>>({});
 export function Field({
   children,
+  error: explicitError,
   ...props
-}: LabelHTMLAttributes<HTMLLabelElement>) {
+}: LabelHTMLAttributes<HTMLLabelElement> & { error?: string }) {
   const errors = useContext(FieldErrors);
   const generated = useId();
   let name = generated;
@@ -792,10 +793,11 @@ export function Field({
         {cloneElement(el, {
           name,
           id: el.props.id || generated,
-          "aria-invalid": !!errors[name],
-          "aria-describedby": errors[name]
-            ? `${generated}-error`
-            : el.props["aria-describedby"],
+          "aria-invalid": !!(explicitError || errors[name]),
+          "aria-describedby":
+            explicitError || errors[name]
+              ? `${generated}-error`
+              : el.props["aria-describedby"],
         })}
       </Fragment>
     );
@@ -803,9 +805,9 @@ export function Field({
   return (
     <label {...props} className={`${props.className || ""} validated-field`}>
       {controls}
-      {errors[name] && (
+      {(explicitError || errors[name]) && (
         <small id={`${generated}-error`} className="field-error" role="alert">
-          {errors[name]}
+          {explicitError || errors[name]}
         </small>
       )}
     </label>

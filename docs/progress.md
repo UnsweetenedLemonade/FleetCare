@@ -106,3 +106,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - C9: Reserve green buttons for primary page actions — typecheck a lint prošly.
 
 - Test document permissions metadata versions and recipient changes — typecheck a lint prošly.
+
+- A7 follow-up: Validate export periods at their date fields — typecheck a lint prošly.
