@@ -468,6 +468,7 @@ export function DataTable<T extends { id: string }>({
   filters = [],
   emptyText = "Žádný odpovídající záznam",
   prefix = "",
+  toolbarActions,
 }: {
   rows: T[];
   columns: Column<T>[];
@@ -476,6 +477,7 @@ export function DataTable<T extends { id: string }>({
   filters?: Filter<T>[];
   emptyText?: string;
   prefix?: string;
+  toolbarActions?: ReactNode;
 }) {
   const [params, setParams] = useSearchParams();
   const location = useLocation();
@@ -554,6 +556,9 @@ export function DataTable<T extends { id: string }>({
           </select>
         ))}
         <span className="muted">{filtered.length} výsledků</span>
+        {toolbarActions && (
+          <div className="toolbar-actions">{toolbarActions}</div>
+        )}
       </div>
       <div className="table-scroll">
         <table>
@@ -677,6 +682,53 @@ export function DataTable<T extends { id: string }>({
           </Button>
         </div>
       </div>
+    </div>
+  );
+}
+
+export function HistorySwitch({
+  checked,
+  onChange,
+  label = "Zobrazit i historické",
+}: {
+  checked: boolean;
+  onChange: (value: boolean) => void;
+  label?: string;
+}) {
+  return (
+    <label className="history-switch">
+      <input
+        type="checkbox"
+        role="switch"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+      />
+      <span>{label}</span>
+    </label>
+  );
+}
+export function ViewToggle({
+  value,
+  onChange,
+  items,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  items: { value: string; label: string; icon?: ReactNode }[];
+}) {
+  return (
+    <div className="view-toggle" role="group" aria-label="Zobrazení">
+      {items.map((i) => (
+        <button
+          key={i.value}
+          type="button"
+          aria-pressed={value === i.value}
+          onClick={() => onChange(i.value)}
+        >
+          {i.icon}
+          {i.label}
+        </button>
+      ))}
     </div>
   );
 }

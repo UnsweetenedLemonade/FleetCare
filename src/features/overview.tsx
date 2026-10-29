@@ -8,10 +8,16 @@ import {
   Receipt,
   Play,
   Square,
+  List,
+  CalendarDays,
 } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
+  Back,
   Badge,
+  DataGrid,
+  HistorySwitch,
+  ViewToggle,
   Button,
   DataTable,
   Empty,
@@ -274,7 +280,26 @@ export function DeadlinesPage() {
   const [calendar, setCalendar] = useState(false),
     [month, setMonth] = useState(today().slice(0, 7)),
     [historical, setHistorical] = useState(false);
-  const all = deadlines(s).filter((d) => historical || d.state !== "Splněno");
+  const all = deadlines(s)
+    .filter((d) => historical || d.state !== "Splněno")
+    .map((d) => ({ ...d, path: `/deadlines/${encodeURIComponent(d.id)}` }));
+  const controls = (
+    <>
+      <ViewToggle
+        value={calendar ? "calendar" : "list"}
+        onChange={(v) => setCalendar(v === "calendar")}
+        items={[
+          { value: "list", label: "Seznam", icon: <List size={16} /> },
+          {
+            value: "calendar",
+            label: "Kalendář",
+            icon: <CalendarDays size={16} />,
+          },
+        ]}
+      />
+      <HistorySwitch checked={historical} onChange={setHistorical} />
+    </>
+  );
   const year = Number(month.slice(0, 4)),
     m = Number(month.slice(5, 7)) - 1;
   const first = (new Date(year, m, 1).getDay() + 6) % 7,
@@ -290,29 +315,15 @@ export function DeadlinesPage() {
         subtitle="Platnosti, časové a kilometrové hranice navázané na skutečné podklady."
         actions={
           <Button primary onClick={() => edit("deadlines")}>
+            <Plus size={17} />
             Přidat termín
           </Button>
         }
       />
-      <div className="section-actions">
-        <Button primary={!calendar} onClick={() => setCalendar(false)}>
-          Seznam
-        </Button>
-        <Button primary={calendar} onClick={() => setCalendar(true)}>
-          Kalendář
-        </Button>
-        <label className="switch">
-          <input
-            type="checkbox"
-            checked={historical}
-            onChange={(e) => setHistorical(e.target.checked)}
-          />
-          Zobrazit i historické
-        </label>
-      </div>
       <Panel>
         {calendar ? (
           <>
+            <div className="toolbar toolbar-right">{controls}</div>
             <div className="calendar-nav">
               <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>
                 ←
@@ -368,6 +379,7 @@ export function DeadlinesPage() {
           </>
         ) : (
           <DataTable
+            toolbarActions={controls}
             rows={all}
             path={(d) => d.path}
             search={(d) => d.title + " " + d.owner}
@@ -622,5 +634,48 @@ export function DriverWorkspace() {
         </Panel>
       )}
     </div>
+  );
+}
+
+export function DeadlinePage() {
+  const { id } = useParams();
+  const { s } = useFleet();
+  const edit = useEditors();
+  const d = deadlines(s).find((d) => d.id === id);
+  if (!d) return <Empty title="Termín není dostupný" />;
+  const record = s.deadlines.find((r) => r.id === d.id);
+  return (
+    <>
+      <Back to="/deadlines">Termíny a upozornění</Back>
+      <PageHead
+        title={d.title}
+        actions={
+          record ? (
+            <Button onClick={() => edit("deadlines", record)}>
+              Upravit termín
+            </Button>
+          ) : (
+            <Link className="btn" to={d.path}>
+              Upravit termín
+            </Link>
+          )
+        }
+      />
+      <Panel>
+        <DataGrid
+          items={[
+            ["Datum", date(d.date)],
+            ["Km hranice", number(d.km, "km")],
+            ["Odpovědný", d.owner],
+            ["Stav", <Badge value={d.state} />],
+          ]}
+        />
+        {d.derived && (
+          <p className="muted">
+            Odvozený termín se upravuje ve zdrojovém záznamu.
+          </p>
+        )}
+      </Panel>
+    </>
   );
 }
