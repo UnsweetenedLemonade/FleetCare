@@ -94,3 +94,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - C3: Remove the shared page footer — typecheck a lint prošly.
 
 - C4: Mark destructive row and confirmation actions in red — typecheck a lint prošly.
+
+- C5: Color required-field markers red through shared form labels — typecheck a lint prošly.

@@ -1949,3 +1949,7 @@ textarea[aria-invalid="true"] {
     animation: none;
   }
 }
+
+.required-mark {
+  color: #b3261e;
+}

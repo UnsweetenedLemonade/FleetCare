@@ -1,5 +1,6 @@
 import {
   Children,
+  Fragment,
   cloneElement,
   createContext,
   isValidElement,
@@ -404,7 +405,12 @@ export function Form({
               >
                 <label htmlFor={id}>
                   {f.label}
-                  {f.required ? " *" : ""}
+                  {f.required && (
+                    <span className="required-mark" aria-hidden="true">
+                      {" "}
+                      *
+                    </span>
+                  )}
                 </label>
                 {f.type === "select" ? (
                   <select {...common} defaultValue={String(value)}>
@@ -767,7 +773,6 @@ export function Field({
   const errors = useContext(FieldErrors);
   const generated = useId();
   let name = generated;
-  let required = false;
   const controls = Children.map(children, (child) => {
     if (
       !isValidElement(child) ||
@@ -776,25 +781,28 @@ export function Field({
       return child;
     const el = child as ReactElement<InputHTMLAttributes<HTMLInputElement>>;
     name = el.props.name || generated;
-    required = !!el.props.required;
-    return cloneElement(el, {
-      name,
-      id: el.props.id || generated,
-      "aria-invalid": !!errors[name],
-      "aria-describedby": errors[name]
-        ? `${generated}-error`
-        : el.props["aria-describedby"],
-    });
+    return (
+      <Fragment key={name}>
+        {el.props.required && (
+          <span className="required-mark" aria-hidden="true">
+            {" "}
+            *
+          </span>
+        )}
+        {cloneElement(el, {
+          name,
+          id: el.props.id || generated,
+          "aria-invalid": !!errors[name],
+          "aria-describedby": errors[name]
+            ? `${generated}-error`
+            : el.props["aria-describedby"],
+        })}
+      </Fragment>
+    );
   });
   return (
     <label {...props} className={`${props.className || ""} validated-field`}>
       {controls}
-      {required && (
-        <span className="required-mark" aria-hidden="true">
-          {" "}
-          *
-        </span>
-      )}
       {errors[name] && (
         <small id={`${generated}-error`} className="field-error" role="alert">
           {errors[name]}
