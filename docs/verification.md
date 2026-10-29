@@ -68,3 +68,16 @@ Nenalezena chyba aplikace v těchto scénářích. Nejde o ověření všech kom
 ## 29. 10. 2026 — UX/FE refinements A1–C9
 
 Větev `codex/ux-refinements`, aplikační commit `7fffcfc`: prošly typecheck, lint, 43 testů v 11 souborech, produkční build, kontrola čistého produktu a generování kontraktů bez rozdílu. Chromium desktop 1440 px a mobil 390 px ověřilo nové dialogy, tabulky, historii, konkrétní chyby polí, dokumentové uploady/stažení, přílohu výdaje včetně opakování selhání bez duplicity a řidičův prostor. Produkční preview prošlo založením vozidla, reloadem, přímými SPA cestami a skutečným XLSX exportem. Podrobný report, vlastní rozhodnutí, změny API a hranice ověření jsou v [ux-refinements.md](ux-refinements.md). Nenasazováno; externí integrace nebyly ověřeny.
+
+## 29. 10. 2026 — Následné ověření dotčených funkcionalit na žádost uživatele
+
+Znovu ověřena větev `codex/ux-refinements` na commitu `f2efa8c` (aplikační kód `7fffcfc`). Výchozí pracovní strom byl čistý; nebyla nutná žádná oprava aplikace.
+
+- Typecheck, lint, všech 43 testů v 11 souborech a produkční build prošly. Regenerace API kontraktů nevytvořila rozdíl; kontrola čistého produktu bez demo dat také prošla. Build nadále hlásí existující upozornění na velikost chunků.
+- Chromium zopakovalo přiřazení zakázky v dialogu a persistenci, shodné/rozdílné CCS podklady a vyřešení rozdílu, individuální plán a šablonu, detail/editaci termínu a kalendář, tabulky přidělení a historii, dropdowny, nákladový přehled, konkrétní chyby polí a období exportu.
+- Znovu ověřeno založení výdaje s přílohou, upload/filtrování/úprava/smazání pojištění, skutečné stažení originálních bajtů přílohy a CCS PDF, změna příjemce, řidičovy úkoly a navigace Vedení.
+- Úmyslná chyba zápisu přílohy do IndexedDB následovaná opakováním skončila právě jedním výdajem a jednou přílohou. Chybějící/neplatná účtenka zobrazila chybu u souboru a nevytvořila tankování. Ověřena horní středová pozice toastu.
+- Nové doplňkové funkční scénáře prošly samostatně při šířkách 1440 i 390 px: založení a editace jediného servisního kontaktu; založení CCS karty, přiřazení časové vazby k vozidlu, změna tolerance a deaktivace; změna svěřeného řidiče, ukončení přidělení, správný výchozí filtr a zobrazení historie z detailu vozidla i řidiče. Hodnoty byly po reloadu ověřeny v UI i u CCS karty v uložených datech.
+- Čerstvě sestavené produkční preview znovu prošlo přímými SPA cestami, založením vozidla, reloadem a detailem, výchozím nákladovým přehledem a skutečným stažením XLSX.
+
+V otestovaných scénářích nebyla nalezena rozbitá funkce ani běhová chyba prohlížeče. Všechna provozní data byla fiktivní a izolovaná v dočasných kontextech prohlížeče. Výsledek se týká lokálního adaptéru a testovaného HTTP kontraktu; ostrý backend, Google Sheets, OCR, e-maily, Make a nasazení nebyly ověřovány. Mobilní scénáře používají Chromium s rozměry telefonu, nikoli fyzické zařízení.

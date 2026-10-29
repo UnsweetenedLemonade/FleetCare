@@ -122,3 +122,7 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 ### Dokončení UX/FE iterace A1–C9
 
 Všechny body nového UX zadání implementovány na `codex/ux-refinements` s jednotlivými commity a pushi. Finální aplikační commit `7fffcfc` prošel 43 testy, typecheckem, lintem, produkčním buildem, kontrolou čistého produktu a kontraktů. Ověřeny desktopové/mobilní scénáře i produkční preview a skutečný export XLSX. Kompletní report je v `docs/ux-refinements.md`, včetně dvou nutných nových příkazů pro metadata dokumentu a příjemce a rozhodnutí o jednom servisním kontaktu. Podmínka zahájení jízdy řidiče zůstává nezměněná. Připraveno k revizi; main ani veřejné demo se v této iteraci neměnily.
+
+### Následný regresní průchod UX změn
+
+Na žádost uživatele znovu ověřen `f2efa8c`: 43 testů, lint, typecheck, build, čistý produkt a kontrakty prošly. Desktop/mobil navíc prošly skutečným ukládáním a editací servisního kontaktu, CCS karty a její vazby i změnou/ukončením přidělení s historií. Zopakovány byly dokumenty, přílohy včetně selhání a opakování, CCS, dialogy, validace a skutečný produkční export XLSX. Žádná oprava aplikačního kódu nebyla nutná; podrobný záznam je v `docs/verification.md`. Větev zůstává připravená k revizi a případnému sloučení do main.
