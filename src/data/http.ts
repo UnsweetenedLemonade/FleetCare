@@ -36,7 +36,7 @@ export class HttpRepository implements Repository {
   ) {
     if (!/^https?:\/\//.test(base) && !base.startsWith("/"))
       throw new DomainError(
-        "API režim vyžaduje URL gateway nebo cestu začínající lomítkem.",
+        "Nastavte VITE_API_BASE_URL na URL gateway nebo relativní cestu začínající lomítkem.",
         undefined,
         503,
       );
