@@ -394,6 +394,7 @@ function PlanItems({
               />
             </Field>
             <Button
+              danger
               aria-label="Odebrat úkon"
               onClick={() => onChange(value.filter((x) => x.id !== item.id))}
             >
@@ -922,6 +923,7 @@ export function EntityEditor({
                     ))}
                   </div>
                   <Button
+                    danger
                     onClick={() =>
                       setBindings(bindings.filter((_, n) => n !== i))
                     }

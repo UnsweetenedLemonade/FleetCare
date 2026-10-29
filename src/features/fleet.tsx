@@ -268,6 +268,7 @@ function AssignmentDialog({
     >
       <div className="dialog-body">
         <Form
+          danger={end}
           onDirty={setDirty}
           fields={[
             ...(!end

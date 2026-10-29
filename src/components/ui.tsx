@@ -319,6 +319,7 @@ export function Form({
   onSubmit,
   children,
   submit = "Uložit",
+  danger = false,
   onDirty,
 }: {
   fields: FieldSpec[];
@@ -326,6 +327,7 @@ export function Form({
   onSubmit: (values: Record<string, unknown>) => Promise<void>;
   children?: ReactNode;
   submit?: string;
+  danger?: boolean;
   onDirty?: (dirty: boolean) => void;
 }) {
   const [errors, setErrors] = useState<Record<string, string>>({}),
@@ -459,7 +461,12 @@ export function Form({
         {children}
         {failure && <Notice error>{failure}</Notice>}
         <div className="form-actions">
-          <Button primary type="submit" disabled={pending}>
+          <Button
+            primary={!danger}
+            danger={danger}
+            type="submit"
+            disabled={pending}
+          >
             {pending ? "Ukládání…" : submit}
           </Button>
         </div>
