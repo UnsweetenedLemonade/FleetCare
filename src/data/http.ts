@@ -32,7 +32,7 @@ export class HttpRepository implements Repository {
   readonly mode = "http" as const;
   constructor(
     private base: string,
-    private transport: typeof fetch = fetch,
+    private transport: typeof fetch = fetch.bind(globalThis),
   ) {
     if (!/^https?:\/\//.test(base) && !base.startsWith("/"))
       throw new DomainError(

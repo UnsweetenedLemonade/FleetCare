@@ -1,6 +1,6 @@
 # Přenos a spuštění FleetCare na VPS přes Docker
 
-Postup předpokládá Debian/Ubuntu, doménu směrovanou na VPS a přístup přes SSH. Nasazení spouští dvě služby: Nginx pro frontend/API proxy a Node gateway pro Google Sheets. Gateway není publikovaná na internet; obě služby komunikují v Docker síti. Google service-account JSON se mountuje jako Compose secret a není součástí image.
+Postup předpokládá Debian/Ubuntu, doménu směrovanou na VPS a přístup přes SSH. Nasazení spouští tři služby: Caddy pro veřejné HTTPS, Nginx pro frontend/API proxy a Node gateway pro Google Sheets. Gateway není publikovaná na internet; kontejnery komunikují v Docker síti. Google service-account JSON se mountuje jako Compose secret a není součástí image.
 
 ## 1. Připravte Google přístup
 
@@ -52,6 +52,7 @@ Upravte `/opt/fleetcare/app/.env.docker`, pokud je cesta ke klíči jiná. Má o
 ```dotenv
 GOOGLE_SHEET_ID=1x9KHpZiofd-2VK1T_LwJ1wRYnW9btzYn9nS6uwHnBPQ
 GOOGLE_SERVICE_ACCOUNT_FILE=/opt/fleetcare/secrets/google-service-account.json
+FLEETCARE_DOMAIN=app.vasedomena.cz
 ```
 
 Nedávejte service-account JSON do `/opt/fleetcare/app` ani do Git repozitáře.
@@ -64,41 +65,30 @@ Na VPS:
 cd /opt/fleetcare/app
 sudo docker compose --env-file .env.docker config
 sudo docker compose --env-file .env.docker up --build -d
-sudo docker compose ps
-sudo docker compose logs --tail=100 gateway web
+sudo docker compose --env-file .env.docker ps
+sudo docker compose --env-file .env.docker logs --tail=100 gateway web proxy
 ```
 
-Nginx v kontejneru servíruje frontend a předává `/api/v1/*` gateway. Frontend používá relativní `/api/v1`, takže není třeba měnit build pro každou doménu. Compose vystavuje web jen na `127.0.0.1:8080`; port gateway 8787 není publikován.
+Veřejný Caddy přijímá porty 80/443 a předává doménu Nginxu. Nginx servíruje frontend a předává `/api/v1/*` gateway. Frontend používá relativní `/api/v1`, takže není třeba měnit build pro každou doménu. Compose navíc zpřístupňuje web na `127.0.0.1:8080` pro lokální diagnostiku; gateway port 8787 není publikován.
 
-## 6. Připojte doménu přes HTTPS reverzní proxy
+## 6. Připojte doménu přes HTTPS
 
-Nasměrujte DNS `A` (případně `AAAA`) záznam domény na VPS. Pokud na hostu používáte Caddy, může jeho webový blok vypadat takto:
+DNS `A` záznam domény musí ukazovat na IP VPS. Pokud máte `AAAA` záznam, musí ukazovat na správnou IPv6 adresu VPS; jinak jej odstraňte. V `.env.docker` nastavte `FLEETCARE_DOMAIN` na přesný název domény. Přiložený `deploy/Caddyfile` předává provoz na interní službu `web:80` a Caddy automaticky obstará certifikát.
 
-```caddyfile
-fleetcare.example.cz {
-    reverse_proxy 127.0.0.1:8080
-}
-```
+Povolte příchozí porty **80/tcp** a **443/tcp** ve firewallu poskytovatele VPS a případném firewallu serveru. Porty 8080 a 8787 ponechte neveřejné. Caddy získá certifikát, pokud DNS ukazuje na VPS a je dosažitelný na portech 80/443; certifikáty a stav ukládá do pojmenovaných Docker volumes. [Požadavky Caddy na automatické HTTPS](https://caddyserver.com/docs/automatic-https).
 
-Povolte z internetu porty 80 a 443 pro TLS proxy; porty 8080 a 8787 ponechte neveřejné. Pokud už VPS provozuje Nginx/Traefik, předejte požadavky pro doménu na `127.0.0.1:8080` a zachovejte běžné HTTP hlavičky. API zůstává na stejném originu jako frontend, takže CORS není potřeba.
-
-Po úpravě Caddyfile načtěte konfiguraci:
-
-```sh
-sudo caddy validate --config /etc/caddy/Caddyfile
-sudo systemctl reload caddy
-```
+Pokud později zjistíš, že už na VPS běží jiný veřejný web/proxy, nepouštěj Caddy kontejner na stejných portech. V tom případě odstraň službu `proxy` z Compose a nastav existující proxy na `127.0.0.1:8080`.
 
 ## 7. Ověřte propojení a aktualizujte aplikaci
 
 Na VPS ověřte proxy lokálně:
 
 ```sh
-curl -fsS http://127.0.0.1:8080/api/health
-curl -fsS http://127.0.0.1:8080/api/v1/workspace
+curl -fsS https://app.vasedomena.cz/api/health
+curl -fsS https://app.vasedomena.cz/api/v1/workspace
 ```
 
-Pak otevřete `https://fleetcare.example.cz`, zkuste načtení evidence a vytvořte testovací změnu v podporované části. Změny se ukládají přímo do odpovídajícího listu. Chyba 403 obvykle znamená, že tabulka není sdílená s service accountem jako Editor; 501/422 značí akci nebo pole bez odpovídajícího listu/sloupce.
+Pak otevřete `https://app.vasedomena.cz` (nahraďte skutečnou doménou), zkuste načtení evidence a vytvořte testovací změnu v podporované části. Změny se ukládají přímo do odpovídajícího listu. Chyba 403 obvykle znamená, že tabulka není sdílená s service accountem jako Editor; 501/422 značí akci nebo pole bez odpovídajícího listu/sloupce.
 
 Při další změně zdrojů přeneste upravené soubory znovu přes `rsync` a spusťte:
 

@@ -28,6 +28,25 @@ services:
       - "127.0.0.1:8080:80"
     restart: unless-stopped
 
+  proxy:
+    image: caddy:2
+    environment:
+      FLEETCARE_DOMAIN: ${FLEETCARE_DOMAIN:?Set FLEETCARE_DOMAIN in .env.docker}
+    depends_on:
+      - web
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    restart: unless-stopped
+
 secrets:
   google_service_account:
     file: ${GOOGLE_SERVICE_ACCOUNT_FILE:?Set GOOGLE_SERVICE_ACCOUNT_FILE in .env.docker}
+
+volumes:
+  caddy_data:
+  caddy_config:
