@@ -853,14 +853,17 @@ export function FilePicker({
   label = "Vybrat soubory",
   accept = "application/pdf,image/jpeg,image/png",
   multiple = true,
+  camera = false,
 }: {
   files: File[];
   onChange: (files: File[]) => void;
   label?: string;
   accept?: string;
   multiple?: boolean;
+  camera?: boolean;
 }) {
   const ref = useRef<HTMLInputElement>(null);
+  const cameraRef = useRef<HTMLInputElement>(null);
   return (
     <div className="file-picker">
       <div
@@ -884,6 +887,22 @@ export function FilePicker({
           onChange={(e) => onChange(Array.from(e.target.files || []))}
         />
       </div>
+      {camera && (
+        <>
+          <Button onClick={() => cameraRef.current?.click()}>
+            Vyfotit účtenku
+          </Button>
+          <input
+            className="visually-hidden"
+            ref={cameraRef}
+            type="file"
+            aria-label="Vyfotit účtenku"
+            accept="image/jpeg,image/png"
+            capture="environment"
+            onChange={(e) => onChange(Array.from(e.target.files || []))}
+          />
+        </>
+      )}
       {!!files.length && (
         <ul className="selected-files">
           {files.map((f, i) => (

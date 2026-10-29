@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams } from "react-router";
-import { FileText, Upload, Download, Trash2, Pencil } from "lucide-react";
+import { Upload, Download, Trash2, Pencil } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import type { Document } from "../domain/models";
 import {
@@ -13,6 +13,7 @@ import {
   Form,
   HistorySwitch,
   Field,
+  FilePicker,
   ValidatedForm,
   Notice,
   PageHead,
@@ -114,37 +115,13 @@ export function UploadDialog({
               />
             </Field>
           </div>
-          <Field className="upload-zone">
-            <Upload size={30} />
-            <strong>Vyberte PDF, JPG nebo PNG</strong>
-            <span>
-              Až {fileLimits.maxFiles} souborů. Více stran lze nahrát společně.
-            </span>
-            <input
-              aria-label="Vybrat soubory"
-              type="file"
-              accept="application/pdf,image/jpeg,image/png"
-              multiple
-              onChange={(e) => setSelected(Array.from(e.target.files || []))}
-            />
-          </Field>
-          {docType === "Účtenka" && (
-            <Field className="camera-input">
-              Vyfotit účtenku
-              <input
-                aria-label="Vyfotit účtenku"
-                type="file"
-                accept="image/jpeg,image/png"
-                capture="environment"
-                onChange={(e) => setSelected(Array.from(e.target.files || []))}
-              />
-            </Field>
-          )}
-          {selected.map((f, i) => (
-            <p key={i}>
-              <FileText size={16} /> {f.name} · {number(f.size / 1024, "kB")}
-            </p>
-          ))}
+          <FilePicker
+            files={selected}
+            onChange={setSelected}
+            label="Vybrat soubory"
+            camera={docType === "Účtenka"}
+          />
+          <small>Až {fileLimits.maxFiles} souborů. PDF, JPG nebo PNG.</small>
           {error && <Notice error>{error}</Notice>}
           <div className="form-actions">
             <Button

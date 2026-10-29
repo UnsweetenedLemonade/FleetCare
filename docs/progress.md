@@ -68,3 +68,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - B1: Share table toolbars and consistent history switches — typecheck a lint prošly.
 
 - B2: Use a shared add-method dropdown for vehicles and fuel — typecheck a lint prošly.
+
+- B3: Use application file pickers for uploads and camera receipts — typecheck a lint prošly.
