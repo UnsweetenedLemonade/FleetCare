@@ -82,3 +82,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - B8: Add explicit recipient editing and secondary fault actions — typecheck a lint prošly.
 
 - B9: Move dashboard quick actions directly below the heading — typecheck a lint prošly.
+
+- B10: Position toast notifications at the top center — typecheck a lint prošly.

@@ -1317,8 +1317,10 @@ dialog::backdrop {
 }
 .toast {
   position: fixed;
-  right: 27px;
-  bottom: 22px;
+  left: 50%;
+  top: max(18px, env(safe-area-inset-top));
+  transform: translateX(-50%);
+  animation: toast-enter 0.18s ease-out;
   z-index: 110;
   background: #163f32;
   color: white;
@@ -1758,8 +1760,8 @@ footer {
     flex-wrap: wrap;
   }
   .toast {
-    right: 18px;
-    bottom: 16px;
+    left: 50%;
+    top: max(16px, env(safe-area-inset-top));
     font-size: var(--font-small);
   }
   .search-result {
@@ -1930,4 +1932,20 @@ textarea[aria-invalid="true"] {
 .choice-menu .btn {
   width: 100%;
   justify-content: flex-start;
+}
+
+@keyframes toast-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
 }
