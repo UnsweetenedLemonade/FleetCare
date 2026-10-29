@@ -1953,3 +1953,7 @@ textarea[aria-invalid="true"] {
 .required-mark {
   color: #b3261e;
 }
+
+.tabs a:hover {
+  text-decoration: none;
+}

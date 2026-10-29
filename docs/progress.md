@@ -98,3 +98,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - C5: Color required-field markers red through shared form labels — typecheck a lint prošly.
 
 - C6: Simplify edit and download labels consistently — typecheck a lint prošly.
+
+- C7: Keep tab labels free of hover underlines — typecheck a lint prošly.
