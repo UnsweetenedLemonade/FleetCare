@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import {
@@ -10,7 +11,14 @@ import {
 } from "../domain/models";
 import type { EditableCollection } from "../data/contracts";
 import { useFleet } from "../app/context";
-import { Button, Dialog, Form, Notice, type FieldSpec } from "../components/ui";
+import {
+  Button,
+  Dialog,
+  Field,
+  Form,
+  Notice,
+  type FieldSpec,
+} from "../components/ui";
 import { localTime, toUtc, today } from "../lib/format";
 const options = (items: readonly string[]): [string, string][] =>
   items.map((x) => [x, x]);
@@ -309,7 +317,7 @@ function Entitlements({
       <h3>{title}</h3>
       {value.map((item, i) => (
         <div className="repeat-row" key={i}>
-          <label>
+          <Field>
             Název
             <input
               aria-label={`${title} název ${i + 1}`}
@@ -323,8 +331,8 @@ function Entitlements({
               }
               required
             />
-          </label>
-          <label>
+          </Field>
+          <Field>
             Platnost do
             <input
               type="date"
@@ -337,7 +345,7 @@ function Entitlements({
                 )
               }
             />
-          </label>
+          </Field>
           <Button
             aria-label={`Odebrat ${title} ${i + 1}`}
             onClick={() => onChange(value.filter((_, n) => n !== i))}
@@ -368,9 +376,10 @@ function PlanItems({
       {value.map((item, i) => (
         <div className="repeat-card" key={item.id}>
           <div className="repeat-row">
-            <label>
+            <Field>
               Název úkonu
               <input
+                name={`items.${i}.name`}
                 required
                 value={item.name}
                 onChange={(e) =>
@@ -381,7 +390,7 @@ function PlanItems({
                   )
                 }
               />
-            </label>
+            </Field>
             <Button
               aria-label="Odebrat úkon"
               onClick={() => onChange(value.filter((x) => x.id !== item.id))}
@@ -400,7 +409,7 @@ function PlanItems({
                 "nextDate",
               ] as const
             ).map((key, k) => (
-              <label key={key}>
+              <Field key={key}>
                 {
                   [
                     "Interval (km)",
@@ -412,6 +421,7 @@ function PlanItems({
                   ][k]
                 }
                 <input
+                  name={`items.${i}.${key}`}
                   type={key.includes("Date") ? "date" : "text"}
                   inputMode={key.includes("Date") ? undefined : "decimal"}
                   value={item[key] ?? ""}
@@ -432,7 +442,7 @@ function PlanItems({
                     )
                   }
                 />
-              </label>
+              </Field>
             ))}
           </div>
         </div>
@@ -473,9 +483,10 @@ function Stops({
       {value.map((item, i) => (
         <div className="repeat-card" key={item.id}>
           <div className="form-grid">
-            <label>
+            <Field>
               Typ
               <select
+                name={`stops.${i}.type`}
                 value={item.type}
                 onChange={(e) =>
                   onChange(
@@ -491,10 +502,11 @@ function Stops({
                   <option key={x}>{x}</option>
                 ))}
               </select>
-            </label>
-            <label>
+            </Field>
+            <Field>
               Místo
               <input
+                name={`stops.${i}.place`}
                 value={item.place}
                 onChange={(e) =>
                   onChange(
@@ -504,11 +516,12 @@ function Stops({
                   )
                 }
               />
-            </label>
+            </Field>
             {(["from", "to"] as const).map((key) => (
-              <label key={key}>
+              <Field key={key}>
                 Okno {key === "from" ? "od" : "do"}
                 <input
+                  name={`stops.${i}.${key}`}
                   type="datetime-local"
                   value={item[key] ? localTime(item[key]) : ""}
                   onChange={(e) =>
@@ -526,11 +539,12 @@ function Stops({
                     )
                   }
                 />
-              </label>
+              </Field>
             ))}
-            <label>
+            <Field>
               Kontakt
               <input
+                name={`stops.${i}.contact`}
                 value={item.contact}
                 onChange={(e) =>
                   onChange(
@@ -540,10 +554,11 @@ function Stops({
                   )
                 }
               />
-            </label>
-            <label>
+            </Field>
+            <Field>
               Pokyny
               <input
+                name={`stops.${i}.instructions`}
                 value={item.instructions}
                 onChange={(e) =>
                   onChange(
@@ -553,7 +568,7 @@ function Stops({
                   )
                 }
               />
-            </label>
+            </Field>
           </div>
         </div>
       ))}
@@ -712,6 +727,23 @@ export function EntityEditor({
             }
             if (collection === "templates" || collection === "plans")
               values.items = items;
+            if (collection === "templates" || collection === "plans") {
+              const issues: z.core.$ZodIssue[] = [];
+              items.forEach((item, index) => {
+                if (
+                  !(
+                    (item.intervalKm ?? 0) > 0 || (item.intervalMonths ?? 0) > 0
+                  )
+                )
+                  for (const field of ["intervalKm", "intervalMonths"])
+                    issues.push({
+                      code: "custom",
+                      path: ["items", index, field],
+                      message: "Zadejte kladný interval v km nebo měsících.",
+                    });
+              });
+              if (issues.length) throw new z.ZodError(issues);
+            }
             if (collection === "plans") values.templateId = templateId || null;
             if (collection === "orders") values.stops = stops;
             if (collection === "expenses") {
@@ -755,7 +787,7 @@ export function EntityEditor({
             </>
           )}
           {collection === "plans" && (
-            <label>
+            <Field>
               Šablona
               <select
                 value={templateId}
@@ -785,7 +817,7 @@ export function EntityEditor({
                 Výběr šablony předvyplní úkony. Změny se uloží až potvrzením
                 formuláře.
               </small>
-            </label>
+            </Field>
           )}
           {(collection === "templates" || collection === "plans") && (
             <PlanItems value={items} onChange={change(setItems)} />
@@ -799,9 +831,10 @@ export function EntityEditor({
               {bindings.map((b, i) => (
                 <div className="repeat-card" key={i}>
                   <div className="form-grid">
-                    <label>
+                    <Field>
                       Vozidlo
                       <select
+                        name={`bindings.${i}.vehicleId`}
                         value={b.vehicleId}
                         required
                         onChange={(e) => {
@@ -820,11 +853,12 @@ export function EntityEditor({
                           </option>
                         ))}
                       </select>
-                    </label>
+                    </Field>
                     {(["from", "to"] as const).map((k) => (
-                      <label key={k}>
+                      <Field key={k}>
                         Platnost {k === "from" ? "od" : "do"}
                         <input
+                          name={`bindings.${i}.${k}`}
                           type="date"
                           required={k === "from"}
                           value={b[k] || ""}
@@ -839,7 +873,7 @@ export function EntityEditor({
                             );
                           }}
                         />
-                      </label>
+                      </Field>
                     ))}
                   </div>
                   <Button

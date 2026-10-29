@@ -58,3 +58,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - A5: Add deadline details and right-aligned list calendar controls — typecheck a lint prošly.
 
 - A6: Use assignment tables with history and vehicle identifiers — typecheck a lint prošly.
+
+- A7: Show accessible field-specific validation including repeated service items — typecheck a lint prošly.

@@ -11,6 +11,8 @@ import {
   Dialog,
   Empty,
   Form,
+  Field,
+  ValidatedForm,
   Notice,
   PageHead,
 } from "../components/ui";
@@ -57,7 +59,7 @@ export function UploadDialog({
           připojenou službu. Pro extrakci platí limit 5 MB, pro běžnou přílohu
           20 MB.
         </Notice>
-        <form
+        <ValidatedForm
           onSubmit={async (e) => {
             e.preventDefault();
             if (pending) return;
@@ -83,7 +85,7 @@ export function UploadDialog({
           }}
         >
           <div className="form-grid">
-            <label>
+            <Field>
               Typ dokumentu
               <select
                 value={docType}
@@ -93,25 +95,25 @@ export function UploadDialog({
                   <option key={x}>{x}</option>
                 ))}
               </select>
-            </label>
-            <label>
+            </Field>
+            <Field>
               Platnost do (metadata)
               <input
                 type="date"
                 value={validUntil}
                 onChange={(e) => setValid(e.target.value)}
               />
-            </label>
-            <label>
+            </Field>
+            <Field>
               Splatnost (metadata)
               <input
                 type="date"
                 value={dueAt}
                 onChange={(e) => setDue(e.target.value)}
               />
-            </label>
+            </Field>
           </div>
-          <label className="upload-zone">
+          <Field className="upload-zone">
             <Upload size={30} />
             <strong>Vyberte PDF, JPG nebo PNG</strong>
             <span>
@@ -124,9 +126,9 @@ export function UploadDialog({
               multiple
               onChange={(e) => setSelected(Array.from(e.target.files || []))}
             />
-          </label>
+          </Field>
           {docType === "Účtenka" && (
-            <label className="camera-input">
+            <Field className="camera-input">
               Vyfotit účtenku
               <input
                 aria-label="Vyfotit účtenku"
@@ -135,7 +137,7 @@ export function UploadDialog({
                 capture="environment"
                 onChange={(e) => setSelected(Array.from(e.target.files || []))}
               />
-            </label>
+            </Field>
           )}
           {selected.map((f, i) => (
             <p key={i}>
@@ -152,7 +154,7 @@ export function UploadDialog({
               {pending ? "Ukládání…" : "Uložit dokumenty"}
             </Button>
           </div>
-        </form>
+        </ValidatedForm>
       </div>
     </Dialog>
   );
@@ -211,14 +213,14 @@ export function DocumentList({
             Přidat dokument
           </Button>
         )}
-        <label className="switch">
+        <Field className="switch">
           <input
             type="checkbox"
             checked={historical}
             onChange={(e) => setHistorical(e.target.checked)}
           />
           Zobrazit i historické
-        </label>
+        </Field>
       </div>
       <DataTable
         prefix={`documents-${ownerType}-${ownerId}.`}
@@ -489,7 +491,7 @@ function LinkDocument({ id }: { id: string }) {
   return (
     <Dialog title="Připojit STK k vozidlu" onClose={close}>
       <div className="dialog-body">
-        <label>
+        <Field>
           Vozidlo
           <select value={v} onChange={(e) => setV(e.target.value)}>
             <option value="">Vyberte…</option>
@@ -499,7 +501,7 @@ function LinkDocument({ id }: { id: string }) {
               </option>
             ))}
           </select>
-        </label>
+        </Field>
         {err && <Notice error>{err}</Notice>}
         <div className="form-actions">
           <Button

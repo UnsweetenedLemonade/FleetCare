@@ -1,4 +1,13 @@
 import {
+  Children,
+  cloneElement,
+  createContext,
+  isValidElement,
+  useContext,
+  useId,
+  type InputHTMLAttributes,
+  type LabelHTMLAttributes,
+  type ReactElement,
   useEffect,
   useRef,
   useState,
@@ -320,6 +329,11 @@ export function Form({
     if (pending) return;
     setErrors({});
     setFailure("");
+    const invalid = nativeFieldErrors(e.currentTarget);
+    if (Object.keys(invalid).length) {
+      setErrors(invalid);
+      return;
+    }
     const fd = new FormData(e.currentTarget);
     const values: Record<string, unknown> = {};
     try {
@@ -344,17 +358,13 @@ export function Form({
         const next: Record<string, string> = {};
         const general: string[] = [];
         for (const issue of error.issues) {
-          const key = String(issue.path[0]);
-          if (fields.some((f) => f.key === key)) next[key] = issue.message;
-          else general.push(issue.path.join(".") + ": " + issue.message);
+          const key = issue.path.join(".");
+          next[key] = issue.message;
+          if (!key) general.push(issue.message);
         }
         setErrors(next);
         if (general.length) setFailure(general.join(" · "));
-      } else if (
-        error instanceof DomainError &&
-        error.field &&
-        fields.some((f) => f.key === error.field)
-      )
+      } else if (error instanceof DomainError && error.field)
         setErrors({ [error.field]: error.message });
       else
         setFailure(error instanceof Error ? error.message : "Operace selhala.");
@@ -363,89 +373,91 @@ export function Form({
     }
   }
   return (
-    <form onSubmit={save} onChange={() => onDirty?.(true)}>
-      <div className="form-grid">
-        {fields.map((f) => {
-          const value = initial[f.key] ?? f.initial ?? "";
-          const id = "field-" + f.key;
-          const common = {
-            name: f.key,
-            id,
-            required: f.required,
-            readOnly: f.readOnly,
-            "aria-invalid": !!errors[f.key],
-            "aria-describedby":
-              f.help || errors[f.key] ? id + "-hint" : undefined,
-          };
-          return (
-            <div
-              key={f.key}
-              className={"field " + (f.type === "textarea" ? "full" : "")}
-            >
-              <label htmlFor={id}>
-                {f.label}
-                {f.required ? " *" : ""}
-              </label>
-              {f.type === "select" ? (
-                <select {...common} defaultValue={String(value)}>
-                  {!f.required && (
-                    <option value="">Není doloženo / žádné</option>
-                  )}
-                  {f.required && (
-                    <option value="" disabled>
-                      Vyberte…
-                    </option>
-                  )}
-                  {f.options?.map(([v, l]) => (
-                    <option key={v} value={v}>
-                      {l}
-                    </option>
-                  ))}
-                </select>
-              ) : f.type === "textarea" ? (
-                <textarea {...common} defaultValue={String(value)} />
-              ) : f.type === "checkbox" ? (
-                <input {...common} type="checkbox" defaultChecked={!!value} />
-              ) : (
-                <input
-                  {...common}
-                  type={
-                    f.type === "number" || f.type === "money"
-                      ? "text"
-                      : f.type === "datetime"
-                        ? "datetime-local"
-                        : f.type || "text"
-                  }
-                  inputMode={
-                    f.type === "number" || f.type === "money"
-                      ? "decimal"
-                      : undefined
-                  }
-                  defaultValue={
-                    f.type === "money" && typeof value === "number"
-                      ? value / 100
-                      : String(value)
-                  }
-                />
-              )}
-              <small
-                id={id + "-hint"}
-                className={errors[f.key] ? "field-error" : ""}
+    <FieldErrors.Provider value={errors}>
+      <form noValidate onSubmit={save} onChange={() => onDirty?.(true)}>
+        <div className="form-grid">
+          {fields.map((f) => {
+            const value = initial[f.key] ?? f.initial ?? "";
+            const id = "field-" + f.key;
+            const common = {
+              name: f.key,
+              id,
+              required: f.required,
+              readOnly: f.readOnly,
+              "aria-invalid": !!errors[f.key],
+              "aria-describedby":
+                f.help || errors[f.key] ? id + "-hint" : undefined,
+            };
+            return (
+              <div
+                key={f.key}
+                className={"field " + (f.type === "textarea" ? "full" : "")}
               >
-                {errors[f.key] || f.help}
-              </small>
-            </div>
-          );
-        })}
-      </div>
-      {children}
-      {failure && <Notice error>{failure}</Notice>}
-      <div className="form-actions">
-        <Button primary type="submit" disabled={pending}>
-          {pending ? "Ukládání…" : submit}
-        </Button>
-      </div>
-    </form>
+                <label htmlFor={id}>
+                  {f.label}
+                  {f.required ? " *" : ""}
+                </label>
+                {f.type === "select" ? (
+                  <select {...common} defaultValue={String(value)}>
+                    {!f.required && (
+                      <option value="">Není doloženo / žádné</option>
+                    )}
+                    {f.required && (
+                      <option value="" disabled>
+                        Vyberte…
+                      </option>
+                    )}
+                    {f.options?.map(([v, l]) => (
+                      <option key={v} value={v}>
+                        {l}
+                      </option>
+                    ))}
+                  </select>
+                ) : f.type === "textarea" ? (
+                  <textarea {...common} defaultValue={String(value)} />
+                ) : f.type === "checkbox" ? (
+                  <input {...common} type="checkbox" defaultChecked={!!value} />
+                ) : (
+                  <input
+                    {...common}
+                    type={
+                      f.type === "number" || f.type === "money"
+                        ? "text"
+                        : f.type === "datetime"
+                          ? "datetime-local"
+                          : f.type || "text"
+                    }
+                    inputMode={
+                      f.type === "number" || f.type === "money"
+                        ? "decimal"
+                        : undefined
+                    }
+                    defaultValue={
+                      f.type === "money" && typeof value === "number"
+                        ? value / 100
+                        : String(value)
+                    }
+                  />
+                )}
+                <small
+                  id={id + "-hint"}
+                  className={errors[f.key] ? "field-error" : ""}
+                >
+                  {errors[f.key] || f.help}
+                </small>
+              </div>
+            );
+          })}
+        </div>
+        {children}
+        {failure && <Notice error>{failure}</Notice>}
+        <div className="form-actions">
+          <Button primary type="submit" disabled={pending}>
+            {pending ? "Ukládání…" : submit}
+          </Button>
+        </div>
+      </form>
+    </FieldErrors.Provider>
   );
 }
 export type Column<T> = {
@@ -730,5 +742,99 @@ export function ViewToggle({
         </button>
       ))}
     </div>
+  );
+}
+
+const FieldErrors = createContext<Record<string, string>>({});
+export function Field({
+  children,
+  ...props
+}: LabelHTMLAttributes<HTMLLabelElement>) {
+  const errors = useContext(FieldErrors);
+  const generated = useId();
+  let name = generated;
+  let required = false;
+  const controls = Children.map(children, (child) => {
+    if (
+      !isValidElement(child) ||
+      !["input", "select", "textarea"].includes(String(child.type))
+    )
+      return child;
+    const el = child as ReactElement<InputHTMLAttributes<HTMLInputElement>>;
+    name = el.props.name || generated;
+    required = !!el.props.required;
+    return cloneElement(el, {
+      name,
+      id: el.props.id || generated,
+      "aria-invalid": !!errors[name],
+      "aria-describedby": errors[name]
+        ? `${generated}-error`
+        : el.props["aria-describedby"],
+    });
+  });
+  return (
+    <label {...props} className={`${props.className || ""} validated-field`}>
+      {controls}
+      {required && (
+        <span className="required-mark" aria-hidden="true">
+          {" "}
+          *
+        </span>
+      )}
+      {errors[name] && (
+        <small id={`${generated}-error`} className="field-error" role="alert">
+          {errors[name]}
+        </small>
+      )}
+    </label>
+  );
+}
+function nativeFieldErrors(form: HTMLFormElement) {
+  const errors: Record<string, string> = {};
+  for (const el of Array.from(form.elements)) {
+    if (
+      !(
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLSelectElement ||
+        el instanceof HTMLTextAreaElement
+      ) ||
+      !el.name ||
+      el.disabled ||
+      el.validity.valid
+    )
+      continue;
+    const label =
+      el.labels?.[0]?.textContent?.split("*")[0]?.trim() || "Toto pole";
+    errors[el.name] = el.validity.valueMissing
+      ? `Vyplňte pole „${label}“.`
+      : el.validity.typeMismatch
+        ? "Zadejte platnou e-mailovou adresu."
+        : el.validity.rangeUnderflow
+          ? `Zadejte hodnotu alespoň ${el instanceof HTMLInputElement ? el.min : ""}.`
+          : "Zadejte platnou hodnotu.";
+  }
+  return errors;
+}
+export function ValidatedForm({
+  onSubmit,
+  children,
+  ...props
+}: React.ComponentProps<"form">) {
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  return (
+    <FieldErrors.Provider value={errors}>
+      <form
+        {...props}
+        noValidate
+        onSubmit={(e) => {
+          const next = nativeFieldErrors(e.currentTarget);
+          setErrors(next);
+          if (Object.keys(next).length) e.preventDefault();
+          else onSubmit?.(e);
+        }}
+      >
+        {children}
+      </form>
+    </FieldErrors.Provider>
   );
 }

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useFleet } from "../app/context";
-import { Dialog, Form, Notice } from "../components/ui";
+import { Dialog, Field, Form, Notice } from "../components/ui";
 import { localTime, toUtc } from "../lib/format";
 export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
   const { s, actor, run, upload, close } = useFleet(),
@@ -79,7 +79,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
             navigate(`/fuels/${id}`);
           }}
         >
-          <label className="upload-zone">
+          <Field className="upload-zone">
             Účtenka PDF / JPG / PNG
             <input
               aria-label="Vybrat účtenku"
@@ -88,8 +88,8 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
               multiple
               onChange={(e) => setFiles(Array.from(e.target.files || []))}
             />
-          </label>
-          <label>
+          </Field>
+          <Field>
             Vyfotit účtenku
             <input
               aria-label="Vyfotit účtenku"
@@ -98,7 +98,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
               capture="environment"
               onChange={(e) => setFiles(Array.from(e.target.files || []))}
             />
-          </label>
+          </Field>
           {files.map((f, i) => (
             <p key={i}>{f.name}</p>
           ))}
