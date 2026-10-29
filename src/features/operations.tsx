@@ -1,7 +1,7 @@
 import { dateKey } from "../lib/format";
 import { useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
-import { Download, Pencil, Send, Square } from "lucide-react";
+import { Download, Pencil, Bell, Square } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
   Back,
@@ -484,11 +484,12 @@ export function FaultPage() {
         actions={
           actor.role !== "Řidič" && (
             <>
-              <Button primary onClick={() => edit("faults", f)}>
-                Upravit řešení a stav
+              <Button onClick={() => edit("faults", f)}>
+                <Pencil size={17} />
+                Upravit
               </Button>
               <Button onClick={() => show(<NotifyDialog faultId={f.id} />)}>
-                <Send size={17} />
+                <Bell size={17} />
                 Notifikovat řidiče
               </Button>
             </>
@@ -547,6 +548,12 @@ export function FaultPage() {
                     </small>
                   </div>
                   <Badge value={n.state} />
+                  <Button
+                    disabled={["sent", "sending"].includes(n.state)}
+                    onClick={() => show(<RecipientDialog id={n.id} />)}
+                  >
+                    Změnit příjemce
+                  </Button>
                 </div>
               ))}
           </Panel>
@@ -614,6 +621,39 @@ function NotifyDialog({ faultId }: { faultId: string }) {
               serviceAt: toUtc(String(v.serviceAt)),
               place: String(v.place),
               message: String(v.message),
+            });
+            close();
+          }}
+        />
+      </div>
+    </Dialog>
+  );
+}
+
+function RecipientDialog({ id }: { id: string }) {
+  const { s, run, close } = useFleet();
+  const n = s.notifications.find((n) => n.id === id)!;
+  const [dirty, setDirty] = useState(false);
+  return (
+    <Dialog title="Změnit příjemce" onClose={close} dirty={dirty}>
+      <div className="dialog-body">
+        <Form
+          fields={[
+            {
+              key: "email",
+              label: "E-mail příjemce",
+              type: "email",
+              required: true,
+            },
+          ]}
+          initial={{ email: n.email || "" }}
+          onDirty={setDirty}
+          onSubmit={async (v) => {
+            await run({
+              type: "notification.recipient",
+              id: n.id,
+              version: n.version,
+              email: String(v.email),
             });
             close();
           }}

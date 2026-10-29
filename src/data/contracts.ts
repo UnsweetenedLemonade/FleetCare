@@ -71,6 +71,12 @@ export type Command =
     }
   | { type: "notification.retry"; id: string }
   | {
+      type: "notification.recipient";
+      id: string;
+      version: number;
+      email: string;
+    }
+  | {
       type: "ccs.resolve";
       transactionId: string;
       fuelId: string | null;

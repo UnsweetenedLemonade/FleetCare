@@ -527,6 +527,22 @@ export function applyCommand(
       state: "not_configured",
       reason: "E-mailová služba není připojena.",
     });
+  } else if (c.type === "notification.recipient") {
+    manager(actor);
+    const n = find(s, "notifications", c.id);
+    version(n.version, c.version);
+    ensure(
+      !["sent", "sending"].includes(n.state),
+      "Odeslaný nebo odesílaný požadavek nelze měnit.",
+    );
+    const email = settingsSchema.shape.managerEmail.parse(c.email);
+    ensure(email, "Vyplňte e-mail příjemce.", "email");
+    Object.assign(n, touch(n), {
+      email,
+      recipientId: null,
+      state: "not_configured",
+      reason: "Příjemce změněn. E-mailová služba není připojena.",
+    });
   } else if (c.type === "notification.retry") {
     manager(actor);
     const n = find(s, "notifications", c.id);
