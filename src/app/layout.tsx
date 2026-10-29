@@ -62,7 +62,16 @@ export function Layout({
     retry: false,
     staleTime: 60000,
   });
-  const entries = actor.role === "Řidič" ? driverNav : management;
+  const entries =
+    actor.role === "Řidič"
+      ? driverNav
+      : actor.role === "Vedení"
+        ? [
+            ...management.slice(0, -1),
+            ["/reports", "Reporty", BarChart3] as const,
+            management[management.length - 1],
+          ]
+        : management;
   return (
     <>
       <a
@@ -110,12 +119,6 @@ export function Layout({
               <span>{label}</span>
             </NavLink>
           ))}
-          {actor.role === "Vedení" && (
-            <NavLink to="/reports">
-              <BarChart3 size={19} />
-              Reporty
-            </NavLink>
-          )}
         </nav>
       </aside>
       {menu && (

@@ -100,3 +100,5 @@ Znovu ověřen commit `c25daef`: typecheck, lint, 38 testů a produkční build 
 - C6: Simplify edit and download labels consistently — typecheck a lint prošly.
 
 - C7: Keep tab labels free of hover underlines — typecheck a lint prošly.
+
+- C8: Place reports before settings in management navigation — typecheck a lint prošly.
