@@ -126,3 +126,7 @@ Všechny body nového UX zadání implementovány na `codex/ux-refinements` s je
 ### Následný regresní průchod UX změn
 
 Na žádost uživatele znovu ověřen `f2efa8c`: 43 testů, lint, typecheck, build, čistý produkt a kontrakty prošly. Desktop/mobil navíc prošly skutečným ukládáním a editací servisního kontaktu, CCS karty a její vazby i změnou/ukončením přidělení s historií. Zopakovány byly dokumenty, přílohy včetně selhání a opakování, CCS, dialogy, validace a skutečný produkční export XLSX. Žádná oprava aplikačního kódu nebyla nutná; podrobný záznam je v `docs/verification.md`. Větev zůstává připravená k revizi a případnému sloučení do main.
+
+### 30. 10. 2026 — Kontrola omezeného zadání detailu vozidla
+
+Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `VehiclePage` / `ServicePlan`. Úprava vozidla, individuálního plánu, výběr šablony a Dokumenty zůstaly zachované. Prošly lint, typecheck, 43 testů, build a cílená kontrola Chromium desktop/mobil včetně uploadu/náhledu/stažení pojištění. Aplikační kód a vzhled se neměnily; nový commit obsahuje pouze report kontroly v `docs/verification.md` a tento záznam.

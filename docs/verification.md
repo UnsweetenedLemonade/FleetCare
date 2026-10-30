@@ -81,3 +81,15 @@ Znovu ověřena větev `codex/ux-refinements` na commitu `f2efa8c` (aplikační 
 - Čerstvě sestavené produkční preview znovu prošlo přímými SPA cestami, založením vozidla, reloadem a detailem, výchozím nákladovým přehledem a skutečným stažením XLSX.
 
 V otestovaných scénářích nebyla nalezena rozbitá funkce ani běhová chyba prohlížeče. Všechna provozní data byla fiktivní a izolovaná v dočasných kontextech prohlížeče. Výsledek se týká lokálního adaptéru a testovaného HTTP kontraktu; ostrý backend, Google Sheets, OCR, e-maily, Make a nasazení nebyly ověřovány. Mobilní scénáře používají Chromium s rozměry telefonu, nikoli fyzické zařízení.
+
+## 30. 10. 2026 — Cílená kontrola odstranění prvků detailu vozidla
+
+Prověřeno nové zadání omezené na detail vozidla na větvi `codex/ux-refinements`, commit `b1be20a`. Všechny požadované prvky již byly odstraněné; žádné další změny aplikačního kódu, textů, barev, rozložení nebo stylů nebyly potřeba.
+
+- `src/features/fleet.tsx`, `VehiclePage`: není záložka Pojištění a termíny ani její obsah, tlačítka Upravit provozní údaj STK / Přidat pojištění / termín, hlavičkový upload STK, hlášení závady v záložce Závady a servis ani zadání tankování v záložce Tankování a náklady. Původní cesta záložky `terms` zobrazí existující stav nedostupné části detailu.
+- `ServicePlan` ve stejném souboru: chybí Přiřadit šablonu i Zaznamenat provedení včetně jejich obrazovkových handlerů. Stávající úprava individuálního plánu (tužka v řádku) a výběr šablony v editoru jsou zachované.
+- Zachována současná akce Upravit informace o vozidle. `DocumentList`, `useEditors`, `useUpload`, datové modely a sdílené/API příkazy `plan.apply` / `plan.complete` zůstaly nedotčené; slouží i dalším místům nebo kompatibilitě existujícího kontraktu. Upload STK v Dokumentech a při přidávání vozidla není hlavičková akce detailu a nebyl odstraňován.
+- Lint, typecheck, všech 43 testů v 11 souborech a produkční build prošly. Zůstává existující upozornění Vite na velké chunky.
+- Chromium 1440 px a 390 px s izolovanými fiktivními daty ověřilo nepřítomnost všech uvedených prvků na dotčených záložkách, zachovanou úpravu vozidla/plánu a výběr šablony. Dokumenty prošly skutečným nahráním pojištění, reloadem, otevřením náhledu a stažením originálu se shodnými bajty; bez běhových chyb.
+
+Nově se nic dalšího neodstraňovalo. Nejasná místa nevyžadující další zásah nebyla zjištěna. Ověření se týká lokálního adaptéru; externí integrace a veřejné nasazení nebyly testovány ani měněny.
