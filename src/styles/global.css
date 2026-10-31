@@ -1962,3 +1962,10 @@ textarea[aria-invalid="true"] {
 .panel:has(.choice-menu) {
   overflow: visible;
 }
+
+.field-label {
+  display: block;
+}
+.required-mark {
+  white-space: nowrap;
+}
