@@ -143,15 +143,15 @@ export function editorFields(
           options: s.orders.map((o) => [o.id, o.number]),
         }),
         f("purpose", "Účel samostatné jízdy"),
-        f("from", "Místo od", "text", true),
-        f("startAt", "Začátek", "datetime", true, {
+        f("from", "Počáteční místo", "text", true),
+        f("startAt", "Začáteční datum", "datetime", true, {
           initial: localTime(),
         }),
         f("startKm", "Počáteční tachometr (km)", "number", true),
         ...(existing
           ? [
-              f("to", "Skutečné místo do"),
-              f("endAt", "Skutečný konec", "datetime"),
+              f("to", "Konečné místo"),
+              f("endAt", "Konečné datum", "datetime"),
               f("endKm", "Koncový tachometr (km)", "number"),
               f("note", "Poznámka / důvod opravy", "textarea"),
             ]

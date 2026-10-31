@@ -363,10 +363,12 @@ export function DocumentPage() {
         }
       }
     >
-      {location.state?.returnLabel ||
-        previousName ||
-        labels[parts[1]] ||
-        "Přehled"}
+      {parts[1] === "vehicles" && parts[2]
+        ? "Detail vozidla"
+        : location.state?.returnLabel ||
+          previousName ||
+          labels[parts[1]] ||
+          "Přehled"}
     </Back>
   );
   const job = useQuery({
