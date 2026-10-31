@@ -146,3 +146,5 @@ Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `Vehi
 - Ověření: typecheck, lint, všech 43 testů a produkční build prošly (původní upozornění na velikost JS chunků). Chromium ověřil desktop/mobil 1440/375 px ve formuláři vozidla, select paliva, skutečné uložení a automatické zavření toastu. Navíc prohlížeč ověřil 78 povinných labelů sdílených editorů vozidel, řidičů, zakázek, jízd, závad, tankování, výdajů, termínů a nastavení v šířkách 320/1200 px. Ověření všech provozních scénářů s externími službami není součástí této změny.
 
 - Upřesnění návratu z dokumentu: při návratu na detail vozidla zobrazuje společný DocumentPage text „Detail vozidla“ místo SPZ, včetně přímých vstupů s returnLabel. Cíl odkazu zůstává zachován.
+
+- Upřesnění popisků společného editoru jízdy: Počáteční místo, Začáteční datum, Konečné místo, Konečné datum. První dva názvy platí i při zahájení jízdy. Typy polí a ostatní texty mimo editor zůstávají zachovány.
