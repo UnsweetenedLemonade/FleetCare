@@ -55,6 +55,33 @@ describe("Provozní pravidla", () => {
       suitability(s, s.orders[0], s.vehicles[0], null).reasons.join(),
     ).toContain("Servisní");
   });
+  it("termín vyžaduje existující vozidlo a platné datum", () => {
+    const s = fixture();
+    const data = {
+      title: "STK",
+      type: "STK" as const,
+      vehicleId: "v1",
+      date: "2026-12-10",
+      responsible: "Fleet manažer",
+      priority: "Střední" as const,
+      state: "Plánováno" as const,
+    };
+    applyCommand(s, manager, { type: "save", collection: "deadlines", data });
+    expect(s.deadlines).toHaveLength(1);
+    for (const invalid of [
+      { ...data, vehicleId: "" },
+      { ...data, vehicleId: "missing" },
+      { ...data, date: "" },
+      { ...data, date: "2026-02-30" },
+    ])
+      expect(() =>
+        applyCommand(s, manager, {
+          type: "save",
+          collection: "deadlines",
+          data: invalid,
+        }),
+      ).toThrow();
+  });
   it("svěření nepřepisuje řidiče zakázky a verze chrání souběh", () => {
     const s = fixture();
     applyCommand(s, manager, {

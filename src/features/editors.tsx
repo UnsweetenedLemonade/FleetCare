@@ -265,9 +265,9 @@ export function editorFields(
         f("type", "Typ", "select", true, {
           options: options(["STK", "Pojištění", "Servis", "Oprávnění"]),
         }),
-        { ...vehicle, required: false },
+        vehicle,
         { ...driver, required: false },
-        f("date", "Datum termínu", "date"),
+        f("date", "Datum termínu", "date", true),
         f("km", "Km hranice", "number"),
         f("responsible", "Odpovědná osoba / role", "text", true, {
           initial: "Fleet manažer",

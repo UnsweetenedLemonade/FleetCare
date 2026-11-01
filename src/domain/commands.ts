@@ -332,7 +332,13 @@ export function applyCommand(
     }
     if (c.collection === "deadlines") {
       const d = collections.deadlines.parse(parsed);
-      ensure(d.date || d.km !== null, "Vyplňte datum nebo km hranici.", "date");
+      ensure(d.vehicleId, "Vyberte vozidlo pro termín.", "vehicleId");
+      ensure(d.date, "Vyplňte datum termínu.", "date");
+      ensure(
+        s.vehicles.some((vehicle) => vehicle.id === d.vehicleId),
+        "Vyberte existující vozidlo.",
+        "vehicleId",
+      );
     }
     if (c.collection === "orders") {
       const o = collections.orders.parse(parsed);

@@ -267,9 +267,13 @@ async function executeCommand(command) {
         licence: licences.map((x) => x.name).join(", "), licence_valid_until: validDates[0] || "", vehicle_id: "",
       });
     }
-    if (collection === "deadlines") return update("deadlines", "deadline_id", () => ({
-      vehicle_id: data.vehicleId || "", deadline_type: data.title, valid_until: data.date || "", state: data.state,
-    }), { vehicle_id: data.vehicleId || "", deadline_type: data.title, valid_until: data.date || "", state: data.state });
+    if (collection === "deadlines") {
+      if (typeof data.vehicleId !== "string" || !data.vehicleId.trim()) fail(422, "Vyberte vozidlo pro termín.");
+      if (typeof data.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.date) || dateOnly(data.date) !== data.date) fail(422, "Vyplňte platné datum termínu.");
+      return update("deadlines", "deadline_id", () => ({
+        vehicle_id: data.vehicleId, deadline_type: data.title, valid_until: data.date, state: data.state,
+      }), { vehicle_id: data.vehicleId, deadline_type: data.title, valid_until: data.date, state: data.state });
+    }
     if (collection === "fuels") return update("fuel", "fuel_id", () => ({
       vehicle_id: data.vehicleId, driver_id: data.driverId, date: isoDate(data.at), litres: data.litres,
       amount_czk: money(data.amountMinor), ccs_amount_czk: money(data.amountMinor),
