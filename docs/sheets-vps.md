@@ -12,6 +12,9 @@ Gateway v `server/sheets-gateway.mjs` je záměrně samostatný Node proces. Goo
 | `trips` (`trip_id`, `vehicle_id`, `driver_id`, `order_number`, `start_at`, `actual_end_at`, `from`, `to`, `odometer_start`, `odometer_end`, `km`, `state`, `source`) | Přímé mapování; `km` se při změně koncového tachometru dopočítá. |
 | `fuel` (`fuel_id`, `vehicle_id`, `driver_id`, `date`, `litres`, `amount_czk`, `ccs_amount_czk`, `full_tank`, `station`, `match_state`) | Částky CZK se převádějí na/z haléřů; stav párování jde do `match_state`. |
 | `settings` (`key`, `value`, `note`) | `manager_email` → e-mail manažera; `a5_levels_days` → dny upozornění. Obě hodnoty se ukládají do existujících řádků. |
+| `accounts` (`account_id`, `email`, `password`, `role`, `driver_id`, `active`) | Přihlášení porovnává e-mail bez ohledu na velikost písmen a heslo jako text. Role `driver`, `fleet`, `management` se mapují na `Řidič`, `Fleet manažer`, `Vedení`; u řidiče se používá `driver_id`. Sloupec `active` se v prototypu ignoruje. |
+
+Gateway poskytuje `POST /v1/auth/login` pro přihlášení k listu `accounts`. List musí mít přesně uvedené hlavičky; účet řidiče potřebuje vyplněné `driver_id`, které odpovídá `driver_id` v listu `drivers`.
 
 Zápisy do existujících sloupců podporují editaci/přidání vozidel a řidičů, termínů a tankování, zahájení jízdy, potvrzení jízdy, přepnutí řidiče, přiřazení vozidla a nastavení manažera/upozornění. Nové řádky dostanou stabilní UUID. Aktualizace mění pouze mapované buňky a zachová ostatní buňky řádku. U ostatních akcí vrátí gateway HTTP 501/422; listy `documents`, `reports`, `errors`, zakázky a další kolekce zatím nejsou provozní evidencí. `file_ref` není přenositelný obsah souboru, proto uploady ani náhledy dokumentů nefungují.
 
