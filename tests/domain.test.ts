@@ -10,6 +10,7 @@ import {
 } from "../src/domain/rules";
 import { canonicalCosts, consumption, report } from "../src/domain/analytics";
 import { toPragueTimestamp } from "../src/lib/format";
+import { commandSchema } from "../src/data/command-schema";
 import { fixture, manager } from "./factories";
 describe("Provozní pravidla", () => {
   it("rezerva je vhodná, neznámá kapacita nikoli", () => {
@@ -81,6 +82,32 @@ describe("Provozní pravidla", () => {
           data: invalid,
         }),
       ).toThrow();
+  });
+  it("tankování vyžaduje kladné litry a částku při každém zápisu", () => {
+    const s = fixture();
+    const command = {
+      type: "save" as const,
+      collection: "fuels" as const,
+      data: {
+        vehicleId: "v1",
+        driverId: "d1",
+        at: "2026-10-30T10:00:00+01:00",
+        litres: 42.5,
+        amountMinor: 156000,
+        full: "Ano" as const,
+      },
+    };
+    applyCommand(s, manager, command);
+    expect(s.fuels[0]).toMatchObject({ litres: 42.5, amountMinor: 156000 });
+    for (const invalid of [
+      { ...command, data: { ...command.data, litres: null } },
+      { ...command, data: { ...command.data, litres: 0 } },
+      { ...command, data: { ...command.data, amountMinor: null } },
+      { ...command, data: { ...command.data, amountMinor: 0 } },
+    ]) {
+      expect(() => applyCommand(fixture(), manager, invalid)).toThrow();
+      expect(() => commandSchema.parse(invalid)).toThrow();
+    }
   });
   it("svěření nepřepisuje řidiče zakázky a verze chrání souběh", () => {
     const s = fixture();

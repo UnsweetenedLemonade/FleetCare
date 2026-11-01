@@ -19,9 +19,8 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
     >
       <div className="dialog-body">
         <Notice>
-          Vyberte vlastníka a skutečný čas transakce. Litry ani částku z
-          nepřipojené extrakce nedoplňujeme. Neúplný záznam pak můžete doplnit
-          ručně.
+          Zadejte vlastníka, čas, litry a částku podle účtenky. Údaje z obrázku
+          se bez nakonfigurovaného OCR automaticky nevytěžují.
         </Notice>
         <Form
           fields={[
@@ -45,6 +44,18 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
               type: "datetime",
               required: true,
               initial: localTime(),
+            },
+            {
+              key: "litres",
+              label: "Litry (l)",
+              type: "number",
+              required: true,
+            },
+            {
+              key: "amountMinor",
+              label: "Částka včetně DPH",
+              type: "money",
+              required: true,
             },
           ]}
           initial={{

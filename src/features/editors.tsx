@@ -212,8 +212,8 @@ export function editorFields(
         f("at", "Datum a čas transakce", "datetime", true, {
           initial: localTime(),
         }),
-        f("litres", "Litry (l)", "number"),
-        f("amountMinor", "Částka včetně DPH", "money"),
+        f("litres", "Litry (l)", "number", true),
+        f("amountMinor", "Částka včetně DPH", "money", true),
         currency,
         f("fuel", "Palivo"),
         ...(actor.role !== "Řidič"

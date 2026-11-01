@@ -177,6 +177,16 @@ export function applyCommand(
     if (c.collection === "fuels") {
       const f = collections.fuels.parse(parsed);
       ensure(
+        f.litres !== null && f.litres > 0,
+        "Zadejte počet litrů.",
+        "litres",
+      );
+      ensure(
+        f.amountMinor !== null && f.amountMinor > 0,
+        "Zadejte částku tankování.",
+        "amountMinor",
+      );
+      ensure(
         s.vehicles.some((v) => v.id === f.vehicleId) &&
           s.drivers.some((d) => d.id === f.driverId),
         "Vyberte existující vozidlo a řidiče.",

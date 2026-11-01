@@ -1,5 +1,7 @@
 # FleetCare — stav předání
 
+- Tankování: formulář i nahrání účtenky vyžadují kladné litry a částku. Kontrolu opakuje doménový příkaz, HTTP command schema a Sheets gateway; mapování ukládá číselné hodnoty do `litres`, `amount_czk` a `ccs_amount_czk`. Typecheck, lint, 48 testů, syntaxe gatewaye i produkční build prošly; UI ověřilo, že prázdné hodnoty zastaví obě cesty před uložením.
+
 - Termíny: formulář vyžaduje vozidlo i datum. Doménový zápis ověřuje, že vozidlo existuje; Sheets gateway odmítne chybějící/neplatné hodnoty a zapíše `vehicle_id` i `valid_until` bez prázdného fallbacku. Typecheck, lint, 47 testů, syntaxe gatewaye, kontrola odeslání prázdného formuláře a produkční build prošly.
 
 - Jízdy: ukončení z FE uloží prázdný `state`; následné úpravy stav nepřepisují. UI odvozuje štítek „Ukončena neúplná“ / „K ověření“ podle koncového tachometru. Časy formulářů se ukládají jako ISO s pražským offsetem a Sheets gateway zachovává offset při načtení. Typecheck, lint, 46 testů, syntaxe gatewaye a produkční build prošly; HTTP testy a lokální UI vyžadovaly povolený loopback server.

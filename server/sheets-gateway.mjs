@@ -274,7 +274,10 @@ async function executeCommand(command) {
         vehicle_id: data.vehicleId, deadline_type: data.title, valid_until: data.date, state: data.state,
       }), { vehicle_id: data.vehicleId, deadline_type: data.title, valid_until: data.date, state: data.state });
     }
-    if (collection === "fuels") return update("fuel", "fuel_id", () => ({
+    if (collection === "fuels") {
+      if (!Number.isFinite(data.litres) || data.litres <= 0) fail(422, "Zadejte počet litrů.");
+      if (!Number.isInteger(data.amountMinor) || data.amountMinor <= 0) fail(422, "Zadejte částku tankování.");
+      return update("fuel", "fuel_id", () => ({
       vehicle_id: data.vehicleId, driver_id: data.driverId, date: isoDate(data.at), litres: data.litres,
       amount_czk: money(data.amountMinor), ccs_amount_czk: money(data.amountMinor),
       full_tank: data.full, station: data.station, match_state: data.state,
@@ -283,6 +286,7 @@ async function executeCommand(command) {
       amount_czk: money(data.amountMinor), ccs_amount_czk: money(data.amountMinor),
       full_tank: data.full, station: data.station, match_state: data.state,
     });
+    }
     if (collection === "trips") {
       if (!command.id) fail(422, "Novou jízdu vytvořte příkazem trip.start.");
       return update("trips", "trip_id", () => ({
