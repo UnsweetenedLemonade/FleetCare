@@ -11,6 +11,7 @@ import type {
   Trip,
   Fault,
 } from "../domain/models";
+import { tripStatus } from "../domain/models";
 import { date, money, number } from "../lib/format";
 export const optionPairs = (a: readonly string[]): [string, string][] =>
   a.map((x) => [x, x]);
@@ -391,7 +392,7 @@ export function TripsTable({
             "Potvrzena",
             "Uzavřena",
           ]),
-          value: (t) => t.state,
+          value: tripStatus,
         },
         {
           key: "vehicle",
@@ -479,10 +480,10 @@ export function TripsTable({
         {
           key: "state",
           label: "Stav / zdroj",
-          sort: (t) => t.state,
+          sort: tripStatus,
           render: (t) => (
             <>
-              <Badge value={t.state} />
+              <Badge value={tripStatus(t)} />
               <small>{t.source === "manual" ? "Ruční záznam" : t.source}</small>
             </>
           ),
@@ -693,7 +694,7 @@ export function DriverOperationsTable({ driverId }: { driverId: string }) {
         title: t.purpose,
         detail: "",
         at: t.startAt,
-        state: t.state,
+        state: tripStatus(t),
         path: `/trips/${t.id}`,
       })),
   ];

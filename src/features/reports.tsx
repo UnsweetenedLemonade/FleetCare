@@ -15,6 +15,7 @@ import {
   Panel,
 } from "../components/ui";
 import { report, type Scope } from "../domain/analytics";
+import { tripStatus } from "../domain/models";
 import { date, money, number, today } from "../lib/format";
 import {
   buildPdf,
@@ -576,7 +577,7 @@ export function ExportDialog({
                         startKm: t.startKm,
                         endKm: t.endKm,
                         km: t.endKm === null ? null : t.endKm - t.startKm,
-                        state: t.state,
+                        state: tripStatus(t),
                         source: t.source,
                       };
                       return defs.map(([key]) => values[key]);

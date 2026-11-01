@@ -48,7 +48,7 @@ export const localTime = (value?: string | null) => {
     .format(d)
     .replace(" ", "T");
 };
-export function toUtc(value: string): string {
+export function toPragueTimestamp(value: string): string {
   if (!value) return "";
   const target = value.slice(0, 16);
   let t = Date.parse(target + "Z");
@@ -58,7 +58,21 @@ export function toUtc(value: string): string {
   }
   if (localTime(new Date(t).toISOString()) !== target)
     throw new Error("Tento čas v pásmu Europe/Prague neexistuje.");
-  return new Date(t).toISOString();
+  const offset = Math.round(
+    (Date.UTC(
+      Number(target.slice(0, 4)),
+      Number(target.slice(5, 7)) - 1,
+      Number(target.slice(8, 10)),
+      Number(target.slice(11, 13)),
+      Number(target.slice(14, 16)),
+    ) -
+      t) /
+      60000,
+  );
+  const sign = offset >= 0 ? "+" : "-";
+  const hours = String(Math.floor(Math.abs(offset) / 60)).padStart(2, "0");
+  const minutes = String(Math.abs(offset) % 60).padStart(2, "0");
+  return `${target}:00${sign}${hours}:${minutes}`;
 }
 export function decimal(input: string, nullable = true): number | null {
   if (!input.trim() && nullable) return null;

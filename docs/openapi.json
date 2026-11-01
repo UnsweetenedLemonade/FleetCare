@@ -1442,13 +1442,21 @@
             ]
           },
           "state": {
-            "type": "string",
-            "enum": [
-              "Probíhá",
-              "Ukončena neúplná",
-              "K ověření",
-              "Potvrzena",
-              "Uzavřena"
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "Probíhá",
+                  "Ukončena neúplná",
+                  "K ověření",
+                  "Potvrzena",
+                  "Uzavřena"
+                ]
+              },
+              {
+                "type": "string",
+                "const": ""
+              }
             ]
           },
           "note": {

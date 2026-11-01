@@ -21,8 +21,15 @@ import { DocumentList } from "./documents";
 import { useEditors } from "./editors";
 import { DRef, FaultTable, OrderTable, TripsTable, VRef } from "./tables";
 import { a6Due, activeAssignment, suitability } from "../domain/rules";
-import { date, localTime, money, number, toUtc } from "../lib/format";
+import {
+  date,
+  localTime,
+  money,
+  number,
+  toPragueTimestamp,
+} from "../lib/format";
 import { ExportDialog } from "./reports";
+import { tripStatus } from "../domain/models";
 export function OrdersPage() {
   const { s } = useFleet();
   return (
@@ -323,9 +330,9 @@ export function TripPage() {
         text="Záznam neexistuje nebo není ve vašem kontextu."
       />
     );
+  const status = tripStatus(t);
   const canEdit =
-    t.state !== "Uzavřena" &&
-    (actor.role !== "Řidič" || t.state !== "Potvrzena");
+    status !== "Uzavřena" && (actor.role !== "Řidič" || status !== "Potvrzena");
   return (
     <>
       <Back to={actor.role === "Řidič" ? "/my/trips" : "/trips"}>
@@ -338,27 +345,27 @@ export function TripPage() {
           <>
             {canEdit && (
               <Button
-                primary={t.state === "Probíhá"}
+                primary={status === "Probíhá"}
                 onClick={() =>
                   edit(
                     "trips",
                     t,
-                    t.state === "Probíhá"
+                    status === "Probíhá"
                       ? { endAt: new Date().toISOString() }
                       : undefined,
                   )
                 }
               >
-                {t.state === "Probíhá" ? (
+                {status === "Probíhá" ? (
                   <Square size={17} />
                 ) : (
                   <Pencil size={17} />
                 )}
-                {t.state === "Probíhá" ? "Ukončit jízdu" : "Upravit údaje"}
+                {status === "Probíhá" ? "Ukončit jízdu" : "Upravit údaje"}
               </Button>
             )}
             {actor.role !== "Řidič" &&
-              ["K ověření", "Potvrzena"].includes(t.state) && (
+              ["K ověření", "Potvrzena"].includes(status) && (
                 <Button
                   onClick={async () => {
                     try {
@@ -367,7 +374,7 @@ export function TripPage() {
                         id: t.id,
                         version: t.version,
                         state:
-                          t.state === "K ověření" ? "Potvrzena" : "Uzavřena",
+                          status === "K ověření" ? "Potvrzena" : "Uzavřena",
                       });
                     } catch (e) {
                       setError(
@@ -376,7 +383,7 @@ export function TripPage() {
                     }
                   }}
                 >
-                  {t.state === "K ověření"
+                  {status === "K ověření"
                     ? "Potvrdit údaje jízdy"
                     : "Uzavřít jízdu"}
                 </Button>
@@ -395,7 +402,7 @@ export function TripPage() {
       )}
       <Panel title="Skutečný průběh">
         <div className="section-actions">
-          <Badge value={t.state} />
+          <Badge value={status} />
         </div>
         <DataGrid
           items={[
@@ -607,7 +614,7 @@ function NotifyDialog({ faultId }: { faultId: string }) {
               type: "fault.notify",
               id: faultId,
               email: String(v.email),
-              serviceAt: toUtc(String(v.serviceAt)),
+              serviceAt: toPragueTimestamp(String(v.serviceAt)),
               place: String(v.place),
               message: String(v.message),
             });

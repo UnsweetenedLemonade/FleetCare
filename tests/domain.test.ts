@@ -9,7 +9,7 @@ import {
   validateTrip,
 } from "../src/domain/rules";
 import { canonicalCosts, consumption, report } from "../src/domain/analytics";
-import { toUtc } from "../src/lib/format";
+import { toPragueTimestamp } from "../src/lib/format";
 import { fixture, manager } from "./factories";
 describe("Provozní pravidla", () => {
   it("rezerva je vhodná, neznámá kapacita nikoli", () => {
@@ -87,7 +87,7 @@ describe("Provozní pravidla", () => {
     expect(a6Due(t, new Date("2026-10-23T12:00:00Z"))).toBe(true);
     expect(a6Due({ ...t, endAt: null }, new Date("2026-11-01"))).toBe(false);
   });
-  it("jízdu bez koncového km uloží neúplnou a doplnění přepočte stav", () => {
+  it("ukončení jízdy nechá stav prázdný a následné úpravy jej zachovají", () => {
     const s = fixture();
     applyCommand(s, manager, {
       type: "trip.start",
@@ -108,7 +108,7 @@ describe("Provozní pravidla", () => {
       version: 1,
       data: { endAt: "2026-10-27T11:00:00Z", to: "B" },
     });
-    expect(s.trips[0].state).toBe("Ukončena neúplná");
+    expect(s.trips[0].state).toBe("");
     applyCommand(s, manager, {
       type: "save",
       collection: "trips",
@@ -116,7 +116,7 @@ describe("Provozní pravidla", () => {
       version: 2,
       data: { endKm: 150 },
     });
-    expect(s.trips[0].state).toBe("K ověření");
+    expect(s.trips[0].state).toBe("");
     expect(odometer(s, "v1")).toBe(150);
     s.readings.push({
       ...meta(),
@@ -133,6 +133,7 @@ describe("Provozní pravidla", () => {
       data: { endKm: 140 },
     });
     expect(odometer(s, "v1")).toBe(200);
+    expect(s.trips[0].state).toBe("");
   });
   it("blokuje překryv a zpětný tachometr", () => {
     const s = fixture();
@@ -240,10 +241,14 @@ describe("Provozní pravidla", () => {
     });
     expect(s.plans[0].items[0].nextKm).toBe(1100);
   });
-  it("převod Europe/Prague zvládne letní čas a odmítne neexistující čas", () => {
-    expect(toUtc("2026-07-01T10:00")).toBe("2026-07-01T08:00:00.000Z");
-    expect(toUtc("2026-12-01T10:00")).toBe("2026-12-01T09:00:00.000Z");
-    expect(() => toUtc("2026-03-29T02:30")).toThrow("neexistuje");
+  it("ukládá pražský čas s odpovídajícím offsetem a odmítá neexistující čas", () => {
+    expect(toPragueTimestamp("2026-07-01T10:00")).toBe(
+      "2026-07-01T10:00:00+02:00",
+    );
+    expect(toPragueTimestamp("2026-12-01T10:00")).toBe(
+      "2026-12-01T10:00:00+01:00",
+    );
+    expect(() => toPragueTimestamp("2026-03-29T02:30")).toThrow("neexistuje");
   });
 });
 describe("Ekonomika", () => {

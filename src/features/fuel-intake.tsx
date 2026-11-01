@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useFleet } from "../app/context";
 import { Dialog, FilePicker, Form, Notice } from "../components/ui";
-import { localTime, toUtc } from "../lib/format";
+import { localTime, toPragueTimestamp } from "../lib/format";
 export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
   const { s, actor, run, upload, close } = useFleet(),
     navigate = useNavigate();
@@ -74,7 +74,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
                 data: {
                   ...values,
                   id,
-                  at: toUtc(String(values.at)),
+                  at: toPragueTimestamp(String(values.at)),
                   full: "Není doloženo",
                   state: "Neúplný podklad",
                 },
