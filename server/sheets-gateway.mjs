@@ -289,12 +289,18 @@ async function executeCommand(command) {
     }
     if (collection === "trips") {
       if (!command.id) fail(422, "Novou jízdu vytvořte příkazem trip.start.");
-      return update("trips", "trip_id", () => ({
+      return update("trips", "trip_id", (existing) => {
+        const completes = text(existing, "state") === "Probíhá" && !existing.actual_end_at && !!data.endAt;
+        const state = completes
+          ? data.endKm == null ? "Ukončena neúplná" : "K ověření"
+          : (data.state ?? existing.state ?? "");
+        return {
         vehicle_id: data.vehicleId, driver_id: data.driverId, order_number: data.purpose,
         start_at: data.startAt, actual_end_at: data.endAt || "", from: data.from, to: data.to,
         odometer_start: data.startKm, odometer_end: data.endKm ?? "",
-        km: data.endKm == null ? "" : Math.max(0, data.endKm - data.startKm), state: data.state, source: data.note,
-      }));
+        km: data.endKm == null ? "" : Math.max(0, data.endKm - data.startKm), state, source: data.note,
+      };
+      });
     }
     fail(422, `List tabulky nepodporuje ukládání kolekce ${collection}.`);
   }

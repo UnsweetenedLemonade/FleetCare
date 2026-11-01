@@ -701,6 +701,15 @@ export function EntityEditor({
           submit={startTrip ? "Zahájit jízdu" : "Uložit"}
           onSubmit={async (values) => {
             values = { ...defaults, ...values };
+            if (collection === "trips" && record) {
+              const previous = record as Records["trips"];
+              values.state =
+                previous.state === "Probíhá" && !previous.endAt && values.endAt
+                  ? values.endKm === null
+                    ? "Ukončena neúplná"
+                    : "K ověření"
+                  : previous.state;
+            }
             for (const field of fields) {
               if (field.type === "datetime")
                 values[field.key] = values[field.key]

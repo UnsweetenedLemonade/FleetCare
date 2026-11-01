@@ -165,11 +165,13 @@ export function applyCommand(
           "orderId",
         );
       validateTrip(s, t);
-      // The frontend leaves the state blank on completion for the backend
-      // integration to classify. Later edits must retain the saved state.
+      // Classify only the first transition from an active trip to a completed
+      // one. Later edits must retain the saved state.
       t.state =
         original?.state === "Probíhá" && !original.endAt && !!t.endAt
-          ? ""
+          ? t.endKm === null
+            ? "Ukončena neúplná"
+            : "K ověření"
           : (original?.state ?? t.state);
       Object.assign(parsed, t);
       readKm(s, t.vehicleId, t.endKm, t.endAt || t.startAt, t.id + "-end");

@@ -141,7 +141,7 @@ describe("Provozní pravidla", () => {
     expect(a6Due(t, new Date("2026-10-23T12:00:00Z"))).toBe(true);
     expect(a6Due({ ...t, endAt: null }, new Date("2026-11-01"))).toBe(false);
   });
-  it("ukončení jízdy nechá stav prázdný a následné úpravy jej zachovají", () => {
+  it("ukončení určí stav podle koncového km a pozdější úpravy jej zachovají", () => {
     const s = fixture();
     applyCommand(s, manager, {
       type: "trip.start",
@@ -162,15 +162,15 @@ describe("Provozní pravidla", () => {
       version: 1,
       data: { endAt: "2026-10-27T11:00:00Z", to: "B" },
     });
-    expect(s.trips[0].state).toBe("");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
     applyCommand(s, manager, {
       type: "save",
       collection: "trips",
       id: t.id,
       version: 2,
-      data: { endKm: 150 },
+      data: { endKm: 150, state: "Potvrzena" },
     });
-    expect(s.trips[0].state).toBe("");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
     expect(odometer(s, "v1")).toBe(150);
     s.readings.push({
       ...meta(),
@@ -187,7 +187,27 @@ describe("Provozní pravidla", () => {
       data: { endKm: 140 },
     });
     expect(odometer(s, "v1")).toBe(200);
-    expect(s.trips[0].state).toBe("");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
+    const complete = fixture();
+    applyCommand(complete, manager, {
+      type: "trip.start",
+      data: {
+        vehicleId: "v1",
+        driverId: "d1",
+        purpose: "Doložená jízda",
+        from: "A",
+        startAt: "2026-10-27T10:00:00Z",
+        startKm: 100,
+      },
+    });
+    applyCommand(complete, manager, {
+      type: "save",
+      collection: "trips",
+      id: complete.trips[0].id,
+      version: 1,
+      data: { endAt: "2026-10-27T11:00:00Z", endKm: 150, to: "B" },
+    });
+    expect(complete.trips[0].state).toBe("K ověření");
   });
   it("blokuje překryv a zpětný tachometr", () => {
     const s = fixture();
