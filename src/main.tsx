@@ -12,8 +12,10 @@ import {
 import { createRepository } from "./app/config";
 import { WorkspaceProvider } from "./app/context";
 import { Layout } from "./app/layout";
+import { LoginPage } from "./app/login";
 import { roles, type Actor } from "./domain/models";
 import type { Repository } from "./data/contracts";
+import { HttpRepository } from "./data/http";
 import { Empty, Notice } from "./components/ui";
 import {
   Dashboard,
@@ -71,10 +73,39 @@ class ErrorBoundary extends Component<
 }
 function App() {
   const [repo] = useState<Repository>(() => createRepository());
-  const [initial] = useState(readActorPreference);
-  const [actor, setActor] = useState<Actor>(initial.actor);
+  const [initial] = useState(() =>
+    repo.mode === "local"
+      ? readActorPreference()
+      : { actor: readSessionPreference(), error: "" },
+  );
+  const [actor, setActor] = useState<Actor | null>(initial.actor);
   const [preferenceError, setPreferenceError] = useState(initial.error);
   const navigate = useNavigate();
+  const login = async (email: string, password: string) => {
+    if (!(repo instanceof HttpRepository)) return;
+    const next = await repo.authenticate(email, password);
+    await client.cancelQueries();
+    client.clear();
+    try {
+      localStorage.setItem("fleetcare.session", JSON.stringify(next));
+      setPreferenceError("");
+    } catch {
+      setPreferenceError(
+        "Přihlášení nebude zachováno po obnovení stránky. Prohlížeč blokuje místní úložiště.",
+      );
+    }
+    setActor(next);
+    navigate(next.role === "Řidič" ? "/my/vehicle" : "/", {
+      replace: true,
+    });
+  };
+  const logout = async () => {
+    await client.cancelQueries();
+    client.clear();
+    localStorage.removeItem("fleetcare.session");
+    setActor(null);
+    navigate("/", { replace: true });
+  };
   const switchActor = async (next: Actor) => {
     await client.cancelQueries();
     client.removeQueries({ queryKey: ["workspace"] });
@@ -91,6 +122,7 @@ function App() {
     }
     navigate(next.role === "Řidič" ? "/my/vehicle" : "/", { replace: true });
   };
+  if (!actor) return <LoginPage onLogin={login} />;
   const manager = actor.role !== "Řidič";
   return (
     <WorkspaceProvider
@@ -98,7 +130,12 @@ function App() {
       actor={actor}
       repo={repo}
     >
-      <Layout onActor={(next) => void switchActor(next)}>
+      <Layout
+        onActor={
+          repo.mode === "local" ? (next) => void switchActor(next) : undefined
+        }
+        onLogout={repo.mode === "http" ? () => void logout() : undefined}
+      >
         {preferenceError && <Notice>{preferenceError}</Notice>}
         <Routes>
           {manager ? (
@@ -182,6 +219,25 @@ function readActorPreference(): { actor: Actor; error: string } {
       error: "Preference kontextu není dostupná. Zvolte roli v horní liště.",
     };
   }
+}
+function readSessionPreference(): Actor | null {
+  try {
+    const value: unknown = JSON.parse(
+      localStorage.getItem("fleetcare.session") || "null",
+    );
+    if (
+      value &&
+      typeof value === "object" &&
+      "role" in value &&
+      roles.includes(value.role as Actor["role"]) &&
+      "driverId" in value &&
+      (value.driverId === null || typeof value.driverId === "string")
+    )
+      return value as Actor;
+  } catch {
+    /* Invalid or unavailable saved login is treated as signed out. */
+  }
+  return null;
 }
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

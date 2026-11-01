@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { parseWorkspace, type Actor } from "../domain/models";
+import { parseWorkspace, roles, type Actor } from "../domain/models";
 import type { CommandEnvelope, Repository, UploadInput } from "./contracts";
 import { DomainError } from "../domain/rules";
 import { scopedWorkspace } from "../domain/rules";
@@ -28,6 +28,10 @@ const jobSchema = z.object({
   missingFields: z.array(z.string()).optional(),
   error: z.string().optional(),
 });
+const actorSchema = z.object({
+  role: z.enum(roles),
+  driverId: z.string().nullable(),
+});
 export class HttpRepository implements Repository {
   readonly mode = "http" as const;
   constructor(
@@ -42,7 +46,11 @@ export class HttpRepository implements Repository {
       );
     this.base = base.replace(/\/$/, "");
   }
-  private async request(path: string, actor: Actor, init: RequestInit = {}) {
+  private async request(
+    path: string,
+    actor: Actor | null,
+    init: RequestInit = {},
+  ) {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), 20000);
     const abort = () => controller.abort();
@@ -54,7 +62,11 @@ export class HttpRepository implements Repository {
         credentials: "include",
         signal: controller.signal,
         headers: {
-          "X-Actor-Context": encodeURIComponent(JSON.stringify(actor)),
+          ...(actor
+            ? {
+                "X-Actor-Context": encodeURIComponent(JSON.stringify(actor)),
+              }
+            : {}),
           ...(init.body && typeof init.body === "string"
             ? { "Content-Type": "application/json" }
             : {}),
@@ -100,6 +112,16 @@ export class HttpRepository implements Repository {
       clearTimeout(timeout);
       init.signal?.removeEventListener("abort", abort);
     }
+  }
+  async authenticate(email: string, password: string): Promise<Actor> {
+    return actorSchema.parse(
+      await (
+        await this.request("/auth/login", null, {
+          method: "POST",
+          body: JSON.stringify({ email, password }),
+        })
+      ).json(),
+    );
   }
   async read(actor: Actor, signal?: AbortSignal) {
     return scopedWorkspace(

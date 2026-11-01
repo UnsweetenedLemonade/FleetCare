@@ -16,6 +16,7 @@ import {
   FileText,
   Fuel,
   ClipboardList,
+  LogOut,
 } from "lucide-react";
 import { useFleet } from "./context";
 import { Button } from "../components/ui";
@@ -45,9 +46,11 @@ const driverNav = [
 export function Layout({
   children,
   onActor,
+  onLogout,
 }: {
   children: React.ReactNode;
-  onActor: (actor: Actor) => void;
+  onActor?: (actor: Actor) => void;
+  onLogout?: () => void;
 }) {
   const { actor, repo } = useFleet();
   const [menu, setMenu] = useState(false);
@@ -59,6 +62,7 @@ export function Layout({
   const identities = useQuery({
     queryKey: ["actors", repo.mode],
     queryFn: ({ signal }) => repo.identities(signal),
+    enabled: repo.mode === "local",
     retry: false,
     staleTime: 60000,
   });
@@ -94,19 +98,28 @@ export function Layout({
           </span>
           FleetCare<span className="brand-period">.</span>
         </Link>
-        <label className="role-select">
-          <select
-            aria-label="Role"
-            value={actor.role}
-            onChange={(e) =>
-              onActor({ role: e.target.value as Actor["role"], driverId: null })
-            }
-          >
-            {roles.map((role) => (
-              <option key={role}>{role}</option>
-            ))}
-          </select>
-        </label>
+        {repo.mode === "local" ? (
+          <label className="role-select">
+            <select
+              aria-label="Role"
+              value={actor.role}
+              onChange={(e) =>
+                onActor?.({
+                  role: e.target.value as Actor["role"],
+                  driverId: null,
+                })
+              }
+            >
+              {roles.map((role) => (
+                <option key={role}>{role}</option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <div className="role-display" aria-label="Přihlášená role">
+            {actor.role}
+          </div>
+        )}
         <nav aria-label="Hlavní navigace">
           {entries.map(([path, label, Icon]) => (
             <NavLink
@@ -141,8 +154,18 @@ export function Layout({
           <HeaderSearch
             key={`${actor.role}:${actor.driverId}:${location.pathname}`}
           />
+          {onLogout && (
+            <Button
+              className="logout-button"
+              aria-label="Odhlásit se"
+              onClick={onLogout}
+            >
+              <LogOut size={17} />
+              <span>Odhlásit</span>
+            </Button>
+          )}
         </header>
-        {actor.role === "Řidič" && (
+        {actor.role === "Řidič" && repo.mode === "local" && (
           <div className="actor-bar">
             <label>
               Řidič
@@ -150,7 +173,7 @@ export function Layout({
                 aria-label="Vybraný řidič"
                 value={actor.driverId || ""}
                 onChange={(e) =>
-                  onActor({ ...actor, driverId: e.target.value || null })
+                  onActor?.({ ...actor, driverId: e.target.value || null })
                 }
               >
                 <option value="">Zvolte existujícího řidiče…</option>

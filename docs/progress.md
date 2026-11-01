@@ -1,5 +1,8 @@
 # FleetCare — stav předání
 
+- Přidáno přihlášení pro HTTP/Sheets režim přes list `accounts`: e-mail a heslo se ověřují v gateway, role `driver`/`fleet`/`management` se mapují na aplikaci, řidič se váže přes `driver_id`; `active` se dle zadání ignoruje. Přihlášený kontext se při obnově zachová a lze se odhlásit. Lokální režim si ponechává přepínač rolí. Ověřeno typecheck, lint, gateway syntax, 46 testů a produkční build; login karta zkontrolována na desktopu a šířce 390 px.
+- Dockerfile gatewaye nyní kopíruje modul mapující účty, který login endpoint importuje. Po změně je nutné na VPS znovu sestavit a vynutit vytvoření kontejneru `gateway`.
+
 - Oprava diagnostiky HTTP konfigurace: `HttpRepository` nyní při neplatné/nezadané URL uvádí `VITE_API_BASE_URL`, jak očekává test i konfigurace aplikace. Ověřeno typecheck, lint, všech 36 testů a produkční build.
 
 - Připraven Node gateway pro školní Google Sheet `FleetCare DB`: mapuje podle existujících záhlaví vozidla, řidiče, termíny, jízdy, tankování a vybraná nastavení. Zapisuje do těchto listů, kontroluje změnu řádku před uložením a přijímá idempotency key. Zápisy nepokrytých entit a souborů zůstávají vypnuté, protože v tabulce nemají příslušné listy/sloupce. Konfigurace VPS a přesné limity jsou v `docs/sheets-vps.md`. Service account musí mít v tabulce roli Editor; jeho klíč zůstává mimo repozitář.

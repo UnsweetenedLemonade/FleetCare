@@ -27,7 +27,15 @@ beforeAll(async () => {
     }
     if (req.url === "/workspace")
       res.end(JSON.stringify(invalid ? { vehicles: "invalid" } : fixture()));
-    else if (req.url === "/search")
+    else if (req.url === "/auth/login") {
+      const input = JSON.parse(body || "{}");
+      if (input.email === "driver@example.cz" && input.password === "pw")
+        res.end(JSON.stringify({ role: "Řidič", driverId: "d1" }));
+      else {
+        res.writeHead(401);
+        res.end(JSON.stringify({ message: "E-mail nebo heslo není správné." }));
+      }
+    } else if (req.url === "/search")
       res.end(
         JSON.stringify([
           {
@@ -71,6 +79,15 @@ describe("HTTP kontrakt proti izolovanému serveru", () => {
     invalid = true;
     await expect(repo.read(manager)).rejects.toThrow();
     invalid = false;
+  });
+  it("přihlásí účet a vrátí jeho aplikační roli", async () => {
+    const repo = new HttpRepository(base);
+    await expect(repo.authenticate("driver@example.cz", "pw")).resolves.toEqual(
+      { role: "Řidič", driverId: "d1" },
+    );
+    await expect(repo.authenticate("driver@example.cz", "bad")).rejects.toThrow(
+      "E-mail nebo heslo není správné.",
+    );
   });
   it("přenese idempotenci příkazu a nepovolí řidiči CCS operaci", async () => {
     const repo = new HttpRepository(base);

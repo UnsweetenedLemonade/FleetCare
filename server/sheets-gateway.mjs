@@ -1,6 +1,7 @@
 import { createServer } from "node:http";
 import { createHash, createSign, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
+import { matchAccount } from "./account-auth.mjs";
 
 const port = Number(process.env.PORT || 8787);
 const host = process.env.HOST || "127.0.0.1";
@@ -369,6 +370,17 @@ const server = createServer(async (req, res) => {
   if (req.method === "OPTIONS") { res.writeHead(204).end(); return; }
   try {
     if (req.method === "GET" && req.url === "/health") { res.writeHead(200, { "content-type": "application/json" }).end('{"ok":true}'); return; }
+    if (req.method === "POST" && req.url === "/v1/auth/login") {
+      let body = "";
+      for await (const chunk of req) body += chunk;
+      const input = JSON.parse(body || "{}");
+      const email = String(input.email || "").trim().toLocaleLowerCase("en-US");
+      const password = String(input.password || "");
+      if (!email || !password) fail(400, "Zadejte e-mail a heslo.");
+      const actor = matchAccount(await rows("accounts"), email, password);
+      if (!actor) fail(401, "E-mail nebo heslo není správné.");
+      res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(actor)); return;
+    }
     if (req.method === "GET" && req.url === "/v1/workspace") {
       res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify(await workspace())); return;
     }
