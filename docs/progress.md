@@ -1,6 +1,10 @@
 # FleetCare — stav předání
 
-- Jízdy: ukončení z FE uloží prázdný `state`; následné úpravy stav nepřepisují. UI odvozuje štítek „Ukončena neúplná“ / „K ověření“ podle koncového tachometru. Časy formulářů se ukládají jako ISO s pražským offsetem a Sheets gateway zachovává offset při načtení. Typecheck, lint, 46 testů, syntaxe gatewaye a produkční build prošly; HTTP testy a lokální UI vyžadovaly povolený loopback server.
+- Tankování: formulář i nahrání účtenky vyžadují kladné litry a částku. Kontrolu opakuje doménový příkaz, HTTP command schema a Sheets gateway; mapování ukládá číselné hodnoty do `litres`, `amount_czk` a `ccs_amount_czk`. Typecheck, lint, 48 testů, syntaxe gatewaye i produkční build prošly; UI ověřilo, že prázdné hodnoty zastaví obě cesty před uložením.
+
+- Termíny: formulář vyžaduje vozidlo i datum. Doménový zápis ověřuje, že vozidlo existuje; Sheets gateway odmítne chybějící/neplatné hodnoty a zapíše `vehicle_id` i `valid_until` bez prázdného fallbacku. Typecheck, lint, 47 testů, syntaxe gatewaye, kontrola odeslání prázdného formuláře a produkční build prošly.
+
+- Jízdy: ukončení z FE uloží „Ukončena neúplná“ bez koncového tachometru, jinak „K ověření“; následné úpravy stav nepřepisují. Časy se ukládají jako ISO s pražským offsetem. Typecheck, lint, 48 testů, syntaxe gatewaye a produkční build prošly.
 
 - Přidáno přihlášení pro HTTP/Sheets režim přes list `accounts`: e-mail a heslo se ověřují v gateway, role `driver`/`fleet`/`management` se mapují na aplikaci, řidič se váže přes `driver_id`; `active` se dle zadání ignoruje. Přihlášený kontext se při obnově zachová a lze se odhlásit. Lokální režim si ponechává přepínač rolí. Ověřeno typecheck, lint, gateway syntax, 46 testů a produkční build; login karta zkontrolována na desktopu a šířce 390 px.
 - Dockerfile gatewaye nyní kopíruje modul mapující účty, který login endpoint importuje. Po změně je nutné na VPS znovu sestavit a vynutit vytvoření kontejneru `gateway`.

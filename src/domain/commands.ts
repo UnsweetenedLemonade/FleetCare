@@ -165,17 +165,29 @@ export function applyCommand(
           "orderId",
         );
       validateTrip(s, t);
-      // The frontend leaves the state blank on completion for the backend
-      // integration to classify. Later edits must retain the saved state.
+      // Classify only the first transition from an active trip to a completed
+      // one. Later edits must retain the saved state.
       t.state =
         original?.state === "Probíhá" && !original.endAt && !!t.endAt
-          ? ""
+          ? t.endKm === null
+            ? "Ukončena neúplná"
+            : "K ověření"
           : (original?.state ?? t.state);
       Object.assign(parsed, t);
       readKm(s, t.vehicleId, t.endKm, t.endAt || t.startAt, t.id + "-end");
     }
     if (c.collection === "fuels") {
       const f = collections.fuels.parse(parsed);
+      ensure(
+        f.litres !== null && f.litres > 0,
+        "Zadejte počet litrů.",
+        "litres",
+      );
+      ensure(
+        f.amountMinor !== null && f.amountMinor > 0,
+        "Zadejte částku tankování.",
+        "amountMinor",
+      );
       ensure(
         s.vehicles.some((v) => v.id === f.vehicleId) &&
           s.drivers.some((d) => d.id === f.driverId),
@@ -332,7 +344,13 @@ export function applyCommand(
     }
     if (c.collection === "deadlines") {
       const d = collections.deadlines.parse(parsed);
-      ensure(d.date || d.km !== null, "Vyplňte datum nebo km hranici.", "date");
+      ensure(d.vehicleId, "Vyberte vozidlo pro termín.", "vehicleId");
+      ensure(d.date, "Vyplňte datum termínu.", "date");
+      ensure(
+        s.vehicles.some((vehicle) => vehicle.id === d.vehicleId),
+        "Vyberte existující vozidlo.",
+        "vehicleId",
+      );
     }
     if (c.collection === "orders") {
       const o = collections.orders.parse(parsed);

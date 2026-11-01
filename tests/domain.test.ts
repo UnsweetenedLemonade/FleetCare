@@ -10,6 +10,7 @@ import {
 } from "../src/domain/rules";
 import { canonicalCosts, consumption, report } from "../src/domain/analytics";
 import { toPragueTimestamp } from "../src/lib/format";
+import { commandSchema } from "../src/data/command-schema";
 import { fixture, manager } from "./factories";
 describe("Provozní pravidla", () => {
   it("rezerva je vhodná, neznámá kapacita nikoli", () => {
@@ -55,6 +56,59 @@ describe("Provozní pravidla", () => {
       suitability(s, s.orders[0], s.vehicles[0], null).reasons.join(),
     ).toContain("Servisní");
   });
+  it("termín vyžaduje existující vozidlo a platné datum", () => {
+    const s = fixture();
+    const data = {
+      title: "STK",
+      type: "STK" as const,
+      vehicleId: "v1",
+      date: "2026-12-10",
+      responsible: "Fleet manažer",
+      priority: "Střední" as const,
+      state: "Plánováno" as const,
+    };
+    applyCommand(s, manager, { type: "save", collection: "deadlines", data });
+    expect(s.deadlines).toHaveLength(1);
+    for (const invalid of [
+      { ...data, vehicleId: "" },
+      { ...data, vehicleId: "missing" },
+      { ...data, date: "" },
+      { ...data, date: "2026-02-30" },
+    ])
+      expect(() =>
+        applyCommand(s, manager, {
+          type: "save",
+          collection: "deadlines",
+          data: invalid,
+        }),
+      ).toThrow();
+  });
+  it("tankování vyžaduje kladné litry a částku při každém zápisu", () => {
+    const s = fixture();
+    const command = {
+      type: "save" as const,
+      collection: "fuels" as const,
+      data: {
+        vehicleId: "v1",
+        driverId: "d1",
+        at: "2026-10-30T10:00:00+01:00",
+        litres: 42.5,
+        amountMinor: 156000,
+        full: "Ano" as const,
+      },
+    };
+    applyCommand(s, manager, command);
+    expect(s.fuels[0]).toMatchObject({ litres: 42.5, amountMinor: 156000 });
+    for (const invalid of [
+      { ...command, data: { ...command.data, litres: null } },
+      { ...command, data: { ...command.data, litres: 0 } },
+      { ...command, data: { ...command.data, amountMinor: null } },
+      { ...command, data: { ...command.data, amountMinor: 0 } },
+    ]) {
+      expect(() => applyCommand(fixture(), manager, invalid)).toThrow();
+      expect(() => commandSchema.parse(invalid)).toThrow();
+    }
+  });
   it("svěření nepřepisuje řidiče zakázky a verze chrání souběh", () => {
     const s = fixture();
     applyCommand(s, manager, {
@@ -87,7 +141,7 @@ describe("Provozní pravidla", () => {
     expect(a6Due(t, new Date("2026-10-23T12:00:00Z"))).toBe(true);
     expect(a6Due({ ...t, endAt: null }, new Date("2026-11-01"))).toBe(false);
   });
-  it("ukončení jízdy nechá stav prázdný a následné úpravy jej zachovají", () => {
+  it("ukončení určí stav podle koncového km a pozdější úpravy jej zachovají", () => {
     const s = fixture();
     applyCommand(s, manager, {
       type: "trip.start",
@@ -108,15 +162,15 @@ describe("Provozní pravidla", () => {
       version: 1,
       data: { endAt: "2026-10-27T11:00:00Z", to: "B" },
     });
-    expect(s.trips[0].state).toBe("");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
     applyCommand(s, manager, {
       type: "save",
       collection: "trips",
       id: t.id,
       version: 2,
-      data: { endKm: 150 },
+      data: { endKm: 150, state: "Potvrzena" },
     });
-    expect(s.trips[0].state).toBe("");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
     expect(odometer(s, "v1")).toBe(150);
     s.readings.push({
       ...meta(),
@@ -133,7 +187,27 @@ describe("Provozní pravidla", () => {
       data: { endKm: 140 },
     });
     expect(odometer(s, "v1")).toBe(200);
-    expect(s.trips[0].state).toBe("");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
+    const complete = fixture();
+    applyCommand(complete, manager, {
+      type: "trip.start",
+      data: {
+        vehicleId: "v1",
+        driverId: "d1",
+        purpose: "Doložená jízda",
+        from: "A",
+        startAt: "2026-10-27T10:00:00Z",
+        startKm: 100,
+      },
+    });
+    applyCommand(complete, manager, {
+      type: "save",
+      collection: "trips",
+      id: complete.trips[0].id,
+      version: 1,
+      data: { endAt: "2026-10-27T11:00:00Z", endKm: 150, to: "B" },
+    });
+    expect(complete.trips[0].state).toBe("K ověření");
   });
   it("blokuje překryv a zpětný tachometr", () => {
     const s = fixture();

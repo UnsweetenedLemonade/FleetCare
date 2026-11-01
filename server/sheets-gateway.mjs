@@ -267,10 +267,17 @@ async function executeCommand(command) {
         licence: licences.map((x) => x.name).join(", "), licence_valid_until: validDates[0] || "", vehicle_id: "",
       });
     }
-    if (collection === "deadlines") return update("deadlines", "deadline_id", () => ({
-      vehicle_id: data.vehicleId || "", deadline_type: data.title, valid_until: data.date || "", state: data.state,
-    }), { vehicle_id: data.vehicleId || "", deadline_type: data.title, valid_until: data.date || "", state: data.state });
-    if (collection === "fuels") return update("fuel", "fuel_id", () => ({
+    if (collection === "deadlines") {
+      if (typeof data.vehicleId !== "string" || !data.vehicleId.trim()) fail(422, "Vyberte vozidlo pro termín.");
+      if (typeof data.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(data.date) || dateOnly(data.date) !== data.date) fail(422, "Vyplňte platné datum termínu.");
+      return update("deadlines", "deadline_id", () => ({
+        vehicle_id: data.vehicleId, deadline_type: data.title, valid_until: data.date, state: data.state,
+      }), { vehicle_id: data.vehicleId, deadline_type: data.title, valid_until: data.date, state: data.state });
+    }
+    if (collection === "fuels") {
+      if (!Number.isFinite(data.litres) || data.litres <= 0) fail(422, "Zadejte počet litrů.");
+      if (!Number.isInteger(data.amountMinor) || data.amountMinor <= 0) fail(422, "Zadejte částku tankování.");
+      return update("fuel", "fuel_id", () => ({
       vehicle_id: data.vehicleId, driver_id: data.driverId, date: isoDate(data.at), litres: data.litres,
       amount_czk: money(data.amountMinor), ccs_amount_czk: money(data.amountMinor),
       full_tank: data.full, station: data.station, match_state: data.state,
@@ -279,14 +286,21 @@ async function executeCommand(command) {
       amount_czk: money(data.amountMinor), ccs_amount_czk: money(data.amountMinor),
       full_tank: data.full, station: data.station, match_state: data.state,
     });
+    }
     if (collection === "trips") {
       if (!command.id) fail(422, "Novou jízdu vytvořte příkazem trip.start.");
-      return update("trips", "trip_id", () => ({
+      return update("trips", "trip_id", (existing) => {
+        const completes = text(existing, "state") === "Probíhá" && !existing.actual_end_at && !!data.endAt;
+        const state = completes
+          ? data.endKm == null ? "Ukončena neúplná" : "K ověření"
+          : (data.state ?? existing.state ?? "");
+        return {
         vehicle_id: data.vehicleId, driver_id: data.driverId, order_number: data.purpose,
         start_at: data.startAt, actual_end_at: data.endAt || "", from: data.from, to: data.to,
         odometer_start: data.startKm, odometer_end: data.endKm ?? "",
-        km: data.endKm == null ? "" : Math.max(0, data.endKm - data.startKm), state: data.state, source: data.note,
-      }));
+        km: data.endKm == null ? "" : Math.max(0, data.endKm - data.startKm), state, source: data.note,
+      };
+      });
     }
     fail(422, `List tabulky nepodporuje ukládání kolekce ${collection}.`);
   }

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { settingsSchema } from "../domain/models";
-export const commandSchema = z.discriminatedUnion("type", [
+const commandUnion = z.discriminatedUnion("type", [
   z.object({ type: z.literal("ccs.reconcile"), statementId: z.string() }),
   z.object({
     type: z.literal("save"),
@@ -105,3 +105,26 @@ export const commandSchema = z.discriminatedUnion("type", [
     vehicleId: z.string(),
   }),
 ]);
+export const commandSchema = commandUnion.superRefine((command, ctx) => {
+  if (command.type !== "save" || command.collection !== "fuels") return;
+  if (
+    typeof command.data.litres !== "number" ||
+    !Number.isFinite(command.data.litres) ||
+    command.data.litres <= 0
+  )
+    ctx.addIssue({
+      code: "custom",
+      path: ["litres"],
+      message: "Zadejte počet litrů.",
+    });
+  if (
+    typeof command.data.amountMinor !== "number" ||
+    !Number.isInteger(command.data.amountMinor) ||
+    command.data.amountMinor <= 0
+  )
+    ctx.addIssue({
+      code: "custom",
+      path: ["amountMinor"],
+      message: "Zadejte částku tankování.",
+    });
+});

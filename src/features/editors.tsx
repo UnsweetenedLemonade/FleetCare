@@ -212,8 +212,8 @@ export function editorFields(
         f("at", "Datum a čas transakce", "datetime", true, {
           initial: localTime(),
         }),
-        f("litres", "Litry (l)", "number"),
-        f("amountMinor", "Částka včetně DPH", "money"),
+        f("litres", "Litry (l)", "number", true),
+        f("amountMinor", "Částka včetně DPH", "money", true),
         currency,
         f("fuel", "Palivo"),
         ...(actor.role !== "Řidič"
@@ -265,9 +265,9 @@ export function editorFields(
         f("type", "Typ", "select", true, {
           options: options(["STK", "Pojištění", "Servis", "Oprávnění"]),
         }),
-        { ...vehicle, required: false },
+        vehicle,
         { ...driver, required: false },
-        f("date", "Datum termínu", "date"),
+        f("date", "Datum termínu", "date", true),
         f("km", "Km hranice", "number"),
         f("responsible", "Odpovědná osoba / role", "text", true, {
           initial: "Fleet manažer",
@@ -701,6 +701,15 @@ export function EntityEditor({
           submit={startTrip ? "Zahájit jízdu" : "Uložit"}
           onSubmit={async (values) => {
             values = { ...defaults, ...values };
+            if (collection === "trips" && record) {
+              const previous = record as Records["trips"];
+              values.state =
+                previous.state === "Probíhá" && !previous.endAt && values.endAt
+                  ? values.endKm === null
+                    ? "Ukončena neúplná"
+                    : "K ověření"
+                  : previous.state;
+            }
             for (const field of fields) {
               if (field.type === "datetime")
                 values[field.key] = values[field.key]
