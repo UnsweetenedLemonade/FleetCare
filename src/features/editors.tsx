@@ -22,7 +22,7 @@ import {
 } from "../components/ui";
 import { DomainError } from "../domain/rules";
 import { validateUpload } from "../data/uploads";
-import { localTime, toUtc, today } from "../lib/format";
+import { localTime, toPragueTimestamp, today } from "../lib/format";
 const options = (items: readonly string[]): [string, string][] =>
   items.map((x) => [x, x]);
 const vehicleFuels = [
@@ -545,7 +545,7 @@ function Stops({
                           ? {
                               ...x,
                               [key]: e.target.value
-                                ? toUtc(e.target.value)
+                                ? toPragueTimestamp(e.target.value)
                                 : null,
                             }
                           : x,
@@ -704,7 +704,7 @@ export function EntityEditor({
             for (const field of fields) {
               if (field.type === "datetime")
                 values[field.key] = values[field.key]
-                  ? toUtc(String(values[field.key]))
+                  ? toPragueTimestamp(String(values[field.key]))
                   : null;
             }
             for (const field of [

@@ -34,7 +34,7 @@ import {
   VehicleTable,
 } from "./tables";
 import { activeAssignment, driverState, odometer } from "../domain/rules";
-import { date, localTime, number, toUtc } from "../lib/format";
+import { date, localTime, number, toPragueTimestamp } from "../lib/format";
 import type { Vehicle } from "../domain/models";
 export function VehiclesPage() {
   const { s } = useFleet();
@@ -301,7 +301,7 @@ function AssignmentDialog({
               type: "vehicle.assign",
               vehicleId,
               driverId: end ? null : String(values.driverId),
-              from: toUtc(String(values.from)),
+              from: toPragueTimestamp(String(values.from)),
               reason: String(values.reason),
               odometer: values.odometer as number | null,
             });

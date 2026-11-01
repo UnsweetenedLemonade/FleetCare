@@ -126,6 +126,7 @@ const number = (row, key) => {
 };
 const bool = (row, key) => [true, 1, "TRUE", "Ano", "ANO", "true"].includes(val(row, key));
 const stamp = (value) => {
+  if (typeof value === "string" && /(?:Z|[+-]\d{2}:\d{2})$/i.test(value) && !Number.isNaN(Date.parse(value))) return value;
   const date = new Date(value);
   return Number.isNaN(date.valueOf()) ? "2000-01-01T00:00:00.000Z" : date.toISOString();
 };
@@ -186,7 +187,7 @@ async function workspace() {
     ...meta(text(r, "trip_id"), stamp(r.start_at), r.__version), vehicleId: text(r, "vehicle_id"), driverId: text(r, "driver_id"), orderId: null,
     purpose: text(r, "order_number"), from: text(r, "from"), to: text(r, "to"), startAt: stamp(r.start_at),
     endAt: r.actual_end_at ? stamp(r.actual_end_at) : null, startKm: number(r, "odometer_start") ?? 0,
-    endKm: number(r, "odometer_end"), state: ["Probíhá", "Ukončena neúplná", "K ověření", "Potvrzena", "Uzavřena"].includes(text(r, "state")) ? text(r, "state") : "K ověření", note: text(r, "source"),
+    endKm: number(r, "odometer_end"), state: ["Probíhá", "Ukončena neúplná", "K ověření", "Potvrzena", "Uzavřena"].includes(text(r, "state")) ? text(r, "state") : (!r.actual_end_at ? "Probíhá" : number(r, "odometer_end") === null ? "Ukončena neúplná" : "K ověření"), note: text(r, "source"),
   }));
   const fuels = fuelRaw.filter((r) => r.vehicle_id && r.driver_id && r.date).map((r) => ({
     ...meta(text(r, "fuel_id"), stamp(r.date), r.__version), vehicleId: text(r, "vehicle_id"), driverId: text(r, "driver_id"), at: stamp(r.date),

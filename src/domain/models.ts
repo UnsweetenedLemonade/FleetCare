@@ -129,7 +129,9 @@ export const tripSchema = base.extend({
   endAt: nullableTimestamp,
   startKm: z.number().nonnegative(),
   endKm: nullableNumber,
-  state: z.enum(tripStates),
+  // Empty is sent by the frontend when a driver confirms the actual end;
+  // the integration layer may then classify the completed trip.
+  state: z.enum(tripStates).or(z.literal("")),
   note: z.string().default(""),
 });
 export const faultStates = [
@@ -402,6 +404,11 @@ export type Vehicle = Records["vehicles"];
 export type Driver = Records["drivers"];
 export type Order = Records["orders"];
 export type Trip = Records["trips"];
+export function tripStatus(trip: Pick<Trip, "state" | "endAt" | "endKm">) {
+  if (trip.state) return trip.state;
+  if (!trip.endAt) return "Probíhá";
+  return trip.endKm === null ? "Ukončena neúplná" : "K ověření";
+}
 export type Fault = Records["faults"];
 export type Document = Records["documents"];
 export function emptyWorkspace(): Workspace {

@@ -132,6 +132,7 @@ export function applyCommand(
     }
     if (c.collection === "trips") {
       const t = collections.trips.parse(parsed);
+      const original = s.trips.find((trip) => trip.id === c.id);
       if (actor.role === "Řidič") {
         const original = collections.trips.parse(old);
         ensure(
@@ -164,11 +165,12 @@ export function applyCommand(
           "orderId",
         );
       validateTrip(s, t);
-      t.state = t.endAt
-        ? t.endKm !== null && !!t.to
-          ? "K ověření"
-          : "Ukončena neúplná"
-        : "Probíhá";
+      // The frontend leaves the state blank on completion for the backend
+      // integration to classify. Later edits must retain the saved state.
+      t.state =
+        original?.state === "Probíhá" && !original.endAt && !!t.endAt
+          ? ""
+          : (original?.state ?? t.state);
       Object.assign(parsed, t);
       readKm(s, t.vehicleId, t.endKm, t.endAt || t.startAt, t.id + "-end");
     }
@@ -450,7 +452,7 @@ export function applyCommand(
     version(t.version, c.version);
     ensure(
       c.state === "Potvrzena"
-        ? t.state === "K ověření"
+        ? t.state === "K ověření" || (!t.state && t.endKm !== null)
         : t.state === "Potvrzena",
       "Nepovolený přechod stavu jízdy.",
     );

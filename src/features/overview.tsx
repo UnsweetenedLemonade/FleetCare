@@ -36,6 +36,7 @@ import { Kpi } from "./reports";
 import { FuelIntakeDialog } from "./fuel-intake";
 import { availableVehicles, deadlines, odometer } from "../domain/rules";
 import { date, number, today } from "../lib/format";
+import { tripStatus } from "../domain/models";
 export function Dashboard() {
   const { s, actor } = useFleet(),
     edit = useEditors(),
@@ -70,7 +71,7 @@ export function Dashboard() {
         title: "Doplnit koncový tachometr",
         meta: s.vehicles.find((v) => v.id === t.vehicleId)?.spz || "",
         term: t.endAt,
-        state: t.state,
+        state: tripStatus(t),
         owner: s.drivers.find((d) => d.id === t.driverId)?.name || "Řidič",
         path: `/trips/${t.id}`,
       })),
@@ -451,7 +452,7 @@ export function DriverWorkspace() {
     vehicles = availableVehicles(s, actor.driverId),
     v = vehicles[0];
   const active = s.trips.find(
-    (t) => t.driverId === actor.driverId && t.state === "Probíhá",
+    (t) => t.driverId === actor.driverId && tripStatus(t) === "Probíhá",
   );
   const defaults = { driverId: actor.driverId, vehicleId: v?.id };
   if (!d)
