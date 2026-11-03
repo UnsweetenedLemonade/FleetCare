@@ -1,7 +1,7 @@
 import { DocumentLink } from "./documents";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { useParams } from "react-router";
+import { Link, useParams } from "react-router";
 import { Truck, UserPlus, Pencil, Pause, Play } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import {
@@ -14,7 +14,6 @@ import {
   Empty,
   Form,
   HistorySwitch,
-  Notice,
   PageHead,
   Panel,
   Tabs,
@@ -30,7 +29,6 @@ import {
   FaultTable,
   FuelTable,
   OrderTable,
-  TripsTable,
   VehicleTable,
 } from "./tables";
 import { activeAssignment, driverState, odometer } from "../domain/rules";
@@ -187,25 +185,60 @@ export function VehiclePage() {
           )}
           {tab === "trips" && (
             <>
-              <TripsTable rows={s.trips.filter((t) => t.vehicleId === v.id)} />
-              <h3>Zdroje doloženého nájezdu</h3>
-              {s.readings
-                .filter((r) => r.vehicleId === v.id)
-                .sort((a, b) => b.at.localeCompare(a.at))
-                .map((r) => (
-                  <div className="list-item" key={r.id}>
-                    <span>{date(r.at, true)}</span>
-                    <strong>{number(r.km, "km")}</strong>
-                    <span>
-                      {r.source === "manual"
-                        ? "Ruční provozní záznam"
-                        : r.source}
-                      {odometer(s, v.id) !== null && r.km < odometer(s, v.id)!
-                        ? " · Starší / nižší údaj"
-                        : ""}
-                    </span>
-                  </div>
-                ))}
+              <DataTable
+                rows={[
+                  ...s.trips
+                    .filter((t) => t.vehicleId === v.id)
+                    .map((t) => ({
+                      id: `trip:${t.id}`,
+                      at: t.startAt,
+                      km: t.endKm ?? t.startKm,
+                      source: t.source,
+                      path: `/trips/${t.id}`,
+                      label: `${t.from} → ${t.to || "Na trase"}`,
+                    })),
+                  ...s.readings
+                    .filter((r) => r.vehicleId === v.id)
+                    .map((r) => ({
+                      id: `reading:${r.id}`,
+                      at: r.at,
+                      km: r.km,
+                      source:
+                        r.source === "manual"
+                          ? "Ruční provozní záznam"
+                          : r.source,
+                      path: "",
+                      label: "Doložený nájezd",
+                    })),
+                ]}
+                search={(r) => `${r.label} ${r.source}`}
+                columns={[
+                  {
+                    key: "at",
+                    label: "Datum",
+                    sort: (r) => r.at,
+                    render: (r) => date(r.at, true),
+                  },
+                  {
+                    key: "km",
+                    label: "Tachometr (km)",
+                    sort: (r) => r.km,
+                    render: (r) => number(r.km, "km"),
+                  },
+                  {
+                    key: "source",
+                    label: "Zdroj",
+                    render: (r) =>
+                      r.path ? (
+                        <Link to={r.path}>
+                          {r.label} · {r.source}
+                        </Link>
+                      ) : (
+                        r.source
+                      ),
+                  },
+                ]}
+              />
             </>
           )}
           {tab === "costs" && (
@@ -410,14 +443,15 @@ function ServicePlan({ vehicle }: { vehicle: Vehicle }) {
   const p = s.plans.find((p) => p.vehicleId === vehicle.id);
   return (
     <>
-      {!p?.items.length && (
-        <div className="section-actions">
-          <Button onClick={() => edit("plans", p, { vehicleId: vehicle.id })}>
+      <DataTable
+        toolbarActions={
+          <Button
+            primary
+            onClick={() => edit("plans", p, { vehicleId: vehicle.id })}
+          >
             Vytvořit individuální plán
           </Button>
-        </div>
-      )}
-      <DataTable
+        }
         rows={p?.items || []}
         search={(i) => i.name}
         columns={[
@@ -501,6 +535,7 @@ export function DriverPage() {
               Upravit profil
             </Button>
             <Button
+              danger={!d.suspended}
               onClick={() =>
                 show(
                   <Confirm
@@ -566,11 +601,6 @@ export function DriverPage() {
                   ["Stav profilu", driverState(d)],
                 ]}
               />
-              {(!d.email || !d.phone || !d.licences.length) && (
-                <Notice>
-                  Profil je rozpracovaný. Doplňte pracovní kontakt a oprávnění.
-                </Notice>
-              )}
             </>
           )}
           {tab === "documents" && (

@@ -25,8 +25,10 @@ import {
   Search,
   ChevronDown,
   Pencil,
+  Plus,
 } from "lucide-react";
 import { z } from "zod";
+import { fileLimits } from "../data/uploads";
 import { DomainError } from "../domain/rules";
 import { normalize } from "../lib/format";
 
@@ -40,12 +42,23 @@ export function Button({
   primary?: boolean;
   danger?: boolean;
 }) {
+  const add = Children.toArray(children).some(
+    (c) => typeof c === "string" && c.trim().startsWith("Přidat"),
+  );
+  if (add)
+    children = Children.toArray(children).filter(
+      (c) =>
+        !isValidElement(c) ||
+        typeof c.type === "string" ||
+        c.type === ChevronDown,
+    );
   return (
     <button
       type="button"
       {...props}
       className={`btn ${primary ? "primary" : ""} ${danger ? "danger" : ""} ${props.className || ""}`}
     >
+      {add && <Plus size={17} />}
       {Children.toArray(children).some(
         (child) => typeof child === "string" && /\bUpravit\b/.test(child),
       ) &&
@@ -260,6 +273,10 @@ export function Dialog({
   const draftFocus = useRef<HTMLElement | null>(null);
   const [confirm, setConfirm] = useState(false);
   const close = () => {
+    if (confirm) {
+      setConfirm(false);
+      return;
+    }
     if (dirty) {
       if (!confirm)
         draftFocus.current = document.activeElement as HTMLElement | null;
@@ -294,7 +311,9 @@ export function Dialog({
       </header>
       {confirm && (
         <div className="dialog-body" ref={confirmationRef}>
-          <Notice>Formulář obsahuje neuložené změny. Zahodit je?</Notice>
+          <p className="unsaved-warning">
+            Formulář obsahuje neuložené změny. Zahodit je?
+          </p>
           <div className="actions">
             <Button onClick={() => setConfirm(false)}>
               Pokračovat v úpravách
@@ -328,6 +347,8 @@ export type FieldSpec = {
   help?: string;
   initial?: string;
   readOnly?: boolean;
+  disabled?: boolean;
+  numeric?: "integer" | "decimal";
 };
 export function Form({
   fields,
@@ -363,7 +384,11 @@ export function Form({
     const values: Record<string, unknown> = {};
     try {
       for (const f of fields) {
-        const raw = String(fd.get(f.key) ?? "");
+        const raw = String(
+          f.disabled
+            ? (initial[f.key] ?? f.initial ?? "")
+            : (fd.get(f.key) ?? ""),
+        );
         if (f.type === "checkbox") values[f.key] = fd.has(f.key);
         else if (f.type === "number" || f.type === "money") {
           const n = raw.trim()
@@ -432,6 +457,7 @@ export function Form({
               id,
               required: f.required,
               readOnly: f.readOnly,
+              disabled: f.disabled,
               "aria-invalid": !!errors[f.key],
               "aria-describedby":
                 f.help || errors[f.key] ? id + "-hint" : undefined,
@@ -479,9 +505,37 @@ export function Form({
                           ? "datetime-local"
                           : f.type || "text"
                     }
+                    onInput={
+                      f.type === "number" || f.type === "money"
+                        ? (e) => {
+                            e.currentTarget.value = cleanNumber(
+                              e.currentTarget.value,
+                              f.type === "money" ||
+                                f.numeric === "decimal" ||
+                                [
+                                  "litres",
+                                  "vat",
+                                  "volumeM3",
+                                  "capacityKg",
+                                  "weightKg",
+                                ].includes(f.key),
+                            );
+                          }
+                        : undefined
+                    }
                     inputMode={
                       f.type === "number" || f.type === "money"
-                        ? "decimal"
+                        ? f.type === "money" ||
+                          f.numeric === "decimal" ||
+                          [
+                            "litres",
+                            "vat",
+                            "volumeM3",
+                            "capacityKg",
+                            "weightKg",
+                          ].includes(f.key)
+                          ? "decimal"
+                          : "numeric"
                         : undefined
                     }
                     defaultValue={
@@ -609,6 +663,7 @@ export function DataTable<T extends { id: string }>({
             onChange={(e) => change("q", e.target.value)}
           />
         </label>
+        <span className="result-count muted">{filtered.length} výsledků</span>
         {filters.map((f) => (
           <select
             key={f.key}
@@ -624,7 +679,6 @@ export function DataTable<T extends { id: string }>({
             ))}
           </select>
         ))}
-        <span className="muted">{filtered.length} výsledků</span>
         {toolbarActions && (
           <div className="toolbar-actions">{toolbarActions}</div>
         )}
@@ -817,6 +871,19 @@ function FieldLabel({
   );
 }
 
+export function cleanNumber(value: string, decimal = false) {
+  let separator = false;
+  return Array.from(value)
+    .filter((c) => {
+      if (/^[0-9]$/.test(c)) return true;
+      if (decimal && /[.,]/.test(c) && !separator) {
+        separator = true;
+        return true;
+      }
+      return false;
+    })
+    .join("");
+}
 const FieldErrors = createContext<Record<string, string>>({});
 export function Field({
   children,
@@ -837,6 +904,21 @@ export function Field({
     return (
       <Fragment key={name}>
         {cloneElement(el, {
+          ...(el.props.inputMode === "decimal" ||
+          el.props.inputMode === "numeric" ||
+          el.props.type === "number"
+            ? {
+                type: "text",
+                inputMode: el.props.inputMode || "numeric",
+                onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
+                  e.target.value = cleanNumber(
+                    e.target.value,
+                    el.props.inputMode === "decimal",
+                  );
+                  el.props.onChange?.(e);
+                },
+              }
+            : {}),
           name,
           id: el.props.id || generated,
           "aria-invalid": !!(explicitError || errors[name]),
@@ -933,7 +1015,9 @@ export function FilePicker({
   camera = false,
   name = "files",
   error,
+  maxBytes = fileLimits.storageBytes,
 }: {
+  maxBytes?: number;
   files: File[];
   onChange: (files: File[]) => void;
   label?: string;
@@ -945,7 +1029,29 @@ export function FilePicker({
 }) {
   const errors = useContext(FieldErrors);
   const id = useId();
+  const [rejected, setRejected] = useState<string[]>([]);
   const failure = error || errors[name];
+  const add = (incoming: File[]) => {
+    const next = [...files],
+      failures: string[] = [];
+    for (const file of incoming) {
+      const reason =
+        !fileLimits.mimes.includes(file.type) ||
+        !accept.split(",").includes(file.type)
+          ? "Nepodporovaný typ souboru."
+          : !file.size
+            ? "Soubor je prázdný."
+            : file.size > maxBytes
+              ? `Soubor je větší než ${maxBytes / 1024 / 1024} MB.`
+              : next.length >= (multiple ? fileLimits.maxFiles : 1)
+                ? `Maximálně ${multiple ? fileLimits.maxFiles : 1} souborů.`
+                : "";
+      if (reason) failures.push(`${file.name}: ${reason}`);
+      else next.push(file);
+    }
+    setRejected(failures);
+    onChange(next);
+  };
   const ref = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   return (
@@ -956,7 +1062,7 @@ export function FilePicker({
         onDrop={(e) => {
           e.preventDefault();
           const next = Array.from(e.dataTransfer.files);
-          onChange(multiple ? next : next.slice(0, 1));
+          add(next);
         }}
       >
         <span>Přetáhněte sem soubor nebo jej vyberte.</span>
@@ -971,7 +1077,10 @@ export function FilePicker({
           type="file"
           accept={accept}
           multiple={multiple}
-          onChange={(e) => onChange(Array.from(e.target.files || []))}
+          onChange={(e) => {
+            add(Array.from(e.target.files || []));
+            e.target.value = "";
+          }}
         />
       </div>
       {camera && (
@@ -986,9 +1095,19 @@ export function FilePicker({
             aria-label="Vyfotit účtenku"
             accept="image/jpeg,image/png"
             capture="environment"
-            onChange={(e) => onChange(Array.from(e.target.files || []))}
+            onChange={(e) => {
+              add(Array.from(e.target.files || []));
+              e.target.value = "";
+            }}
           />
         </>
+      )}
+      {!!rejected.length && (
+        <ul className="field-error" role="alert">
+          {rejected.map((message, i) => (
+            <li key={i}>{message}</li>
+          ))}
+        </ul>
       )}
       {failure && (
         <small className="field-error" id={`${id}-error`} role="alert">
@@ -1000,6 +1119,12 @@ export function FilePicker({
           {files.map((f, i) => (
             <li key={`${f.name}-${i}`}>
               {f.name} · {Math.ceil(f.size / 1024)} kB
+              <Button
+                aria-label={`Odebrat ${f.name}`}
+                onClick={() => onChange(files.filter((_, n) => n !== i))}
+              >
+                <X size={16} />
+              </Button>
             </li>
           ))}
         </ul>

@@ -136,7 +136,7 @@ function App() {
         }
         onLogout={repo.mode === "http" ? () => void logout() : undefined}
       >
-        {preferenceError && <Notice>{preferenceError}</Notice>}
+        {preferenceError && <Notice error>{preferenceError}</Notice>}
         <Routes>
           {manager ? (
             <>
