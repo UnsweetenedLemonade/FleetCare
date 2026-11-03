@@ -4,7 +4,6 @@ import { useSearchParams } from "react-router";
 import { Download } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
-  Badge,
   Button,
   DataTable,
   Dialog,
@@ -217,37 +216,7 @@ export function ReportsPage({ costsOnly = false }: { costsOnly?: boolean }) {
             />
           )}
         </Panel>
-        {!costsOnly && (
-          <Panel title="Úplnost a metodika">
-            {!!result.boundaryTrips && (
-              <Notice>
-                {result.boundaryTrips} jízd překračuje hranici období. Jejich km
-                bez rozděleného podkladu nejsou zahrnuty do měsíčního
-                jmenovatele.
-              </Notice>
-            )}
-            <p>
-              Časové zařazení zakázek používá poslední objednanou zastávku. Stav
-              dokončení a plánované výnosy se vyhodnocují odděleně.
-            </p>
-            <p>
-              Období {date(scope.from)} — {date(scope.to)}. Měny se vyhodnocují
-              odděleně.
-            </p>
-            <p>
-              Náklady obsahují částky včetně DPH. Cena zakázky je bez DPH.
-              Odhady oprav se nezapočítávají.
-            </p>
-            <p>
-              Spotřeba vychází pouze z doloženého úseku mezi tankováními do plna
-              v období, včetně dílčích tankování.
-            </p>
-            <p>
-              Využití vozidel: <strong>Nelze vyhodnotit</strong> — není
-              definován dostupný pracovní čas.
-            </p>
-          </Panel>
-        )}
+
       </div>
       <Panel title="Podklady podle vozidel">
         <DataTable
@@ -329,12 +298,7 @@ export function ReportsPage({ costsOnly = false }: { costsOnly?: boolean }) {
           ]}
         />
       </Panel>
-      {!costsOnly && (
-        <Notice>
-          Rozdíl výnosů a vybraných provozních nákladů není čistý zisk.
-          Nezahrnuje úplné účetní náklady firmy.
-        </Notice>
-      )}
+      
     </>
   );
 }
@@ -351,7 +315,7 @@ export function Kpi({
     <div className="kpi">
       <div className="kpi-label">
         {label}
-        <span className="kpi-dot" />
+        
       </div>
       <strong>{value}</strong>
       <small>{hint}</small>
@@ -611,10 +575,8 @@ export function ExportDialog({
             {busy ? "Připravuji soubor…" : "Stáhnout"}
           </Button>
         </div>
-        <p className="muted">
-          Export zahrnuje celý filtrovaný výběr, včetně dalších stránek.
-        </p>
-        <Badge value="Lokálně vytvořený soubor" />
+
+
       </div>
     </Dialog>
   );
