@@ -25,6 +25,7 @@ import {
   Search,
   ChevronDown,
   Pencil,
+  Plus,
 } from "lucide-react";
 import { z } from "zod";
 import { fileLimits } from "../data/uploads";
@@ -41,12 +42,15 @@ export function Button({
   primary?: boolean;
   danger?: boolean;
 }) {
+  const add = Children.toArray(children).some(c => typeof c === "string" && c.trim().startsWith("Přidat"));
+  if (add) children = Children.toArray(children).filter(c => !isValidElement(c) || typeof c.type === "string" || c.type === ChevronDown);
   return (
     <button
       type="button"
       {...props}
       className={`btn ${primary ? "primary" : ""} ${danger ? "danger" : ""} ${props.className || ""}`}
     >
+      {add && <Plus size={17} />}
       {Children.toArray(children).some(
         (child) => typeof child === "string" && /\bUpravit\b/.test(child),
       ) &&
@@ -330,6 +334,8 @@ export type FieldSpec = {
   help?: string;
   initial?: string;
   readOnly?: boolean;
+  disabled?: boolean;
+  numeric?: "integer" | "decimal";
 };
 export function Form({
   fields,
@@ -365,7 +371,7 @@ export function Form({
     const values: Record<string, unknown> = {};
     try {
       for (const f of fields) {
-        const raw = String(fd.get(f.key) ?? "");
+        const raw = String(f.disabled ? initial[f.key] ?? f.initial ?? "" : fd.get(f.key) ?? "");
         if (f.type === "checkbox") values[f.key] = fd.has(f.key);
         else if (f.type === "number" || f.type === "money") {
           const n = raw.trim()
@@ -434,6 +440,7 @@ export function Form({
               id,
               required: f.required,
               readOnly: f.readOnly,
+              disabled: f.disabled,
               "aria-invalid": !!errors[f.key],
               "aria-describedby":
                 f.help || errors[f.key] ? id + "-hint" : undefined,
@@ -481,9 +488,10 @@ export function Form({
                           ? "datetime-local"
                           : f.type || "text"
                     }
+                    onInput={f.type === "number" || f.type === "money" ? (e) => { e.currentTarget.value = cleanNumber(e.currentTarget.value, f.type === "money" || f.numeric === "decimal" || ["litres", "vat", "volumeM3", "capacityKg", "weightKg"].includes(f.key)); } : undefined}
                     inputMode={
                       f.type === "number" || f.type === "money"
-                        ? "decimal"
+                        ? (f.type === "money" || f.numeric === "decimal" || ["litres", "vat", "volumeM3", "capacityKg", "weightKg"].includes(f.key) ? "decimal" : "numeric")
                         : undefined
                     }
                     defaultValue={
@@ -611,6 +619,7 @@ export function DataTable<T extends { id: string }>({
             onChange={(e) => change("q", e.target.value)}
           />
         </label>
+        <span className="result-count muted">{filtered.length} výsledků</span>
         {filters.map((f) => (
           <select
             key={f.key}
@@ -626,7 +635,6 @@ export function DataTable<T extends { id: string }>({
             ))}
           </select>
         ))}
-        <span className="muted">{filtered.length} výsledků</span>
         {toolbarActions && (
           <div className="toolbar-actions">{toolbarActions}</div>
         )}
@@ -819,6 +827,14 @@ function FieldLabel({
   );
 }
 
+export function cleanNumber(value: string, decimal = false) {
+  let separator = false;
+  return Array.from(value).filter(c => {
+    if (/^[0-9]$/.test(c)) return true;
+    if (decimal && /[.,]/.test(c) && !separator) { separator = true; return true; }
+    return false;
+  }).join("");
+}
 const FieldErrors = createContext<Record<string, string>>({});
 export function Field({
   children,
@@ -839,6 +855,10 @@ export function Field({
     return (
       <Fragment key={name}>
         {cloneElement(el, {
+          ...(el.props.inputMode === "decimal" || el.props.inputMode === "numeric" || el.props.type === "number" ? {
+            type: "text", inputMode: el.props.inputMode || "numeric",
+            onChange: (e: React.ChangeEvent<HTMLInputElement>) => { e.target.value = cleanNumber(e.target.value, el.props.inputMode === "decimal"); el.props.onChange?.(e); },
+          } : {}),
           name,
           id: el.props.id || generated,
           "aria-invalid": !!(explicitError || errors[name]),
