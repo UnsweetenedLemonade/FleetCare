@@ -150,3 +150,7 @@ Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `Vehi
 - Upřesnění popisků společného editoru jízdy: Počáteční místo, Začáteční datum, Konečné místo, Konečné datum. První dva názvy platí i při zahájení jízdy. Typy polí a ostatní texty mimo editor zůstávají zachovány.
 
 - Sjednocení umístění potvrzovacího toastu: sdílený styl používá 50vw místo 50 %, včetně mobilního pravidla. Střed se tak odvozuje z plné šířky viewportu bez posunu podle přítomnosti svislého scrollbaru na delším Přehledu. Vzhled, horní odsazení a čas zavření zůstávají zachovány.
+
+## UX dávka 2 – A
+
+Opravy sdíleného potvrzení, uploadů, detailu tankování a kalendářového toolbaru. Diagnóza chybějících kolekcí Sheets pro A1/A3 je v `docs/ux-batch-2.md`. Typecheck a lint prošly. Pracovní větev `codex/ux-batch-2`; cílový remote podle výslovného zadání je UnsweetenedLemonade/FleetCare (původní AGENTS uvádí jiného vlastníka, remote nepřepisován).

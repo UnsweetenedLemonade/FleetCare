@@ -294,11 +294,11 @@ export function DeadlinesPage() {
         ]}
       />
 
+      <HistorySwitch checked={historical} onChange={setHistorical} />
       <Button primary onClick={() => edit("deadlines")}>
         <Plus size={17} />
         Přidat termín
       </Button>
-      <HistorySwitch checked={historical} onChange={setHistorical} />
     </>
   );
   const year = Number(month.slice(0, 4)),
@@ -318,22 +318,11 @@ export function DeadlinesPage() {
       <Panel>
         {calendar ? (
           <>
-            <div className="toolbar toolbar-right">{controls}</div>
-            <div className="calendar-nav">
-              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>
-                ←
-              </Button>
-              <label>
-                Měsíc
-                <input
-                  type="month"
-                  value={month}
-                  onChange={(e) => e.target.value && setMonth(e.target.value)}
-                />
-              </label>
-              <Button aria-label="Další měsíc" onClick={() => shift(1)}>
-                →
-              </Button>
+            <div className="toolbar">
+              <input aria-label="Měsíc" type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
+              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>←</Button>
+              <Button aria-label="Další měsíc" onClick={() => shift(1)}>→</Button>
+              <div className="toolbar-actions">{controls}</div>
             </div>
             <div className="calendar">
               {["Po", "Út", "St", "Čt", "Pá", "So", "Ne"].map((x) => (

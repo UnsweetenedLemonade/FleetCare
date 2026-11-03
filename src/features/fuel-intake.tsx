@@ -3,6 +3,7 @@ import { DomainError } from "../domain/rules";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useFleet } from "../app/context";
+import { fileLimits } from "../data/uploads";
 import { Dialog, FilePicker, Form, Notice } from "../components/ui";
 import { localTime, toUtc } from "../lib/format";
 export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
@@ -95,6 +96,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
           }}
         >
           <FilePicker
+            maxBytes={fileLimits.extractionBytes}
             files={files}
             onChange={setFiles}
             label="Vybrat účtenku"

@@ -112,6 +112,8 @@ export function UploadDialog({
             </Field>
           </div>
           <FilePicker
+            maxBytes={["STK", "Řidičský průkaz", "Účtenka", "CCS výpis"].includes(docType) ? fileLimits.extractionBytes : fileLimits.storageBytes}
+            accept={docType === "CCS výpis" ? "application/pdf" : undefined}
             files={selected}
             error={error}
             onChange={setSelected}

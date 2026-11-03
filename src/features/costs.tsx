@@ -217,9 +217,9 @@ export function FuelPage() {
         }
       />
       <Panel title="Záznam řidiče">
-        <Badge value={f.state} />
         <DataGrid
           items={[
+            ["Stav", <Badge value={!transactions.length && f.state === "Rozdíl" ? "Čeká na výpis" : f.state} />],
             ["Vozidlo", <VRef id={f.vehicleId} />],
             ["Řidič", <DRef id={f.driverId} />],
             ["Datum transakce", date(f.at, true)],

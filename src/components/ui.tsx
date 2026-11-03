@@ -29,6 +29,7 @@ import {
 import { z } from "zod";
 import { DomainError } from "../domain/rules";
 import { normalize } from "../lib/format";
+import { fileLimits } from "../data/uploads";
 
 export function Button({
   children,
@@ -260,6 +261,7 @@ export function Dialog({
   const draftFocus = useRef<HTMLElement | null>(null);
   const [confirm, setConfirm] = useState(false);
   const close = () => {
+    if (confirm) { setConfirm(false); return; }
     if (dirty) {
       if (!confirm)
         draftFocus.current = document.activeElement as HTMLElement | null;
@@ -294,7 +296,7 @@ export function Dialog({
       </header>
       {confirm && (
         <div className="dialog-body" ref={confirmationRef}>
-          <Notice>Formulář obsahuje neuložené změny. Zahodit je?</Notice>
+          <p className="notice warning">Formulář obsahuje neuložené změny. Zahodit je?</p>
           <div className="actions">
             <Button onClick={() => setConfirm(false)}>
               Pokračovat v úpravách
@@ -933,7 +935,9 @@ export function FilePicker({
   camera = false,
   name = "files",
   error,
+  maxBytes = fileLimits.storageBytes,
 }: {
+  maxBytes?: number;
   files: File[];
   onChange: (files: File[]) => void;
   label?: string;
@@ -945,7 +949,20 @@ export function FilePicker({
 }) {
   const errors = useContext(FieldErrors);
   const id = useId();
-  const failure = error || errors[name];
+  const [rejected, setRejected] = useState<string[]>([]);
+  const failure = [error || errors[name], ...rejected].filter(Boolean).join(" ");
+  const add = (incoming: File[]) => {
+    const next = multiple ? [...files] : [];
+    const failures: string[] = [];
+    for (const file of incoming) {
+      const allowed = accept.split(",").some((t) => t.trim() === file.type || (t.trim().startsWith(".") && file.name.toLowerCase().endsWith(t.trim())));
+      const reason = !allowed ? "nepodporovaný typ" : !file.size ? "soubor je prázdný" : file.size > maxBytes ? `větší než ${maxBytes / 1024 / 1024} MB` : next.length >= (multiple ? fileLimits.maxFiles : 1) ? `maximálně ${multiple ? fileLimits.maxFiles : 1} souborů` : "";
+      if (reason) failures.push(`${file.name}: ${reason}.`);
+      else next.push(file);
+    }
+    setRejected(failures);
+    onChange(next);
+  };
   const ref = useRef<HTMLInputElement>(null);
   const cameraRef = useRef<HTMLInputElement>(null);
   return (
@@ -956,7 +973,7 @@ export function FilePicker({
         onDrop={(e) => {
           e.preventDefault();
           const next = Array.from(e.dataTransfer.files);
-          onChange(multiple ? next : next.slice(0, 1));
+          add(next);
         }}
       >
         <span>Přetáhněte sem soubor nebo jej vyberte.</span>
@@ -971,7 +988,7 @@ export function FilePicker({
           type="file"
           accept={accept}
           multiple={multiple}
-          onChange={(e) => onChange(Array.from(e.target.files || []))}
+          onChange={(e) => { add(Array.from(e.target.files || [])); e.target.value = ""; }}
         />
       </div>
       {camera && (
@@ -986,7 +1003,7 @@ export function FilePicker({
             aria-label="Vyfotit účtenku"
             accept="image/jpeg,image/png"
             capture="environment"
-            onChange={(e) => onChange(Array.from(e.target.files || []))}
+            onChange={(e) => { add(Array.from(e.target.files || [])); e.target.value = ""; }}
           />
         </>
       )}
@@ -1000,6 +1017,7 @@ export function FilePicker({
           {files.map((f, i) => (
             <li key={`${f.name}-${i}`}>
               {f.name} · {Math.ceil(f.size / 1024)} kB
+              <Button aria-label={`Odebrat ${f.name}`} onClick={() => onChange(files.filter((_, index) => index !== i))}><X size={16} /></Button>
             </li>
           ))}
         </ul>
