@@ -16,6 +16,7 @@ import {
 import { useFleet } from "../app/context";
 import {
   Back,
+  ChoiceButton,
   Badge,
   DataGrid,
   HistorySwitch,
@@ -30,7 +31,8 @@ import {
 import { useEditors } from "./editors";
 import { DocumentList } from "./documents";
 import { useAddVehicle } from "./vehicle-intake";
-import { DriverTasks } from "./driver-tasks";
+import { DRef, VRef } from "./tables";
+import { DriverTasks, CompleteOdometerDialog } from "./driver-tasks";
 import { FaultTable, FuelTable, OrderTable, TripsTable } from "./tables";
 import { Kpi } from "./reports";
 import { FuelIntakeDialog } from "./fuel-intake";
@@ -131,7 +133,11 @@ export function Dashboard() {
           },
         ].map((a) => (
           <button key={a.label} className="quick-action" onClick={a.action}>
-            <a.icon size={23} />
+            {a.label.startsWith("Přidat") ? (
+              <Plus size={23} />
+            ) : (
+              <a.icon size={23} />
+            )}
             <span>{a.label}</span>
           </button>
         ))}
@@ -317,13 +323,9 @@ export function DeadlinesPage() {
         subtitle="Platnosti, časové a kilometrové hranice navázané na skutečné podklady."
       />
       <Panel>
-        {calendar ? (
-          <>
-            <div className="toolbar toolbar-right">{controls}</div>
-            <div className="calendar-nav">
-              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>
-                ←
-              </Button>
+        <div className="toolbar deadline-controls">
+          {calendar && (
+            <>
               <label>
                 Měsíc
                 <input
@@ -332,10 +334,18 @@ export function DeadlinesPage() {
                   onChange={(e) => e.target.value && setMonth(e.target.value)}
                 />
               </label>
+              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>
+                ←
+              </Button>
               <Button aria-label="Další měsíc" onClick={() => shift(1)}>
                 →
               </Button>
-            </div>
+            </>
+          )}
+          <div className="toolbar-actions">{controls}</div>
+        </div>
+        {calendar ? (
+          <>
             <div className="calendar">
               {["Po", "Út", "St", "Čt", "Pá", "So", "Ne"].map((x) => (
                 <div className="weekday" key={x}>
@@ -375,7 +385,6 @@ export function DeadlinesPage() {
           </>
         ) : (
           <DataTable
-            toolbarActions={controls}
             rows={all}
             path={(d) => d.path}
             search={(d) => d.title + " " + d.owner}
@@ -441,8 +450,8 @@ export function DriverWorkspace() {
     vehicle: "Přehled",
     orders: "Moje zakázky",
     trips: "Moje jízdy",
-    fault: "Nahlásit závadu",
-    fuel: "Zadat tankování",
+    fault: "Závady",
+    fuel: "Tankování",
     requests: "Moje úkoly",
     documents: "Moje dokumenty",
   };
@@ -511,7 +520,7 @@ export function DriverWorkspace() {
               </div>
             </div>
           ) : (
-            <Notice>
+            <Notice error>
               Nemáte dostupné vozidlo. Přiřazení vyřeší fleet manažer.
             </Notice>
           )}
@@ -567,12 +576,12 @@ export function DriverWorkspace() {
         </>
       )}
       {tab === "orders" && (
-        <Panel title="Moje zakázky">
+        <Panel>
           <OrderTable rows={s.orders} />
         </Panel>
       )}
       {tab === "trips" && (
-        <Panel title="Moje jízdy">
+        <Panel>
           <TripsTable
             rows={s.trips}
             toolbarActions={
@@ -588,7 +597,7 @@ export function DriverWorkspace() {
         </Panel>
       )}
       {tab === "fault" && (
-        <Panel title="Nahlášení závady">
+        <Panel>
           <FaultTable
             rows={s.faults}
             toolbarActions={
@@ -597,40 +606,38 @@ export function DriverWorkspace() {
                 disabled={!v}
                 onClick={() => edit("faults", undefined, defaults)}
               >
-                Nahlásit závadu vlastního vozidla
+                Nahlásit závadu
               </Button>
             }
           />
         </Panel>
       )}
       {tab === "fuel" && (
-        <Panel title="Moje tankování">
+        <Panel>
           <FuelTable
             rows={s.fuels}
             toolbarActions={
-              <>
-                <Button
-                  disabled={!v}
-                  onClick={() => show(<FuelIntakeDialog vehicleId={v?.id} />)}
-                >
-                  Nahrát účtenku
-                </Button>
-                <Button
-                  primary
-                  disabled={!v}
-                  onClick={() => edit("fuels", undefined, defaults)}
-                >
-                  <FuelIcon size={17} />
-                  Zadat tankování
-                </Button>
-              </>
+              <ChoiceButton
+                label="Zadat tankování"
+                icon={<Plus size={17} />}
+                choices={[
+                  {
+                    label: "Nahrát účtenku",
+                    action: () => show(<FuelIntakeDialog vehicleId={v?.id} />),
+                  },
+                  {
+                    label: "Zadat manuálně",
+                    action: () => edit("fuels", undefined, defaults),
+                  },
+                ]}
+              />
             }
           />
         </Panel>
       )}
       {tab === "requests" && <DriverTasks />}
       {tab === "documents" && (
-        <Panel title="Moje dokumenty">
+        <Panel>
           <DocumentList ownerType="driver" ownerId={d.id} />
         </Panel>
       )}
@@ -640,10 +647,19 @@ export function DriverWorkspace() {
 
 export function DeadlinePage() {
   const { id } = useParams();
-  const { s } = useFleet();
+  const { s, show } = useFleet();
   const edit = useEditors();
   const d = deadlines(s).find((d) => d.id === id);
   if (!d) return <Empty title="Termín není dostupný" />;
+  const sourceTrip = s.trips.find((t) => d.path === `/trips/${t.id}`);
+  const vehicleId =
+    sourceTrip?.vehicleId ||
+    s.deadlines.find((r) => r.id === d.id)?.vehicleId ||
+    (d.path.startsWith("/vehicles/") ? d.path.split("/")[2] : null);
+  const driverId =
+    sourceTrip?.driverId ||
+    s.deadlines.find((r) => r.id === d.id)?.driverId ||
+    (d.path.startsWith("/drivers/") ? d.path.split("/")[2] : null);
   const record = s.deadlines.find((r) => r.id === d.id);
   return (
     <>
@@ -654,6 +670,14 @@ export function DeadlinePage() {
           record ? (
             <Button onClick={() => edit("deadlines", record)}>
               Upravit termín
+            </Button>
+          ) : sourceTrip && sourceTrip.endKm === null ? (
+            <Button
+              onClick={() =>
+                show(<CompleteOdometerDialog tripId={sourceTrip.id} />)
+              }
+            >
+              Vyřešit
             </Button>
           ) : (
             <Link className="btn" to={d.path}>
@@ -668,7 +692,8 @@ export function DeadlinePage() {
           items={[
             ["Datum", date(d.date)],
             ["Km hranice", number(d.km, "km")],
-            ["Odpovědný", d.owner],
+            ["Vozidlo", vehicleId ? <VRef id={vehicleId} /> : null],
+            ["Odpovědný", driverId ? <DRef id={driverId} /> : d.owner],
             ["Stav", <Badge value={d.state} />],
           ]}
         />

@@ -79,12 +79,12 @@ export function WorkspaceProvider({
       if (command.type === "document.delete")
         client.removeQueries({ queryKey: ["file"] });
       await refresh();
-      setMessage("Změna byla uložena.");
+
     },
     upload: async (input) => {
       await repo.upload(actor, input);
       await refresh();
-      setMessage("Soubor byl uložen. Stav zpracování najdete u dokumentu.");
+
     },
   };
   return (
