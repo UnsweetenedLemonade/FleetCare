@@ -501,7 +501,7 @@ export function FaultPage() {
             ["Vozidlo", <VRef id={f.vehicleId} />],
             ["Nahlášeno", date(f.at, true)],
             ["Kategorie", f.category],
-            ["Oznámená naléhavost", f.urgency],
+            ["Naléhavost", f.urgency],
             ["Tachometr", number(f.km, "km")],
             ["Externí servis", service?.name || null],
             ["Servis od", date(f.serviceFrom, true)],
@@ -560,11 +560,7 @@ export function FaultPage() {
               vehicleId={f.vehicleId}
             />
           </Panel>
-          <Notice>
-            Odhad není skutečný náklad. Doložený výdaj z opravy zapište v
-            Náklady a CCS. Provedené položky plánu zaznamenejte jednotlivě u
-            vozidla.
-          </Notice>
+
           <Link className="btn" to={`/vehicles/${f.vehicleId}/plan`}>
             Servisní plán vozidla →
           </Link>
@@ -581,10 +577,6 @@ function NotifyDialog({ faultId }: { faultId: string }) {
   return (
     <Dialog title="Notifikovat řidiče o servisu" onClose={close}>
       <div className="dialog-body">
-        <Notice>
-          Vytvoří se požadavek na e-mail. V lokálním režimu zůstane stav „Služba
-          není připojena“.
-        </Notice>
         <Form
           fields={[
             { key: "email", label: "Příjemce", type: "email", required: true },

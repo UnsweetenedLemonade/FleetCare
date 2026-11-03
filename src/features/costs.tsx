@@ -13,7 +13,6 @@ import {
   Dialog,
   Empty,
   Form,
-  Notice,
   PageHead,
   Panel,
   Tabs,
@@ -35,11 +34,11 @@ export function CostsPage() {
         label="Zadat tankování"
         icon={<Plus size={17} />}
         choices={[
-          { label: "Manuálně", action: () => edit("fuels") },
           {
             label: "Nahrát účtenku",
             action: () => show(<FuelIntakeDialog />),
           },
+          { label: "Zadat manuálně", action: () => edit("fuels") },
         ]}
       />
     ) : tab === "statements" ? (
@@ -217,9 +216,22 @@ export function FuelPage() {
         }
       />
       <Panel title="Záznam řidiče">
-        <Badge value={f.state} />
         <DataGrid
           items={[
+            [
+              "Stav",
+              <Badge
+                value={
+                  !transactions.length && f.state === "Rozdíl"
+                    ? "Čeká na výpis"
+                    : differences.length
+                      ? "Rozdíl"
+                      : f.state === "Rozdíl"
+                        ? "Spárováno"
+                        : f.state
+                }
+              />,
+            ],
             ["Vozidlo", <VRef id={f.vehicleId} />],
             ["Řidič", <DRef id={f.driverId} />],
             ["Datum transakce", date(f.at, true)],
@@ -465,12 +477,7 @@ export function TransactionPage() {
               <DocumentList ownerType="fuel" ownerId={f.id} add={false} />
               <Link to={`/fuels/${f.id}`}>Otevřít tankování →</Link>
             </>
-          ) : (
-            <Notice>
-              Chybí jednoznačně spojený záznam řidiče. Vyberte podklad při
-              řešení, nebo případ ponechte otevřený.
-            </Notice>
-          )}
+          ) : null}
         </Panel>
       </div>
     </>
@@ -506,10 +513,7 @@ function ResolveDialog({
             </select>
           </label>
         )}
-        <Notice>
-          Vyberte jednoznačný podklad a částku, která bude jediným kanonickým
-          nákladem. Samotná účtenka se znovu nepřičte.
-        </Notice>
+
         <Form
           key={t.id}
           fields={[
