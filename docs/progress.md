@@ -159,3 +159,6 @@ Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `Vehi
 - Upřesnění popisků společného editoru jízdy: Počáteční místo, Začáteční datum, Konečné místo, Konečné datum. První dva názvy platí i při zahájení jízdy. Typy polí a ostatní texty mimo editor zůstávají zachovány.
 
 - Sjednocení umístění potvrzovacího toastu: sdílený styl používá 50vw místo 50 %, včetně mobilního pravidla. Střed se tak odvozuje z plné šířky viewportu bez posunu podle přítomnosti svislého scrollbaru na delším Přehledu. Vzhled, horní odsazení a čas zavření zůstávají zachovány.
+
+## UX dávka 2
+Práce na codex/ux-batch-2; audit a výsledky v docs/ux-batch-2.md. A1/A3 vyžadují rozhodnutí o Sheets integraci; model ani API nebyly změněny.
