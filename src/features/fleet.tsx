@@ -14,7 +14,6 @@ import {
   Empty,
   Form,
   HistorySwitch,
-  Notice,
   PageHead,
   Panel,
   Tabs,
@@ -410,14 +409,8 @@ function ServicePlan({ vehicle }: { vehicle: Vehicle }) {
   const p = s.plans.find((p) => p.vehicleId === vehicle.id);
   return (
     <>
-      {!p?.items.length && (
-        <div className="section-actions">
-          <Button onClick={() => edit("plans", p, { vehicleId: vehicle.id })}>
-            Vytvořit individuální plán
-          </Button>
-        </div>
-      )}
       <DataTable
+        toolbarActions={<Button primary onClick={() => edit("plans", p, {vehicleId: vehicle.id})}>Vytvořit individuální plán</Button>}
         rows={p?.items || []}
         search={(i) => i.name}
         columns={[
@@ -501,6 +494,7 @@ export function DriverPage() {
               Upravit profil
             </Button>
             <Button
+              danger={!d.suspended}
               onClick={() =>
                 show(
                   <Confirm
@@ -566,11 +560,7 @@ export function DriverPage() {
                   ["Stav profilu", driverState(d)],
                 ]}
               />
-              {(!d.email || !d.phone || !d.licences.length) && (
-                <Notice>
-                  Profil je rozpracovaný. Doplňte pracovní kontakt a oprávnění.
-                </Notice>
-              )}
+              
             </>
           )}
           {tab === "documents" && (
