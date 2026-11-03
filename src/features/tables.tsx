@@ -400,12 +400,16 @@ export function TripsTable({
           options: s.vehicles.map((v) => [v.id, v.spz]),
           value: (t) => t.vehicleId,
         },
-        ...(actor.role !== "Řidič" ? [        {
-          key: "driver",
-          label: "Všichni řidiči",
-          options: s.drivers.map((d): [string, string] => [d.id, d.name]),
-          value: (t: Trip) => t.driverId,
-        }] : []),
+        ...(actor.role !== "Řidič"
+          ? [
+              {
+                key: "driver",
+                label: "Všichni řidiči",
+                options: s.drivers.map((d): [string, string] => [d.id, d.name]),
+                value: (t: Trip) => t.driverId,
+              },
+            ]
+          : []),
         {
           key: "purpose",
           label: "Všechny účely",

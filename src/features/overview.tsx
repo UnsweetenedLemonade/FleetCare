@@ -133,7 +133,11 @@ export function Dashboard() {
           },
         ].map((a) => (
           <button key={a.label} className="quick-action" onClick={a.action}>
-            <a.icon size={23} />
+            {a.label.startsWith("Přidat") ? (
+              <Plus size={23} />
+            ) : (
+              <a.icon size={23} />
+            )}
             <span>{a.label}</span>
           </button>
         ))}
@@ -320,7 +324,24 @@ export function DeadlinesPage() {
       />
       <Panel>
         <div className="toolbar deadline-controls">
-          {calendar && <><label>Měsíc<input type="month" value={month} onChange={e => e.target.value && setMonth(e.target.value)} /></label><Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>←</Button><Button aria-label="Další měsíc" onClick={() => shift(1)}>→</Button></>}
+          {calendar && (
+            <>
+              <label>
+                Měsíc
+                <input
+                  type="month"
+                  value={month}
+                  onChange={(e) => e.target.value && setMonth(e.target.value)}
+                />
+              </label>
+              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>
+                ←
+              </Button>
+              <Button aria-label="Další měsíc" onClick={() => shift(1)}>
+                →
+              </Button>
+            </>
+          )}
           <div className="toolbar-actions">{controls}</div>
         </div>
         {calendar ? (
@@ -596,10 +617,20 @@ export function DriverWorkspace() {
           <FuelTable
             rows={s.fuels}
             toolbarActions={
-              <ChoiceButton label="Zadat tankování" icon={<FuelIcon size={17} />} choices={[
-                { label: "Nahrát účtenku", action: () => show(<FuelIntakeDialog vehicleId={v?.id} />) },
-                { label: "Zadat manuálně", action: () => edit("fuels", undefined, defaults) },
-              ]} />
+              <ChoiceButton
+                label="Zadat tankování"
+                icon={<Plus size={17} />}
+                choices={[
+                  {
+                    label: "Nahrát účtenku",
+                    action: () => show(<FuelIntakeDialog vehicleId={v?.id} />),
+                  },
+                  {
+                    label: "Zadat manuálně",
+                    action: () => edit("fuels", undefined, defaults),
+                  },
+                ]}
+              />
             }
           />
         </Panel>
@@ -620,9 +651,15 @@ export function DeadlinePage() {
   const edit = useEditors();
   const d = deadlines(s).find((d) => d.id === id);
   if (!d) return <Empty title="Termín není dostupný" />;
-  const sourceTrip = s.trips.find(t => d.path === `/trips/${t.id}`);
-  const vehicleId = sourceTrip?.vehicleId || s.deadlines.find(r => r.id === d.id)?.vehicleId || (d.path.startsWith("/vehicles/") ? d.path.split("/")[2] : null);
-  const driverId = sourceTrip?.driverId || s.deadlines.find(r => r.id === d.id)?.driverId || (d.path.startsWith("/drivers/") ? d.path.split("/")[2] : null);
+  const sourceTrip = s.trips.find((t) => d.path === `/trips/${t.id}`);
+  const vehicleId =
+    sourceTrip?.vehicleId ||
+    s.deadlines.find((r) => r.id === d.id)?.vehicleId ||
+    (d.path.startsWith("/vehicles/") ? d.path.split("/")[2] : null);
+  const driverId =
+    sourceTrip?.driverId ||
+    s.deadlines.find((r) => r.id === d.id)?.driverId ||
+    (d.path.startsWith("/drivers/") ? d.path.split("/")[2] : null);
   const record = s.deadlines.find((r) => r.id === d.id);
   return (
     <>
@@ -634,7 +671,15 @@ export function DeadlinePage() {
             <Button onClick={() => edit("deadlines", record)}>
               Upravit termín
             </Button>
-          ) : sourceTrip && sourceTrip.endKm === null ? <Button onClick={() => show(<CompleteOdometerDialog tripId={sourceTrip.id} />)}>Vyřešit</Button> : (
+          ) : sourceTrip && sourceTrip.endKm === null ? (
+            <Button
+              onClick={() =>
+                show(<CompleteOdometerDialog tripId={sourceTrip.id} />)
+              }
+            >
+              Vyřešit
+            </Button>
+          ) : (
             <Link className="btn" to={d.path}>
               <Pencil size={17} />
               Upravit termín

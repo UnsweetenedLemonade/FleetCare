@@ -17,7 +17,9 @@ export function SettingsPage() {
   const { tab = "terms" } = useParams();
   const { s, run } = useFleet(),
     edit = useEditors();
-  const [days, setDays] = useState<string[]>((s.settings.daysBefore || []).map(String));
+  const [days, setDays] = useState<string[]>(
+    (s.settings.daysBefore || []).map(String),
+  );
   return (
     <>
       <PageHead
@@ -50,7 +52,6 @@ export function SettingsPage() {
                     key: "kmBefore",
                     label: "Km před servisní hranicí",
                     type: "number",
-
                   },
                 ]}
                 initial={{
@@ -68,7 +69,39 @@ export function SettingsPage() {
                   });
                 }}
               >
-                <div className="subform"><h3>Dny před termínem</h3>{days.map((value, i) => <div className="repeat-row" key={i}><Field>Počet dní<input name={`daysBefore.${i}`} inputMode="numeric" required value={value} onChange={e => setDays(days.map((v,n) => n === i ? e.target.value : v))} /></Field><Button danger aria-label={`Odebrat termín ${i+1}`} onClick={() => setDays(days.filter((_,n) => n !== i))}><Trash2 size={17} /></Button></div>)}<Button onClick={() => setDays([...days, ""])}>{days.length ? "Přidat další termín" : "Přidat termín"}</Button></div>
+                <div className="subform">
+                  <h3>Dny před termínem</h3>
+                  {days.map((value, i) => (
+                    <div className="repeat-row" key={i}>
+                      <Field>
+                        Počet dní
+                        <input
+                          name={`daysBefore.${i}`}
+                          inputMode="numeric"
+                          required
+                          value={value}
+                          onChange={(e) =>
+                            setDays(
+                              days.map((v, n) =>
+                                n === i ? e.target.value : v,
+                              ),
+                            )
+                          }
+                        />
+                      </Field>
+                      <Button
+                        danger
+                        aria-label={`Odebrat termín ${i + 1}`}
+                        onClick={() => setDays(days.filter((_, n) => n !== i))}
+                      >
+                        <Trash2 size={17} />
+                      </Button>
+                    </div>
+                  ))}
+                  <Button onClick={() => setDays([...days, ""])}>
+                    {days.length ? "Přidat další termín" : "Přidat termín"}
+                  </Button>
+                </div>
               </Form>
             </>
           )}
