@@ -216,7 +216,6 @@ export function ReportsPage({ costsOnly = false }: { costsOnly?: boolean }) {
             />
           )}
         </Panel>
-
       </div>
       <Panel title="Podklady podle vozidel">
         <DataTable
@@ -298,7 +297,6 @@ export function ReportsPage({ costsOnly = false }: { costsOnly?: boolean }) {
           ]}
         />
       </Panel>
-      
     </>
   );
 }
@@ -313,10 +311,7 @@ export function Kpi({
 }) {
   return (
     <div className="kpi">
-      <div className="kpi-label">
-        {label}
-        
-      </div>
+      <div className="kpi-label">{label}</div>
       <strong>{value}</strong>
       <small>{hint}</small>
     </div>
@@ -575,8 +570,6 @@ export function ExportDialog({
             {busy ? "Připravuji soubor…" : "Stáhnout"}
           </Button>
         </div>
-
-
       </div>
     </Dialog>
   );
