@@ -1,6 +1,14 @@
+import { useState } from "react";
 import { Link } from "react-router";
 import { useFleet } from "../app/context";
-import { Button, Dialog, Form, DataGrid, DataTable, Panel } from "../components/ui";
+import {
+  Button,
+  Dialog,
+  Form,
+  DataGrid,
+  DataTable,
+  Panel,
+} from "../components/ui";
 import { driverTasks } from "../domain/driver-tasks";
 import { date } from "../lib/format";
 
@@ -25,7 +33,19 @@ export function DriverTasks() {
           },
         ]}
         columns={[
-          { key: "reference", label: "Zakázka / jízda", render: t => { const trip = s.trips.find(x => `trip:${x.id}` === t.id); const order = s.orders.find(x => x.id === trip?.orderId); return <Link to={order ? `/orders/${order.id}` : t.path}>{order?.number || trip?.purpose || trip?.id || "Servis"}</Link>; } },
+          {
+            key: "reference",
+            label: "Zakázka / jízda",
+            render: (t) => {
+              const trip = s.trips.find((x) => `trip:${x.id}` === t.id);
+              const order = s.orders.find((x) => x.id === trip?.orderId);
+              return (
+                <Link to={order ? `/orders/${order.id}` : t.path}>
+                  {order?.number || trip?.purpose || trip?.id || "Servis"}
+                </Link>
+              );
+            },
+          },
           {
             key: "title",
             label: "Úkol",
@@ -58,9 +78,20 @@ export function DriverTasks() {
           {
             key: "action",
             label: "Akce",
-            render: (t) => (
-              t.id.startsWith("trip:") ? <Button onClick={() => show(<CompleteOdometerDialog tripId={t.id.slice(5)} />)}>{t.action}</Button> : <Link className="btn" to={t.path}>{t.action}</Link>
-            ),
+            render: (t) =>
+              t.id.startsWith("trip:") ? (
+                <Button
+                  onClick={() =>
+                    show(<CompleteOdometerDialog tripId={t.id.slice(5)} />)
+                  }
+                >
+                  {t.action}
+                </Button>
+              ) : (
+                <Link className="btn" to={t.path}>
+                  {t.action}
+                </Link>
+              ),
           },
         ]}
       />
@@ -70,12 +101,41 @@ export function DriverTasks() {
 
 export function CompleteOdometerDialog({ tripId }: { tripId: string }) {
   const { s, run, close } = useFleet();
-  const trip = s.trips.find(t => t.id === tripId);
+  const [dirty, setDirty] = useState(false);
+  const trip = s.trips.find((t) => t.id === tripId);
   if (!trip) return null;
-  return <Dialog title="Doplnit tachometr" onClose={close}><div className="dialog-body">
-    <DataGrid items={[["Vozidlo", s.vehicles.find(v => v.id === trip.vehicleId)?.spz], ["Trasa", `${trip.from} → ${trip.to}`], ["Datum", date(trip.startAt, true)]]} />
-    <Form fields={[{key: "endKm", label: "Koncový tachometr (km)", type: "number", required: true}]} onSubmit={async values => {
-      await run({type: "save", collection: "trips", id: trip.id, version: trip.version, data: {...trip, ...values, state: "K ověření"}}); close();
-    }} />
-  </div></Dialog>;
+  return (
+    <Dialog title="Doplnit tachometr" onClose={close} dirty={dirty}>
+      <div className="dialog-body">
+        <DataGrid
+          items={[
+            ["Vozidlo", s.vehicles.find((v) => v.id === trip.vehicleId)?.spz],
+            ["Trasa", `${trip.from} → ${trip.to}`],
+            ["Datum", date(trip.startAt, true)],
+          ]}
+        />
+        <Form
+          onDirty={setDirty}
+          fields={[
+            {
+              key: "endKm",
+              label: "Koncový tachometr (km)",
+              type: "number",
+              required: true,
+            },
+          ]}
+          onSubmit={async (values) => {
+            await run({
+              type: "save",
+              collection: "trips",
+              id: trip.id,
+              version: trip.version,
+              data: { ...trip, ...values, state: "K ověření" },
+            });
+            close();
+          }}
+        />
+      </div>
+    </Dialog>
+  );
 }

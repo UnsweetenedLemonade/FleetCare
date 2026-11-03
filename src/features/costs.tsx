@@ -34,11 +34,11 @@ export function CostsPage() {
         label="Zadat tankování"
         icon={<Plus size={17} />}
         choices={[
-          { label: "Manuálně", action: () => edit("fuels") },
           {
             label: "Nahrát účtenku",
             action: () => show(<FuelIntakeDialog />),
           },
+          { label: "Zadat manuálně", action: () => edit("fuels") },
         ]}
       />
     ) : tab === "statements" ? (
@@ -216,10 +216,22 @@ export function FuelPage() {
         }
       />
       <Panel title="Záznam řidiče">
-
         <DataGrid
           items={[
-            ["Stav", <Badge value={!transactions.length && f.state === "Rozdíl" ? "Čeká na výpis" : differences.length ? "Rozdíl" : f.state === "Rozdíl" ? "Spárováno" : f.state} />],
+            [
+              "Stav",
+              <Badge
+                value={
+                  !transactions.length && f.state === "Rozdíl"
+                    ? "Čeká na výpis"
+                    : differences.length
+                      ? "Rozdíl"
+                      : f.state === "Rozdíl"
+                        ? "Spárováno"
+                        : f.state
+                }
+              />,
+            ],
             ["Vozidlo", <VRef id={f.vehicleId} />],
             ["Řidič", <DRef id={f.driverId} />],
             ["Datum transakce", date(f.at, true)],
@@ -501,7 +513,7 @@ function ResolveDialog({
             </select>
           </label>
         )}
-        
+
         <Form
           key={t.id}
           fields={[

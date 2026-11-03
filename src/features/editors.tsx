@@ -305,7 +305,13 @@ export function editorFields(
     case "cards":
       return [
         f("number", "Identifikace CCS karty", "text", true),
-        f("active", "Aktivní karta", "select", true, {initial: "true", options: [["true", "Ano"], ["false", "Ne"]]}),
+        f("active", "Aktivní karta", "select", true, {
+          initial: "true",
+          options: [
+            ["true", "Ano"],
+            ["false", "Ne"],
+          ],
+        }),
         f(
           "toleranceMinor",
           "Tolerance párování v Kč (včetně)",
@@ -623,17 +629,34 @@ export function EntityEditor({
   const [key] = useState(() => crypto.randomUUID());
   const data: Record<string, unknown> = { ...record, ...defaults };
   const driverMode = actor.role === "Řidič";
-  const trip = collection === "trips" && record ? record as Records["trips"] : null;
+  const trip =
+    collection === "trips" && record ? (record as Records["trips"]) : null;
   const incomplete = trip && tripStatus(trip) === "Ukončena neúplná";
-  let fields = editorFields(collection, s, actor, !!record).filter(f => !(driverMode && ["trips", "fuels"].includes(collection) && f.key === "driverId"));
-  fields = fields.map(f => ({ ...f,
-    disabled: !!(incomplete && f.key !== "endKm") || !!(driverMode && trip && f.key === "startKm"),
-    required: f.required || (f.key === "endKm" && !!trip && (driverMode || !!incomplete)),
+  let fields = editorFields(collection, s, actor, !!record).filter(
+    (f) =>
+      !(
+        driverMode &&
+        ["trips", "fuels"].includes(collection) &&
+        f.key === "driverId"
+      ),
+  );
+  fields = fields.map((f) => ({
+    ...f,
+    disabled:
+      !!(incomplete && f.key !== "endKm") ||
+      !!(driverMode && trip && f.key === "startKm"),
+    required:
+      f.required ||
+      (f.key === "endKm" && !!trip && (driverMode || !!incomplete)),
     label: driverMode && f.key === "note" ? "Poznámka" : f.label,
   }));
   if (trip) {
     const pairs = ["from", "to", "startAt", "endAt", "startKm", "endKm"];
-    fields = [...fields.filter(f => !pairs.includes(f.key) && f.key !== "note"), ...pairs.flatMap(key => fields.filter(f => f.key === key)), ...fields.filter(f => f.key === "note")];
+    fields = [
+      ...fields.filter((f) => !pairs.includes(f.key) && f.key !== "note"),
+      ...pairs.flatMap((key) => fields.filter((f) => f.key === key)),
+      ...fields.filter((f) => f.key === "note"),
+    ];
   }
   const [licences, setLicences] = useState(
       (record && "licences" in record
@@ -692,15 +715,20 @@ export function EntityEditor({
   return (
     <Dialog
       title={
-        driverMode && trip ? "Ukončit jízdu" : startTrip
-          ? "Zahájit jízdu"
-          : !record && collection === "faults" ? "Nahlásit závadu" : !record && collection === "fuels" ? "Zadat tankování" : `${record ? "Upravit" : "Přidat"} ${names[collection]}`
+        driverMode && trip
+          ? "Ukončit jízdu"
+          : startTrip
+            ? "Zahájit jízdu"
+            : !record && collection === "faults"
+              ? "Nahlásit závadu"
+              : !record && collection === "fuels"
+                ? "Zadat tankování"
+                : `${record ? "Upravit" : "Přidat"} ${names[collection]}`
       }
       dirty={dirty}
       onClose={close}
     >
       <div className="dialog-body">
-        
         <Form
           fields={fields}
           initial={data}
@@ -708,11 +736,17 @@ export function EntityEditor({
           submit={startTrip ? "Zahájit jízdu" : "Uložit"}
           onSubmit={async (values) => {
             values = { ...defaults, ...values };
-            if (driverMode && ["trips", "fuels"].includes(collection)) values.driverId = actor.driverId;
+            if (driverMode && ["trips", "fuels"].includes(collection))
+              values.driverId = actor.driverId;
             if (collection === "trips" && record) {
               const previous = record as Records["trips"];
               values.state =
-                (previous.state === "Probíhá" && !previous.endAt && values.endAt) || (previous.endAt && previous.endKm === null && values.endKm !== null)
+                (previous.state === "Probíhá" &&
+                  !previous.endAt &&
+                  values.endAt) ||
+                (previous.endAt &&
+                  previous.endKm === null &&
+                  values.endKm !== null)
                   ? values.endKm === null
                     ? "Ukončena neúplná"
                     : "K ověření"
@@ -780,7 +814,10 @@ export function EntityEditor({
               values.originalId =
                 record && "originalId" in record ? record.originalId : null;
             }
-            if (collection === "cards") { values.bindings = bindings; values.active = String(values.active) === "true"; }
+            if (collection === "cards") {
+              values.bindings = bindings;
+              values.active = String(values.active) === "true";
+            }
             if (collection === "faults" && !record) {
               values.state = "Nahlášena";
               values.caseReference = "FC-" + key;
@@ -846,7 +883,6 @@ export function EntityEditor({
                 }}
                 label="Přidat přílohu"
               />
-              
             </>
           )}
           {collection === "drivers" && (

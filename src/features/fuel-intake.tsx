@@ -1,4 +1,4 @@
-import { validateUpload } from "../data/uploads";
+import { fileLimits, validateUpload } from "../data/uploads";
 import { DomainError } from "../domain/rules";
 import { useState } from "react";
 import { useNavigate } from "react-router";
@@ -18,43 +18,44 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
       dirty={files.length > 0}
     >
       <div className="dialog-body">
-        
         <Form
-          fields={([
-            {
-              key: "vehicleId",
-              label: "Vozidlo",
-              type: "select",
-              required: true,
-              options: s.vehicles.map((v) => [v.id, v.spz]),
-            },
-            {
-              key: "driverId",
-              label: "Řidič",
-              type: "select",
-              required: true,
-              options: s.drivers.map((d) => [d.id, d.name]),
-            },
-            {
-              key: "at",
-              label: "Skutečný čas transakce",
-              type: "datetime",
-              required: true,
-              initial: localTime(),
-            },
-            {
-              key: "litres",
-              label: "Litry (l)",
-              type: "number",
-              required: true,
-            },
-            {
-              key: "amountMinor",
-              label: "Částka včetně DPH",
-              type: "money",
-              required: true,
-            },
-          ] satisfies FieldSpec[]).filter(f => actor.role !== "Řidič" || f.key !== "driverId")}
+          fields={(
+            [
+              {
+                key: "vehicleId",
+                label: "Vozidlo",
+                type: "select",
+                required: true,
+                options: s.vehicles.map((v) => [v.id, v.spz]),
+              },
+              {
+                key: "driverId",
+                label: "Řidič",
+                type: "select",
+                required: true,
+                options: s.drivers.map((d) => [d.id, d.name]),
+              },
+              {
+                key: "at",
+                label: "Skutečný čas transakce",
+                type: "datetime",
+                required: true,
+                initial: localTime(),
+              },
+              {
+                key: "litres",
+                label: "Litry (l)",
+                type: "number",
+                required: true,
+              },
+              {
+                key: "amountMinor",
+                label: "Částka včetně DPH",
+                type: "money",
+                required: true,
+              },
+            ] satisfies FieldSpec[]
+          ).filter((f) => actor.role !== "Řidič" || f.key !== "driverId")}
           initial={{
             vehicleId: vehicleId || "",
             driverId: actor.driverId || "",
@@ -81,7 +82,9 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
                 collection: "fuels",
                 data: {
                   ...values,
-                  ...(actor.role === "Řidič" ? {driverId: actor.driverId} : {}),
+                  ...(actor.role === "Řidič"
+                    ? { driverId: actor.driverId }
+                    : {}),
                   id,
                   at: toPragueTimestamp(String(values.at)),
                   full: "Není doloženo",
@@ -104,13 +107,12 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
           }}
         >
           <FilePicker
-            maxBytes={5 * 1024 * 1024}
+            maxBytes={fileLimits.extractionBytes}
             files={files}
             onChange={setFiles}
             label="Vybrat účtenku"
             camera
           />
-          
         </Form>
       </div>
     </Dialog>

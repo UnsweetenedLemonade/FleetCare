@@ -560,7 +560,7 @@ export function FaultPage() {
               vehicleId={f.vehicleId}
             />
           </Panel>
-          
+
           <Link className="btn" to={`/vehicles/${f.vehicleId}/plan`}>
             Servisní plán vozidla →
           </Link>
@@ -577,7 +577,6 @@ function NotifyDialog({ faultId }: { faultId: string }) {
   return (
     <Dialog title="Notifikovat řidiče o servisu" onClose={close}>
       <div className="dialog-body">
-        
         <Form
           fields={[
             { key: "email", label: "Příjemce", type: "email", required: true },
