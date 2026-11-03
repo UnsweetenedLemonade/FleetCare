@@ -168,8 +168,7 @@ export function applyCommand(
       // Classify only the first transition from an active trip to a completed
       // one. Later edits must retain the saved state.
       t.state =
-        (original?.state === "Probíhá" && !original.endAt && !!t.endAt) ||
-        (original?.state === "Ukončena neúplná" && t.endKm !== null)
+        original?.state === "Probíhá" && !original.endAt && !!t.endAt
           ? t.endKm === null
             ? "Ukončena neúplná"
             : "K ověření"

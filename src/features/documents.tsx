@@ -83,23 +83,19 @@ export function UploadDialog({
           }}
         >
           <div className="form-grid">
-            {type !== "STK" && (
-              <Field>
-                Typ dokumentu
-                <select
-                  value={docType}
-                  onChange={(e) =>
-                    setDocType(e.target.value as Document["type"])
-                  }
-                >
-                  {types[ownerType].map((x) => (
-                    <option key={x}>{x}</option>
-                  ))}
-                </select>
-              </Field>
-            )}
             <Field>
-              Platnost do
+              Typ dokumentu
+              <select
+                value={docType}
+                onChange={(e) => setDocType(e.target.value as Document["type"])}
+              >
+                {types[ownerType].map((x) => (
+                  <option key={x}>{x}</option>
+                ))}
+              </select>
+            </Field>
+            <Field>
+              Platnost do (metadata)
               <input
                 type="date"
                 value={validUntil}
@@ -107,7 +103,7 @@ export function UploadDialog({
               />
             </Field>
             <Field>
-              Splatnost
+              Splatnost (metadata)
               <input
                 type="date"
                 value={dueAt}
@@ -116,14 +112,6 @@ export function UploadDialog({
             </Field>
           </div>
           <FilePicker
-            maxBytes={
-              ["STK", "Řidičský průkaz", "Účtenka", "CCS výpis"].includes(
-                docType,
-              )
-                ? fileLimits.extractionBytes
-                : fileLimits.storageBytes
-            }
-            accept={docType === "CCS výpis" ? "application/pdf" : undefined}
             files={selected}
             error={error}
             onChange={setSelected}
@@ -508,9 +496,7 @@ export function DocumentPage() {
             </Notice>
           )}
           {job.data?.missingFields?.length && (
-            <Notice error>
-              Chybí údaje: {job.data.missingFields.join(", ")}
-            </Notice>
+            <Notice>Chybí údaje: {job.data.missingFields.join(", ")}</Notice>
           )}
           {doc.jobId && (
             <Button
@@ -523,6 +509,12 @@ export function DocumentPage() {
             </Button>
           )}
           {doc.error && <Notice error>{doc.error}</Notice>}
+          {doc.extraction === "not_configured" && (
+            <Notice>
+              Soubor je uložen. Extrakční služba není připojena; žádné údaje
+              nebyly automaticky načteny.
+            </Notice>
+          )}
           <p>Velikost: {number(doc.size / 1024, "kB")}</p>
           <p>Platnost: {date(doc.validUntil)}</p>
           <p>Splatnost: {date(doc.dueAt)}</p>
@@ -531,10 +523,10 @@ export function DocumentPage() {
           )}
           {doc.ownerType === "intake" && actor.role !== "Řidič" && (
             <>
-              <p className="muted">
+              <Notice>
                 STK pro nové vozidlo: originál čeká na připojené zpracování.
                 Vozidlo můžete založit ručně a následně dokument připojit.
-              </p>
+              </Notice>
               <Button onClick={() => show(<LinkDocument id={doc.id} />)}>
                 Připojit k existujícímu vozidlu
               </Button>

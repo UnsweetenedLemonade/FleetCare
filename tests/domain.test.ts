@@ -170,7 +170,7 @@ describe("Provozní pravidla", () => {
       version: 2,
       data: { endKm: 150, state: "Potvrzena" },
     });
-    expect(s.trips[0].state).toBe("K ověření");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
     expect(odometer(s, "v1")).toBe(150);
     s.readings.push({
       ...meta(),
@@ -187,7 +187,7 @@ describe("Provozní pravidla", () => {
       data: { endKm: 140 },
     });
     expect(odometer(s, "v1")).toBe(200);
-    expect(s.trips[0].state).toBe("K ověření");
+    expect(s.trips[0].state).toBe("Ukončena neúplná");
     const complete = fixture();
     applyCommand(complete, manager, {
       type: "trip.start",

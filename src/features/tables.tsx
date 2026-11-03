@@ -364,7 +364,7 @@ export function TripsTable({
   rows: Trip[];
   toolbarActions?: ReactNode;
 }) {
-  const { s, actor } = useFleet();
+  const { s } = useFleet();
   return (
     <DataTable
       toolbarActions={toolbarActions}
@@ -400,16 +400,12 @@ export function TripsTable({
           options: s.vehicles.map((v) => [v.id, v.spz]),
           value: (t) => t.vehicleId,
         },
-        ...(actor.role !== "Řidič"
-          ? [
-              {
-                key: "driver",
-                label: "Všichni řidiči",
-                options: s.drivers.map((d): [string, string] => [d.id, d.name]),
-                value: (t: Trip) => t.driverId,
-              },
-            ]
-          : []),
+        {
+          key: "driver",
+          label: "Všichni řidiči",
+          options: s.drivers.map((d) => [d.id, d.name]),
+          value: (t) => t.driverId,
+        },
         {
           key: "purpose",
           label: "Všechny účely",
@@ -556,7 +552,7 @@ export function FaultTable({
         },
         {
           key: "priority",
-          label: "Naléhavost",
+          label: "Oznámená naléhavost",
           sort: (f) => f.urgency,
           render: (f) => f.urgency,
         },
@@ -722,7 +718,7 @@ export function DriverOperationsTable({ driverId }: { driverId: string }) {
         },
       ]}
       columns={[
-        { key: "type", label: "Typ", render: (r) => r.type },
+        { key: "type", label: "Typ", render: (r) => <Badge value={r.type} /> },
         {
           key: "title",
           label: "Zakázka / jízda",
