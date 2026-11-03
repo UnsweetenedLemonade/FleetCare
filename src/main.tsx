@@ -99,7 +99,7 @@ function App() {
       repo={repo}
     >
       <Layout onActor={(next) => void switchActor(next)}>
-        {preferenceError && <Notice>{preferenceError}</Notice>}
+        {preferenceError && <Notice warning>{preferenceError}</Notice>}
         <Routes>
           {manager ? (
             <>

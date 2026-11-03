@@ -19,11 +19,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
       dirty={files.length > 0}
     >
       <div className="dialog-body">
-        <Notice>
-          Vyberte vlastníka a skutečný čas transakce. Litry ani částku z
-          nepřipojené extrakce nedoplňujeme. Neúplný záznam pak můžete doplnit
-          ručně.
-        </Notice>
+        <></>
         <Form
           fields={[
             {
@@ -103,7 +99,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
             camera
           />
           {saved && (
-            <Notice>
+            <Notice warning>
               Neúplné tankování je uloženo. Při chybě přílohy můžete nahrání
               zopakovat bez vytvoření druhého záznamu.
             </Notice>

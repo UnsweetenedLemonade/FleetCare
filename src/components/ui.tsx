@@ -25,6 +25,7 @@ import {
   Search,
   ChevronDown,
   Pencil,
+  Plus,
 } from "lucide-react";
 import { z } from "zod";
 import { DomainError } from "../domain/rules";
@@ -41,6 +42,10 @@ export function Button({
   primary?: boolean;
   danger?: boolean;
 }) {
+  const parts = Children.toArray(children);
+  const add = parts.some(
+    (child) => typeof child === "string" && /^\s*Přidat/.test(child),
+  );
   return (
     <button
       type="button"
@@ -53,20 +58,30 @@ export function Button({
         !Children.toArray(children).some(
           (child) => isValidElement(child) && child.type === Pencil,
         ) && <Pencil size={17} />}
-      {children}
+      {add && <Plus size={17} />}
+      {add
+        ? parts.filter(
+            (child) =>
+              !isValidElement(child) ||
+              typeof child.type === "string" ||
+              child.type === ChevronDown,
+          )
+        : children}
     </button>
   );
 }
 export function Notice({
   children,
   error = false,
+  warning = false,
 }: {
   children: ReactNode;
   error?: boolean;
+  warning?: boolean;
 }) {
   return (
     <div
-      className={"notice " + (error ? "error" : "")}
+      className={"notice " + (error ? "error" : warning ? "warning" : "")}
       role={error ? "alert" : undefined}
     >
       {children}
@@ -148,9 +163,21 @@ export function Panel({
   children: ReactNode;
   action?: ReactNode;
 }) {
+  const location = useLocation();
+  const redundant =
+    location.pathname.startsWith("/my/") &&
+    [
+      "Moje zakázky",
+      "Moje jízdy",
+      "Moje tankování",
+      "Nahlášení závady",
+      "Moje dokumenty",
+      "Tankování",
+      "Závady",
+    ].includes(title || "");
   return (
     <section className="panel">
-      {title && (
+      {title && !redundant && (
         <div className="panel-head">
           <h2>{title}</h2>
           {action}
@@ -261,7 +288,10 @@ export function Dialog({
   const draftFocus = useRef<HTMLElement | null>(null);
   const [confirm, setConfirm] = useState(false);
   const close = () => {
-    if (confirm) { setConfirm(false); return; }
+    if (confirm) {
+      setConfirm(false);
+      return;
+    }
     if (dirty) {
       if (!confirm)
         draftFocus.current = document.activeElement as HTMLElement | null;
@@ -296,7 +326,9 @@ export function Dialog({
       </header>
       {confirm && (
         <div className="dialog-body" ref={confirmationRef}>
-          <p className="notice warning">Formulář obsahuje neuložené změny. Zahodit je?</p>
+          <p className="notice warning">
+            Formulář obsahuje neuložené změny. Zahodit je?
+          </p>
           <div className="actions">
             <Button onClick={() => setConfirm(false)}>
               Pokračovat v úpravách
@@ -311,6 +343,73 @@ export function Dialog({
     </dialog>
   );
 }
+
+export function NumericInput({
+  numeric,
+  allowNegative = false,
+  onChange,
+  ...props
+}: InputHTMLAttributes<HTMLInputElement> & {
+  numeric?: "integer" | "decimal";
+  allowNegative?: boolean;
+}) {
+  const previous = useRef(String(props.value ?? props.defaultValue ?? ""));
+  const valid = (value: string) =>
+    (numeric === "decimal"
+      ? allowNegative
+        ? /^-?\d*(?:[.,]\d*)?$/
+        : /^\d*(?:[.,]\d*)?$/
+      : allowNegative
+        ? /^-?\d*$/
+        : /^\d*$/
+    ).test(value);
+  const candidate = (el: HTMLInputElement, text: string) =>
+    el.value.slice(0, el.selectionStart ?? el.value.length) +
+    text +
+    el.value.slice(el.selectionEnd ?? el.value.length);
+  return (
+    <input
+      {...props}
+      type={numeric ? "text" : props.type}
+      inputMode={
+        numeric === "integer"
+          ? "numeric"
+          : numeric === "decimal"
+            ? "decimal"
+            : props.inputMode
+      }
+      onPaste={(e) => {
+        if (
+          numeric &&
+          !valid(candidate(e.currentTarget, e.clipboardData.getData("text")))
+        )
+          e.preventDefault();
+        props.onPaste?.(e);
+      }}
+      onKeyDown={(e) => {
+        if (
+          numeric &&
+          e.key.length === 1 &&
+          !e.ctrlKey &&
+          !e.metaKey &&
+          !e.altKey &&
+          !valid(candidate(e.currentTarget, e.key))
+        )
+          e.preventDefault();
+        props.onKeyDown?.(e);
+      }}
+      onChange={(e) => {
+        if (numeric && !valid(e.target.value)) {
+          e.target.value = String(props.value ?? previous.current);
+          return;
+        }
+        previous.current = e.target.value;
+        onChange?.(e);
+      }}
+    />
+  );
+}
+
 export type FieldSpec = {
   key: string;
   label: string;
@@ -330,6 +429,9 @@ export type FieldSpec = {
   help?: string;
   initial?: string;
   readOnly?: boolean;
+  disabled?: boolean;
+  numeric?: "integer" | "decimal";
+  allowNegative?: boolean;
 };
 export function Form({
   fields,
@@ -434,6 +536,7 @@ export function Form({
               id,
               required: f.required,
               readOnly: f.readOnly,
+              disabled: f.disabled,
               "aria-invalid": !!errors[f.key],
               "aria-describedby":
                 f.help || errors[f.key] ? id + "-hint" : undefined,
@@ -472,8 +575,16 @@ export function Form({
                 ) : f.type === "checkbox" ? (
                   <input {...common} type="checkbox" defaultChecked={!!value} />
                 ) : (
-                  <input
+                  <NumericInput
                     {...common}
+                    numeric={
+                      f.type === "money"
+                        ? "decimal"
+                        : f.type === "number"
+                          ? f.numeric || "integer"
+                          : undefined
+                    }
+                    allowNegative={f.allowNegative}
                     type={
                       f.type === "number" || f.type === "money"
                         ? "text"
@@ -531,6 +642,23 @@ export type Filter<T> = {
   options: [string, string][];
   value: (row: T) => string;
 };
+function orderedActions(children: ReactNode): ReactNode[] {
+  const flatten = (nodes: ReactNode): ReactNode[] =>
+    Children.toArray(nodes).flatMap((node) =>
+      isValidElement<{ children?: ReactNode }>(node) && node.type === Fragment
+        ? flatten(node.props.children)
+        : [node],
+    );
+  const rank = (node: ReactNode) =>
+    isValidElement<{ primary?: boolean }>(node)
+      ? node.type === HistorySwitch
+        ? 0
+        : node.type === ChoiceButton || node.props.primary
+          ? 2
+          : 1
+      : 1;
+  return flatten(children).sort((a, b) => rank(a) - rank(b));
+}
 export function DataTable<T extends { id: string }>({
   rows,
   columns,
@@ -611,6 +739,7 @@ export function DataTable<T extends { id: string }>({
             onChange={(e) => change("q", e.target.value)}
           />
         </label>
+        <span className="muted">{filtered.length} výsledků</span>
         {filters.map((f) => (
           <select
             key={f.key}
@@ -626,9 +755,10 @@ export function DataTable<T extends { id: string }>({
             ))}
           </select>
         ))}
-        <span className="muted">{filtered.length} výsledků</span>
         {toolbarActions && (
-          <div className="toolbar-actions">{toolbarActions}</div>
+          <div className="toolbar-actions">
+            {orderedActions(toolbarActions)}
+          </div>
         )}
       </div>
       <div className="table-scroll">
@@ -838,15 +968,27 @@ export function Field({
     name = el.props.name || generated;
     return (
       <Fragment key={name}>
-        {cloneElement(el, {
-          name,
-          id: el.props.id || generated,
-          "aria-invalid": !!(explicitError || errors[name]),
-          "aria-describedby":
-            explicitError || errors[name]
-              ? `${generated}-error`
-              : el.props["aria-describedby"],
-        })}
+        {cloneElement(
+          el.props.inputMode === "numeric" ||
+            el.props.inputMode === "decimal" ||
+            el.props.type === "number" ? (
+            <NumericInput
+              {...el.props}
+              numeric={el.props.inputMode === "decimal" ? "decimal" : "integer"}
+            />
+          ) : (
+            el
+          ),
+          {
+            name,
+            id: el.props.id || generated,
+            "aria-invalid": !!(explicitError || errors[name]),
+            "aria-describedby":
+              explicitError || errors[name]
+                ? `${generated}-error`
+                : el.props["aria-describedby"],
+          },
+        )}
       </Fragment>
     );
   });
@@ -950,13 +1092,30 @@ export function FilePicker({
   const errors = useContext(FieldErrors);
   const id = useId();
   const [rejected, setRejected] = useState<string[]>([]);
-  const failure = [error || errors[name], ...rejected].filter(Boolean).join(" ");
+  const failure = [error || errors[name], ...rejected]
+    .filter(Boolean)
+    .join(" ");
   const add = (incoming: File[]) => {
     const next = multiple ? [...files] : [];
     const failures: string[] = [];
     for (const file of incoming) {
-      const allowed = accept.split(",").some((t) => t.trim() === file.type || (t.trim().startsWith(".") && file.name.toLowerCase().endsWith(t.trim())));
-      const reason = !allowed ? "nepodporovaný typ" : !file.size ? "soubor je prázdný" : file.size > maxBytes ? `větší než ${maxBytes / 1024 / 1024} MB` : next.length >= (multiple ? fileLimits.maxFiles : 1) ? `maximálně ${multiple ? fileLimits.maxFiles : 1} souborů` : "";
+      const allowed = accept
+        .split(",")
+        .some(
+          (t) =>
+            t.trim() === file.type ||
+            (t.trim().startsWith(".") &&
+              file.name.toLowerCase().endsWith(t.trim())),
+        );
+      const reason = !allowed
+        ? "nepodporovaný typ"
+        : !file.size
+          ? "soubor je prázdný"
+          : file.size > maxBytes
+            ? `větší než ${maxBytes / 1024 / 1024} MB`
+            : next.length >= (multiple ? fileLimits.maxFiles : 1)
+              ? `maximálně ${multiple ? fileLimits.maxFiles : 1} souborů`
+              : "";
       if (reason) failures.push(`${file.name}: ${reason}.`);
       else next.push(file);
     }
@@ -988,7 +1147,10 @@ export function FilePicker({
           type="file"
           accept={accept}
           multiple={multiple}
-          onChange={(e) => { add(Array.from(e.target.files || [])); e.target.value = ""; }}
+          onChange={(e) => {
+            add(Array.from(e.target.files || []));
+            e.target.value = "";
+          }}
         />
       </div>
       {camera && (
@@ -1003,7 +1165,10 @@ export function FilePicker({
             aria-label="Vyfotit účtenku"
             accept="image/jpeg,image/png"
             capture="environment"
-            onChange={(e) => { add(Array.from(e.target.files || [])); e.target.value = ""; }}
+            onChange={(e) => {
+              add(Array.from(e.target.files || []));
+              e.target.value = "";
+            }}
           />
         </>
       )}
@@ -1017,7 +1182,14 @@ export function FilePicker({
           {files.map((f, i) => (
             <li key={`${f.name}-${i}`}>
               {f.name} · {Math.ceil(f.size / 1024)} kB
-              <Button aria-label={`Odebrat ${f.name}`} onClick={() => onChange(files.filter((_, index) => index !== i))}><X size={16} /></Button>
+              <Button
+                aria-label={`Odebrat ${f.name}`}
+                onClick={() =>
+                  onChange(files.filter((_, index) => index !== i))
+                }
+              >
+                <X size={16} />
+              </Button>
             </li>
           ))}
         </ul>

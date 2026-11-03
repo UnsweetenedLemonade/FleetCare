@@ -173,7 +173,7 @@ export function editorFields(
         f("description", "Popis závady", "textarea", true),
         f("at", "Okamžik hlášení", "datetime", true, { initial: localTime() }),
         f("km", "Nájezd (km)", "number"),
-        f("urgency", "Oznámená naléhavost", "select", true, {
+        f("urgency", "Naléhavost", "select", true, {
           initial: "Střední",
           options: options(["Nízká", "Střední", "Vysoká"]),
         }),
@@ -437,7 +437,7 @@ function PlanItems({
                 <input
                   name={`items.${i}.${key}`}
                   type={key.includes("Date") ? "date" : "text"}
-                  inputMode={key.includes("Date") ? undefined : "decimal"}
+                  inputMode={key.includes("Date") ? undefined : "numeric"}
                   value={item[key] ?? ""}
                   onChange={(e) =>
                     onChange(
@@ -622,7 +622,14 @@ export function EntityEditor({
   const [dirty, setDirty] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const data: Record<string, unknown> = { ...record, ...defaults };
-  const fields = editorFields(collection, s, actor, !!record);
+  const fields = editorFields(collection, s, actor, !!record).map((field) => ({
+    ...field,
+    numeric: ["litres", "vat", "weightKg", "capacityKg", "volumeM3"].includes(
+      field.key,
+    )
+      ? ("decimal" as const)
+      : field.numeric,
+  }));
   const [licences, setLicences] = useState(
       (record && "licences" in record
         ? record.licences
@@ -682,18 +689,17 @@ export function EntityEditor({
       title={
         startTrip
           ? "Zahájit jízdu"
-          : `${record ? "Upravit" : "Přidat"} ${names[collection]}`
+          : !record && collection === "faults"
+            ? "Nahlásit závadu"
+            : !record && collection === "fuels"
+              ? "Zadat tankování"
+              : `${record ? "Upravit" : "Přidat"} ${names[collection]}`
       }
       dirty={dirty}
       onClose={close}
     >
       <div className="dialog-body">
-        {collection === "faults" && !record && (
-          <Notice>
-            Hlášení se uloží společně s oddělenými požadavky na komunikaci.
-            E-maily v lokálním režimu nejsou odesílány.
-          </Notice>
-        )}
+        {collection === "faults" && !record && <></>}
         <Form
           fields={fields}
           initial={data}
@@ -830,7 +836,7 @@ export function EntityEditor({
                 label="Přidat přílohu"
               />
               {savedExpenseVehicle && (
-                <Notice>
+                <Notice warning>
                   Výdaj je uložen. Pokud nahrání přílohy selhalo, zopakujte
                   uložení; nový výdaj nevznikne. Údaje výdaje lze poté upravit v
                   jeho detailu.

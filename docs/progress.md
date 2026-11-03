@@ -154,3 +154,7 @@ Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `Vehi
 ## UX dávka 2 – A
 
 Opravy sdíleného potvrzení, uploadů, detailu tankování a kalendářového toolbaru. Diagnóza chybějících kolekcí Sheets pro A1/A3 je v `docs/ux-batch-2.md`. Typecheck a lint prošly. Pracovní větev `codex/ux-batch-2`; cílový remote podle výslovného zadání je UnsweetenedLemonade/FleetCare (původní AGENTS uvádí jiného vlastníka, remote nepřepisován).
+
+## UX dávka 2 – B
+
+Sjednoceny sdílené ovládací prvky, číselný vstup, pořadí tabulkových akcí, názvy a informační hlášky. Podrobný seznam v `docs/ux-batch-2.md`.

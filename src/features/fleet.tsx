@@ -567,7 +567,7 @@ export function DriverPage() {
                 ]}
               />
               {(!d.email || !d.phone || !d.licences.length) && (
-                <Notice>
+                <Notice warning>
                   Profil je rozpracovaný. Doplňte pracovní kontakt a oprávnění.
                 </Notice>
               )}

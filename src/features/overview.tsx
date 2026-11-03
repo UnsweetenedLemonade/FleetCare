@@ -19,6 +19,7 @@ import {
   Badge,
   DataGrid,
   HistorySwitch,
+  ChoiceButton,
   ViewToggle,
   Button,
   DataTable,
@@ -319,9 +320,18 @@ export function DeadlinesPage() {
         {calendar ? (
           <>
             <div className="toolbar">
-              <input aria-label="Měsíc" type="month" value={month} onChange={(e) => e.target.value && setMonth(e.target.value)} />
-              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>←</Button>
-              <Button aria-label="Další měsíc" onClick={() => shift(1)}>→</Button>
+              <input
+                aria-label="Měsíc"
+                type="month"
+                value={month}
+                onChange={(e) => e.target.value && setMonth(e.target.value)}
+              />
+              <Button aria-label="Předchozí měsíc" onClick={() => shift(-1)}>
+                ←
+              </Button>
+              <Button aria-label="Další měsíc" onClick={() => shift(1)}>
+                →
+              </Button>
               <div className="toolbar-actions">{controls}</div>
             </div>
             <div className="calendar">
@@ -429,8 +439,8 @@ export function DriverWorkspace() {
     vehicle: "Přehled",
     orders: "Moje zakázky",
     trips: "Moje jízdy",
-    fault: "Nahlásit závadu",
-    fuel: "Zadat tankování",
+    fault: "Závady",
+    fuel: "Tankování",
     requests: "Moje úkoly",
     documents: "Moje dokumenty",
   };
@@ -499,7 +509,7 @@ export function DriverWorkspace() {
               </div>
             </div>
           ) : (
-            <Notice>
+            <Notice warning>
               Nemáte dostupné vozidlo. Přiřazení vyřeší fleet manažer.
             </Notice>
           )}
@@ -585,7 +595,7 @@ export function DriverWorkspace() {
                 disabled={!v}
                 onClick={() => edit("faults", undefined, defaults)}
               >
-                Nahlásit závadu vlastního vozidla
+                Nahlásit závadu
               </Button>
             }
           />
@@ -596,22 +606,20 @@ export function DriverWorkspace() {
           <FuelTable
             rows={s.fuels}
             toolbarActions={
-              <>
-                <Button
-                  disabled={!v}
-                  onClick={() => show(<FuelIntakeDialog vehicleId={v?.id} />)}
-                >
-                  Nahrát účtenku
-                </Button>
-                <Button
-                  primary
-                  disabled={!v}
-                  onClick={() => edit("fuels", undefined, defaults)}
-                >
-                  <FuelIcon size={17} />
-                  Zadat tankování
-                </Button>
-              </>
+              <ChoiceButton
+                label="Zadat tankování"
+                icon={<Plus size={17} />}
+                choices={[
+                  {
+                    label: "Nahrát účtenku",
+                    action: () => show(<FuelIntakeDialog vehicleId={v?.id} />),
+                  },
+                  {
+                    label: "Zadat manuálně",
+                    action: () => edit("fuels", undefined, defaults),
+                  },
+                ]}
+              />
             }
           />
         </Panel>

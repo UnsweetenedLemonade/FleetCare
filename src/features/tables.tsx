@@ -551,7 +551,7 @@ export function FaultTable({
         },
         {
           key: "priority",
-          label: "Oznámená naléhavost",
+          label: "Naléhavost",
           sort: (f) => f.urgency,
           render: (f) => f.urgency,
         },

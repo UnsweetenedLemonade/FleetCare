@@ -218,13 +218,7 @@ export function ReportsPage({ costsOnly = false }: { costsOnly?: boolean }) {
         </Panel>
         {!costsOnly && (
           <Panel title="Úplnost a metodika">
-            {!!result.boundaryTrips && (
-              <Notice>
-                {result.boundaryTrips} jízd překračuje hranici období. Jejich km
-                bez rozděleného podkladu nejsou zahrnuty do měsíčního
-                jmenovatele.
-              </Notice>
-            )}
+            {!!result.boundaryTrips && <></>}
             <p>
               Časové zařazení zakázek používá poslední objednanou zastávku. Stav
               dokončení a plánované výnosy se vyhodnocují odděleně.
@@ -328,12 +322,7 @@ export function ReportsPage({ costsOnly = false }: { costsOnly?: boolean }) {
           ]}
         />
       </Panel>
-      {!costsOnly && (
-        <Notice>
-          Rozdíl výnosů a vybraných provozních nákladů není čistý zisk.
-          Nezahrnuje úplné účetní náklady firmy.
-        </Notice>
-      )}
+      {!costsOnly && <></>}
     </>
   );
 }
@@ -348,10 +337,7 @@ export function Kpi({
 }) {
   return (
     <div className="kpi">
-      <div className="kpi-label">
-        {label}
-        <span className="kpi-dot" />
-      </div>
+      <div className="kpi-label">{label}</div>
       <strong>{value}</strong>
       <small>{hint}</small>
     </div>

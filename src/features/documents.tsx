@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useLocation } from "react-router";
-import { Upload, Download, Trash2, Pencil } from "lucide-react";
+import { Download, Trash2, Pencil } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import type { Document } from "../domain/models";
 import {
@@ -95,7 +95,7 @@ export function UploadDialog({
               </select>
             </Field>
             <Field>
-              Platnost do (metadata)
+              Platnost do
               <input
                 type="date"
                 value={validUntil}
@@ -103,7 +103,7 @@ export function UploadDialog({
               />
             </Field>
             <Field>
-              Splatnost (metadata)
+              Splatnost
               <input
                 type="date"
                 value={dueAt}
@@ -112,7 +112,13 @@ export function UploadDialog({
             </Field>
           </div>
           <FilePicker
-            maxBytes={["STK", "Řidičský průkaz", "Účtenka", "CCS výpis"].includes(docType) ? fileLimits.extractionBytes : fileLimits.storageBytes}
+            maxBytes={
+              ["STK", "Řidičský průkaz", "Účtenka", "CCS výpis"].includes(
+                docType,
+              )
+                ? fileLimits.extractionBytes
+                : fileLimits.storageBytes
+            }
             accept={docType === "CCS výpis" ? "application/pdf" : undefined}
             files={selected}
             error={error}
@@ -199,16 +205,15 @@ export function DocumentList({
       <DataTable
         toolbarActions={
           <>
+            <HistorySwitch checked={historical} onChange={setHistorical} />
             {add && (
               <Button
                 primary
                 onClick={() => open(ownerType, ownerId, vehicleId)}
               >
-                <Upload size={17} />
                 Přidat dokument
               </Button>
             )}
-            <HistorySwitch checked={historical} onChange={setHistorical} />
           </>
         }
         prefix={`documents-${ownerType}-${ownerId}.`}
@@ -498,7 +503,9 @@ export function DocumentPage() {
             </Notice>
           )}
           {job.data?.missingFields?.length && (
-            <Notice>Chybí údaje: {job.data.missingFields.join(", ")}</Notice>
+            <Notice warning>
+              Chybí údaje: {job.data.missingFields.join(", ")}
+            </Notice>
           )}
           {doc.jobId && (
             <Button
@@ -511,12 +518,7 @@ export function DocumentPage() {
             </Button>
           )}
           {doc.error && <Notice error>{doc.error}</Notice>}
-          {doc.extraction === "not_configured" && (
-            <Notice>
-              Soubor je uložen. Extrakční služba není připojena; žádné údaje
-              nebyly automaticky načteny.
-            </Notice>
-          )}
+          {doc.extraction === "not_configured" && <></>}
           <p>Velikost: {number(doc.size / 1024, "kB")}</p>
           <p>Platnost: {date(doc.validUntil)}</p>
           <p>Splatnost: {date(doc.dueAt)}</p>
@@ -525,10 +527,7 @@ export function DocumentPage() {
           )}
           {doc.ownerType === "intake" && actor.role !== "Řidič" && (
             <>
-              <Notice>
-                STK pro nové vozidlo: originál čeká na připojené zpracování.
-                Vozidlo můžete založit ručně a následně dokument připojit.
-              </Notice>
+              <></>
               <Button onClick={() => show(<LinkDocument id={doc.id} />)}>
                 Připojit k existujícímu vozidlu
               </Button>

@@ -37,8 +37,8 @@ const driverNav = [
   ["/my/vehicle", "Přehled", LayoutGrid],
   ["/my/orders", "Moje zakázky", Package],
   ["/my/trips", "Moje jízdy", Route],
-  ["/my/fault", "Nahlásit závadu", Wrench],
-  ["/my/fuel", "Zadat tankování", Fuel],
+  ["/my/fault", "Závady", Wrench],
+  ["/my/fuel", "Tankování", Fuel],
   ["/my/requests", "Moje úkoly", ClipboardList],
   ["/my/documents", "Moje dokumenty", FileText],
 ] as const;
@@ -166,12 +166,7 @@ export function Layout({
             )}
           </div>
         )}
-        <div className={"mode-banner " + (config.label ? "demo" : "")}>
-          {config.label ||
-            (repo.mode === "local"
-              ? "Lokální režim — data jsou uložena v tomto prohlížeči"
-              : "API režim — data z nakonfigurovaného rozhraní")}
-        </div>
+        {config.label && <div className="mode-banner demo">{config.label}</div>}
         <main className="content" id="main" tabIndex={-1}>
           {children}
         </main>

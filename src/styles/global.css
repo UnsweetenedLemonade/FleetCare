@@ -749,7 +749,7 @@ legend {
   border-bottom: 1px solid var(--line);
 }
 .toolbar > .muted {
-  margin-left: auto;
+  margin-right: auto;
   font-size: var(--font-small);
 }
 .toolbar select {
@@ -1969,4 +1969,21 @@ textarea[aria-invalid="true"] {
 }
 .required-mark {
   white-space: nowrap;
+}
+
+.notice.warning {
+  background: #fff7df;
+  color: #6b4d11;
+  border-color: #e9cf8c;
+}
+.selected-files li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.selected-files li .btn {
+  margin-left: auto;
+}
+.toolbar > input[type="month"] {
+  width: auto;
 }
