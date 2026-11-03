@@ -83,7 +83,7 @@ export function UploadDialog({
           }}
         >
           <div className="form-grid">
-            <Field>
+            {type !== "STK" && <Field>
               Typ dokumentu
               <select
                 value={docType}
@@ -93,9 +93,9 @@ export function UploadDialog({
                   <option key={x}>{x}</option>
                 ))}
               </select>
-            </Field>
+            </Field>}
             <Field>
-              Platnost do (metadata)
+              Platnost do
               <input
                 type="date"
                 value={validUntil}
@@ -103,7 +103,7 @@ export function UploadDialog({
               />
             </Field>
             <Field>
-              Splatnost (metadata)
+              Splatnost
               <input
                 type="date"
                 value={dueAt}
@@ -112,6 +112,8 @@ export function UploadDialog({
             </Field>
           </div>
           <FilePicker
+            maxBytes={["STK", "Řidičský průkaz", "Účtenka", "CCS výpis"].includes(docType) ? fileLimits.extractionBytes : fileLimits.storageBytes}
+            accept={docType === "CCS výpis" ? "application/pdf" : undefined}
             files={selected}
             error={error}
             onChange={setSelected}
@@ -496,7 +498,7 @@ export function DocumentPage() {
             </Notice>
           )}
           {job.data?.missingFields?.length && (
-            <Notice>Chybí údaje: {job.data.missingFields.join(", ")}</Notice>
+            <Notice error>Chybí údaje: {job.data.missingFields.join(", ")}</Notice>
           )}
           {doc.jobId && (
             <Button
@@ -510,7 +512,7 @@ export function DocumentPage() {
           )}
           {doc.error && <Notice error>{doc.error}</Notice>}
           {doc.extraction === "not_configured" && (
-            <Notice>
+            <Notice error>
               Soubor je uložen. Extrakční služba není připojena; žádné údaje
               nebyly automaticky načteny.
             </Notice>
@@ -523,7 +525,7 @@ export function DocumentPage() {
           )}
           {doc.ownerType === "intake" && actor.role !== "Řidič" && (
             <>
-              <Notice>
+              <Notice error>
                 STK pro nové vozidlo: originál čeká na připojené zpracování.
                 Vozidlo můžete založit ručně a následně dokument připojit.
               </Notice>

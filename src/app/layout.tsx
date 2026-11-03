@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -38,8 +38,8 @@ const driverNav = [
   ["/my/vehicle", "Přehled", LayoutGrid],
   ["/my/orders", "Moje zakázky", Package],
   ["/my/trips", "Moje jízdy", Route],
-  ["/my/fault", "Nahlásit závadu", Wrench],
-  ["/my/fuel", "Zadat tankování", Fuel],
+  ["/my/fault", "Závady", Wrench],
+  ["/my/fuel", "Tankování", Fuel],
   ["/my/requests", "Moje úkoly", ClipboardList],
   ["/my/documents", "Moje dokumenty", FileText],
 ] as const;
@@ -52,7 +52,18 @@ export function Layout({
   onActor?: (actor: Actor) => void;
   onLogout?: () => void;
 }) {
-  const { actor, repo } = useFleet();
+  const { s, actor, repo } = useFleet();
+  const [userOpen, setUserOpen] = useState(false);
+  const userRef = useRef<HTMLDivElement>(null);
+  const userTrigger = useRef<HTMLButtonElement>(null);
+  const userName = s.drivers.find(d => d.id === actor.driverId)?.name || actor.role;
+  useEffect(() => {
+    if (!userOpen) return;
+    const outside = (e: PointerEvent) => { if (!userRef.current?.contains(e.target as Node)) setUserOpen(false); };
+    const escape = (e: KeyboardEvent) => { if (e.key === "Escape") { setUserOpen(false); userTrigger.current?.focus(); } };
+    document.addEventListener("pointerdown", outside); document.addEventListener("keydown", escape);
+    return () => { document.removeEventListener("pointerdown", outside); document.removeEventListener("keydown", escape); };
+  }, [userOpen]);
   const [menu, setMenu] = useState(false);
   const location = useLocation();
   useEffect(() => {
@@ -98,28 +109,6 @@ export function Layout({
           </span>
           FleetCare<span className="brand-period">.</span>
         </Link>
-        {repo.mode === "local" ? (
-          <label className="role-select">
-            <select
-              aria-label="Role"
-              value={actor.role}
-              onChange={(e) =>
-                onActor?.({
-                  role: e.target.value as Actor["role"],
-                  driverId: null,
-                })
-              }
-            >
-              {roles.map((role) => (
-                <option key={role}>{role}</option>
-              ))}
-            </select>
-          </label>
-        ) : (
-          <div className="role-display" aria-label="Přihlášená role">
-            {actor.role}
-          </div>
-        )}
         <nav aria-label="Hlavní navigace">
           {entries.map(([path, label, Icon]) => (
             <NavLink
@@ -154,16 +143,36 @@ export function Layout({
           <HeaderSearch
             key={`${actor.role}:${actor.driverId}:${location.pathname}`}
           />
-          {onLogout && (
-            <Button
-              className="logout-button"
-              aria-label="Odhlásit se"
-              onClick={onLogout}
-            >
-              <LogOut size={17} />
-              <span>Odhlásit</span>
+          <div className="user-menu" ref={userRef}>
+            <Button ref={userTrigger} aria-haspopup="true" aria-expanded={userOpen} aria-controls="user-options" onClick={() => setUserOpen(!userOpen)}>
+              <span className="avatar">{userName.split(/\s+/).slice(0,2).map(x => x[0]).join("")}</span><span>{userName}<small>{actor.role}</small></span>
             </Button>
-          )}
+            {userOpen && <div className="choice-menu" id="user-options" aria-label="Uživatelské menu">
+        {repo.mode === "local" ? (
+          <label className="role-select">
+            <select
+              aria-label="Role"
+              value={actor.role}
+              onChange={(e) =>
+                onActor?.({
+                  role: e.target.value as Actor["role"],
+                  driverId: null,
+                })
+              }
+            >
+              {roles.map((role) => (
+                <option key={role}>{role}</option>
+              ))}
+            </select>
+          </label>
+        ) : (
+          <div className="role-display" aria-label="Přihlášená role">
+            {actor.role}
+          </div>
+        )}
+              {onLogout && <Button onClick={onLogout}><LogOut size={17} />Odhlásit se</Button>}
+            </div>}
+          </div>
         </header>
         {actor.role === "Řidič" && repo.mode === "local" && (
           <div className="actor-bar">
@@ -189,12 +198,7 @@ export function Layout({
             )}
           </div>
         )}
-        <div className={"mode-banner " + (config.label ? "demo" : "")}>
-          {config.label ||
-            (repo.mode === "local"
-              ? "Lokální režim — data jsou uložena v tomto prohlížeči"
-              : "API režim — data z nakonfigurovaného rozhraní")}
-        </div>
+        {config.label && <div className="mode-banner demo">{config.label}</div>}
         <main className="content" id="main" tabIndex={-1}>
           {children}
         </main>

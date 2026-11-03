@@ -3,14 +3,14 @@ import { DomainError } from "../domain/rules";
 import { useState } from "react";
 import { useNavigate } from "react-router";
 import { useFleet } from "../app/context";
-import { Dialog, FilePicker, Form, Notice } from "../components/ui";
+import { Dialog, FilePicker, Form, type FieldSpec } from "../components/ui";
 import { localTime, toPragueTimestamp } from "../lib/format";
 export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
   const { s, actor, run, upload, close } = useFleet(),
     navigate = useNavigate();
   const [files, setFiles] = useState<File[]>([]),
     [id] = useState(() => crypto.randomUUID()),
-    [saved, setSaved] = useState(false);
+    [, setSaved] = useState(false);
   return (
     <Dialog
       title="Nahrát tankovací účtenku"
@@ -18,12 +18,9 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
       dirty={files.length > 0}
     >
       <div className="dialog-body">
-        <Notice>
-          Zadejte vlastníka, čas, litry a částku podle účtenky. Údaje z obrázku
-          se bez nakonfigurovaného OCR automaticky nevytěžují.
-        </Notice>
+        
         <Form
-          fields={[
+          fields={([
             {
               key: "vehicleId",
               label: "Vozidlo",
@@ -57,7 +54,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
               type: "money",
               required: true,
             },
-          ]}
+          ] satisfies FieldSpec[]).filter(f => actor.role !== "Řidič" || f.key !== "driverId")}
           initial={{
             vehicleId: vehicleId || "",
             driverId: actor.driverId || "",
@@ -84,6 +81,7 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
                 collection: "fuels",
                 data: {
                   ...values,
+                  ...(actor.role === "Řidič" ? {driverId: actor.driverId} : {}),
                   id,
                   at: toPragueTimestamp(String(values.at)),
                   full: "Není doloženo",
@@ -106,17 +104,13 @@ export function FuelIntakeDialog({ vehicleId }: { vehicleId?: string }) {
           }}
         >
           <FilePicker
+            maxBytes={5 * 1024 * 1024}
             files={files}
             onChange={setFiles}
             label="Vybrat účtenku"
             camera
           />
-          {saved && (
-            <Notice>
-              Neúplné tankování je uloženo. Při chybě přílohy můžete nahrání
-              zopakovat bez vytvoření druhého záznamu.
-            </Notice>
-          )}
+          
         </Form>
       </div>
     </Dialog>
