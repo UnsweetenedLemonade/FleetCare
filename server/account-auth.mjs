@@ -13,7 +13,8 @@ export function matchAccount(accounts, email, password) {
       String(row.email ?? "")
         .trim()
         .toLocaleLowerCase("en-US") === normalizedEmail &&
-      String(row.password ?? "") === String(password ?? ""),
+      String(row.password ?? "") === String(password ?? "") &&
+      [true, 1, "TRUE", "true"].includes(row.active),
   );
   if (!account) return null;
 
