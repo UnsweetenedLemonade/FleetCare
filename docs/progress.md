@@ -6,7 +6,7 @@
 
 - Jízdy: ukončení z FE uloží „Ukončena neúplná“ bez koncového tachometru, jinak „K ověření“; následné úpravy stav nepřepisují. Časy se ukládají jako ISO s pražským offsetem. Typecheck, lint, 48 testů, syntaxe gatewaye a produkční build prošly.
 
-- Přidáno přihlášení pro HTTP/Sheets režim přes list `accounts`: e-mail a heslo se ověřují v gateway, role `driver`/`fleet`/`management` se mapují na aplikaci, řidič se váže přes `driver_id`; `active` se dle zadání ignoruje. Přihlášený kontext se při obnově zachová a lze se odhlásit. Lokální režim si ponechává přepínač rolí. Ověřeno typecheck, lint, gateway syntax, 46 testů a produkční build; login karta zkontrolována na desktopu a šířce 390 px.
+- Přihlášení pro HTTP/Sheets režim přes list `accounts` ověřuje nyní i `active=TRUE`; role `driver`/`fleet`/`management` se mapují na aplikaci a řidič se váže přes `driver_id`. Přihlášený kontext se při obnově zachová a lze se odhlásit. Lokální režim si ponechává přepínač rolí.
 - Dockerfile gatewaye nyní kopíruje modul mapující účty, který login endpoint importuje. Po změně je nutné na VPS znovu sestavit a vynutit vytvoření kontejneru `gateway`.
 
 - Oprava diagnostiky HTTP konfigurace: `HttpRepository` nyní při neplatné/nezadané URL uvádí `VITE_API_BASE_URL`, jak očekává test i konfigurace aplikace. Ověřeno typecheck, lint, všech 36 testů a produkční build.
@@ -164,3 +164,10 @@ Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `Vehi
 Práce na codex/ux-batch-2; audit a výsledky v docs/ux-batch-2.md. A1/A3 vyžadují rozhodnutí o Sheets integraci; model ani API nebyly změněny.
 
 UX dávka 2: implementovány společné komponenty, řidičské formuláře/úkoly, upozornění, sjednocení nájezdu a reportů. Podrobný stav A–F v docs/ux-batch-2.md. Kontroly: 50 testů prošlo, typecheck/lint/build prošly; Chromium ověřil dialog, upload a mobil. A1/A3 vyžadují potvrzenou integraci Sheets, jméno manažera není v Actor API. Finální větev codex/ux-batch-2-cloud.
+
+### 4. 11. 2026 — Opravy Sheets gatewaye
+
+- Účty s `active` odlišným od TRUE se nepřihlásí.
+- Závady se načítají a ukládají do listu `faults`; historie přidělení se načítá z `assignments`, při změně se předchozí záznam uzavře a nový přidá. Při přiřazení kamionu/nákladního vozidla gateway vyžaduje skupinu C nebo CE.
+- Příkaz `vehicle.assign` nese verzi vozidla; doménová kontrola i Sheets gateway vrací konflikt 409 při zastaralé verzi. HTTP klient zobrazuje hlášku o obnovení detailu.
+- Ověřeno: `node --check` obou modulů gatewaye, typecheck, lint, všech 50 testů a produkční build. Testy potřebovaly povolený localhost kvůli svému HTTP serveru. Produkční build má dosavadní upozornění na velké JS chunky. Skutečná tabulka ani nasazená gateway nebyly dostupné pro integrační ověření.

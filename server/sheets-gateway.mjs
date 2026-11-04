@@ -147,8 +147,8 @@ let workspaceCache;
 let workspaceCacheUntil = 0;
 async function workspace() {
   if (workspaceCache && workspaceCacheUntil > Date.now()) return workspaceCache;
-  const [vehiclesSheet, driversSheet, deadlinesSheet, tripsSheet, fuelSheet, settingsRaw] = await Promise.all([
-    sheet("vehicles"), sheet("drivers"), sheet("deadlines"), sheet("trips"), sheet("fuel"), rows("settings"),
+  const [vehiclesSheet, driversSheet, deadlinesSheet, tripsSheet, fuelSheet, faultsSheet, assignmentsSheet, settingsRaw] = await Promise.all([
+    sheet("vehicles"), sheet("drivers"), sheet("deadlines"), sheet("trips"), sheet("fuel"), sheet("faults"), sheet("assignments"), rows("settings"),
   ]);
   const decorated = (data) => data.rows.map((r) => ({ ...r.data, __rowNumber: r.rowNumber, __version: rowVersion(r.values), __values: r.values }));
   const vehiclesRaw = decorated(vehiclesSheet);
@@ -156,6 +156,8 @@ async function workspace() {
   const deadlinesRaw = decorated(deadlinesSheet);
   const tripsRaw = decorated(tripsSheet);
   const fuelRaw = decorated(fuelSheet);
+  const faultsRaw = decorated(faultsSheet);
+  const assignmentsRaw = decorated(assignmentsSheet);
   const settings = Object.fromEntries(settingsRaw.map((r) => [r.key, r.value]));
   const vehicles = vehiclesRaw.map((r) => ({
     ...meta(text(r, "vehicle_id"), undefined, r.__version), spz: text(r, "spz"), vin: text(r, "vin"),
@@ -169,9 +171,17 @@ async function workspace() {
     suspended: text(r, "state") !== "Aktivní", licences: split(r.licence).map((name) => ({ name, validUntil: dateOnly(r.licence_valid_until) })),
     qualifications: [], medicalState: "Není doloženo", medicalUntil: null,
   }));
-  const assignments = driversRaw.filter((r) => r.vehicle_id).map((r, i) => ({
-    ...meta(`sheet-assignment-${i}`), vehicleId: text(r, "vehicle_id"), driverId: text(r, "driver_id"),
-    from: "2000-01-01T00:00:00.000Z", to: null, reason: "Přiřazení importované z tabulky", odometer: null,
+  const assignments = assignmentsRaw.map((r) => ({
+    ...meta(text(r, "assignment_id"), stamp(r.valid_from), r.__version), vehicleId: text(r, "vehicle_id"), driverId: text(r, "driver_id"),
+    from: stamp(r.valid_from), to: r.valid_to ? stamp(r.valid_to) : null, reason: text(r, "reason"), odometer: number(r, "odometer_km"),
+  }));
+  const faults = faultsRaw.map((r) => ({
+    ...meta(text(r, "fault_id"), stamp(r.reported_at), r.__version), vehicleId: text(r, "vehicle_id"), driverId: text(r, "driver_id") || null,
+    at: stamp(r.reported_at), km: number(r, "odometer_km"), category: text(r, "category"), description: text(r, "description"),
+    urgency: text(r, "urgency", "Střední"), state: text(r, "state", "Nahlášena"), unavailable: bool(r, "unavailable"),
+    repair: text(r, "repair"), estimateMinor: number(r, "estimate_czk") == null ? null : Math.round(number(r, "estimate_czk") * 100),
+    actualMinor: number(r, "actual_czk") == null ? null : Math.round(number(r, "actual_czk") * 100), serviceId: null, serviceFrom: null, serviceTo: null,
+    estimateAt: null, estimateSource: null, currency: "CZK", caseReference: text(r, "case_reference"),
   }));
   const readings = vehiclesRaw.filter((r) => number(r, "odometer_km") !== null).map((r) => ({
     ...meta(`sheet-reading-${text(r, "vehicle_id")}`), vehicleId: text(r, "vehicle_id"), at: "2000-01-01T00:00:00.000Z",
@@ -199,7 +209,7 @@ async function workspace() {
   }));
   workspaceCache = {
     vehicles, drivers, assignments, readings, deadlines, trips, fuels,
-    orders: [], faults: [], statements: [], transactions: [], expenses: [], templates: [], plans: [], services: [], cards: [], notifications: [], events: [], documents: [],
+    orders: [], faults, statements: [], transactions: [], expenses: [], templates: [], plans: [], services: [], cards: [], notifications: [], events: [], documents: [],
     settings: {
       managerEmail: String(settings.manager_email || ""),
       daysBefore: split(settings.a5_levels_days).map(Number).filter(Number.isFinite),
@@ -302,6 +312,15 @@ async function executeCommand(command) {
       };
       });
     }
+    if (collection === "faults") {
+      const faultData = {
+        vehicle_id: data.vehicleId, driver_id: data.driverId || "", reported_at: data.at, odometer_km: data.km ?? "",
+        category: data.category, description: data.description, urgency: data.urgency, state: data.state,
+        unavailable: data.unavailable ? "TRUE" : "FALSE", repair: data.repair || "",
+        estimate_czk: money(data.estimateMinor), actual_czk: money(data.actualMinor), case_reference: data.caseReference || "",
+      };
+      return update("faults", "fault_id", () => faultData, faultData);
+    }
     fail(422, `List tabulky nepodporuje ukládání kolekce ${collection}.`);
   }
   if (command.type === "driver.toggle") {
@@ -314,6 +333,14 @@ async function executeCommand(command) {
     const [vehicles, drivers] = await Promise.all([sheet("vehicles"), sheet("drivers")]);
     vehicles.tab = "vehicles"; drivers.tab = "drivers";
     const vehicle = sheetRecord(vehicles, "vehicle_id", command.vehicleId);
+    expectVersion(vehicle, command.version);
+    const [assignmentsSheet] = await Promise.all([sheet("assignments")]);
+    assignmentsSheet.tab = "assignments";
+    const affectedAssignments = assignmentsSheet.rows.filter((row) => !row.data.valid_to &&
+      (String(row.data.vehicle_id) === command.vehicleId || (command.driverId && String(row.data.driver_id) === command.driverId)));
+    const nextDriver = command.driverId ? sheetRecord(drivers, "driver_id", command.driverId) : null;
+    if (nextDriver && ["Kamion", "Nákladní vozidlo"].includes(String(vehicle.data.type || "")) && !/(^|[,;\s])C(E)?($|[,;\s])/i.test(String(nextDriver.data.licence || "")))
+      fail(422, "Řidič nemá potřebné oprávnění");
     const changes = [];
     const oldDriverId = String(vehicle.data.driver_id || "");
     if (oldDriverId) {
@@ -335,6 +362,12 @@ async function executeCommand(command) {
     // Keep one update per row; the last patch wins when the old and next driver are the same.
     const unique = new Map(changes.map((x) => [`${x.tab}:${x.rowNumber}`, x]));
     await updateRows([...unique.values()]);
+    for (const assignment of affectedAssignments)
+      await writeRow("assignments", assignment.rowNumber, { valid_to: command.from }, assignment);
+    if (command.driverId) await appendRow("assignments", {
+      assignment_id: randomUUID(), vehicle_id: command.vehicleId, driver_id: command.driverId, valid_from: command.from,
+      valid_to: "", odometer_km: command.odometer ?? "", reason: command.reason,
+    });
     return;
   }
   if (command.type === "trip.start") {
