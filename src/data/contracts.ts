@@ -28,6 +28,7 @@ export type Command =
   | {
       type: "vehicle.assign";
       vehicleId: string;
+      version: number;
       driverId: string | null;
       from: string;
       reason: string;

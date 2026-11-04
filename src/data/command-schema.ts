@@ -31,6 +31,7 @@ const commandUnion = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("vehicle.assign"),
     vehicleId: z.string(),
+    version: z.number().int().positive(),
     driverId: z.string().nullable(),
     from: z.iso.datetime({ offset: true }),
     reason: z.string().min(1),

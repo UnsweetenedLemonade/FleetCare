@@ -294,6 +294,7 @@ function AssignmentDialog({
   end?: boolean;
 }) {
   const { s, run, close } = useFleet();
+  const v = s.vehicles.find((vehicle) => vehicle.id === vehicleId)!;
   const [dirty, setDirty] = useState(false);
   return (
     <Dialog
@@ -333,6 +334,7 @@ function AssignmentDialog({
             await run({
               type: "vehicle.assign",
               vehicleId,
+              version: v.version,
               driverId: end ? null : String(values.driverId),
               from: toPragueTimestamp(String(values.from)),
               reason: String(values.reason),

@@ -151,7 +151,10 @@ describe("HTTP kontrakt proti izolovanému serveru", () => {
           idempotencyKey: "key-" + code,
           command: { type: "driver.toggle", id: "d1", version: 1 },
         }),
-      ).rejects.toMatchObject({ status: code });
+      ).rejects.toMatchObject({
+        status: code,
+        ...(code === 409 ? { message: "Konflikt verze: obnovte detail před opakováním změny." } : {}),
+      });
       expect(requests.length - before).toBe(1);
     }
     status = 200;

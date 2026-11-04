@@ -378,7 +378,8 @@ export function applyCommand(
     Object.assign(d, touch(d), { suspended: !d.suspended });
   } else if (c.type === "vehicle.assign") {
     manager(actor);
-    find(s, "vehicles", c.vehicleId);
+    const vehicle = find(s, "vehicles", c.vehicleId);
+    version(vehicle.version, c.version);
     ensure(c.reason.trim(), "Vyplňte důvod.", "reason");
     if (c.driverId) {
       const d = find(s, "drivers", c.driverId);
