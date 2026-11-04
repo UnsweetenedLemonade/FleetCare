@@ -3619,6 +3619,11 @@
               "vehicleId": {
                 "type": "string"
               },
+              "version": {
+                "type": "integer",
+                "exclusiveMinimum": 0,
+                "maximum": 9007199254740991
+              },
               "driverId": {
                 "anyOf": [
                   {
@@ -3653,6 +3658,7 @@
             "required": [
               "type",
               "vehicleId",
+              "version",
               "driverId",
               "from",
               "reason",
