@@ -2,7 +2,7 @@ import { DocumentLink } from "./documents";
 import type { ReactNode } from "react";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
-import { Truck, UserPlus, Pencil, Pause, Play } from "lucide-react";
+import { Truck, UserPlus, Pencil, Pause, Play, Plus } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import {
   Back,
@@ -177,7 +177,22 @@ export function VehiclePage() {
           {tab === "plan" && <ServicePlan vehicle={v} />}
           {tab === "faults" && (
             <>
-              <FaultTable rows={s.faults.filter((f) => f.vehicleId === v.id)} />
+              <FaultTable
+                rows={s.faults.filter((f) => f.vehicleId === v.id)}
+                toolbarActions={
+                  actor.role !== "Řidič" && (
+                    <Button
+                      primary
+                      onClick={() =>
+                        edit("faults", undefined, { vehicleId: v.id })
+                      }
+                    >
+                      <Plus size={17} />
+                      Nahlásit závadu
+                    </Button>
+                  )
+                }
+              />
             </>
           )}
           {tab === "orders" && (
