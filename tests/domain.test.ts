@@ -28,8 +28,8 @@ describe("Provozní pravidla", () => {
     applyCommand(s, manager, {
       type: "order.assign",
       id: "o1",
-      version: 1,
       vehicleId: "v1",
+      version: 1,
       driverId: "d1",
     });
     applyCommand(s, manager, { type: "driver.toggle", id: "d1", version: 1 });
@@ -114,6 +114,7 @@ describe("Provozní pravidla", () => {
     applyCommand(s, manager, {
       type: "vehicle.assign",
       vehicleId: "v1",
+      version: 1,
       driverId: "d1",
       from: "2026-10-28T10:00:00Z",
       reason: "Test",
@@ -224,7 +225,8 @@ describe("Provozní pravidla", () => {
       endKm: 150,
       state: "K ověření",
     });
-    expect(() => validateTrip(s, { ...t, endKm: 90 })).toThrow("nižší");
+    expect(() => validateTrip(s, { ...t, endKm: t.startKm })).toThrow("vyšší");
+    expect(() => validateTrip(s, { ...t, endKm: 90 })).toThrow("vyšší");
     s.trips.push(t);
     expect(() => validateTrip(s, { ...t, id: "other" })).toThrow("překrývá");
   });

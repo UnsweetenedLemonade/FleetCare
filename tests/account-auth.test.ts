@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { matchAccount } from "../server/account-auth.mjs";
 
 describe("Sheets account authentication", () => {
-  it("maps spreadsheet roles to application roles and ignores active", () => {
+  it("maps active spreadsheet accounts to application roles", () => {
     expect(
       matchAccount(
         [
@@ -11,7 +11,7 @@ describe("Sheets account authentication", () => {
             password: "plain",
             role: "driver",
             driver_id: "drv-7",
-            active: false,
+            active: "TRUE",
           },
         ],
         " DRIVER@example.cz ",
@@ -21,8 +21,8 @@ describe("Sheets account authentication", () => {
     expect(
       matchAccount(
         [
-          { email: "fleet@example.cz", password: "pw", role: "fleet" },
-          { email: "boss@example.cz", password: "pw", role: "management" },
+          { email: "fleet@example.cz", password: "pw", role: "fleet", active: true },
+          { email: "boss@example.cz", password: "pw", role: "management", active: 1 },
         ],
         "fleet@example.cz",
         "pw",
@@ -30,7 +30,7 @@ describe("Sheets account authentication", () => {
     ).toEqual({ role: "Fleet manažer", driverId: null });
     expect(
       matchAccount(
-        [{ email: "boss@example.cz", password: "pw", role: "management" }],
+        [{ email: "boss@example.cz", password: "pw", role: "management", active: "TRUE" }],
         "boss@example.cz",
         "pw",
       ),
@@ -38,6 +38,7 @@ describe("Sheets account authentication", () => {
   });
 
   it("rejects mismatched passwords and invalid driver accounts", () => {
+    expect(matchAccount([{ email: "fleet@example.cz", password: "pw", role: "fleet", active: false }], "fleet@example.cz", "pw")).toBeNull();
     expect(
       matchAccount(
         [{ email: "fleet@example.cz", password: "pw", role: "fleet" }],
@@ -47,7 +48,7 @@ describe("Sheets account authentication", () => {
     ).toBeNull();
     expect(() =>
       matchAccount(
-        [{ email: "driver@example.cz", password: "pw", role: "driver" }],
+        [{ email: "driver@example.cz", password: "pw", role: "driver", active: true }],
         "driver@example.cz",
         "pw",
       ),

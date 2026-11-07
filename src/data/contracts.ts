@@ -28,11 +28,13 @@ export type Command =
   | {
       type: "vehicle.assign";
       vehicleId: string;
+      version: number;
       driverId: string | null;
       from: string;
       reason: string;
       odometer: number | null;
     }
+  | { type: "vehicle.delete"; id: string; version: number }
   | {
       type: "order.assign";
       id: string;
