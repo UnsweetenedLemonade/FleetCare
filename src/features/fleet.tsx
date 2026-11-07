@@ -2,10 +2,8 @@ import { useHistory } from "../lib/history";
 import { DocumentLink } from "./documents";
 import type { ReactNode } from "react";
 import { useState } from "react";
-import { Link, useParams } from "react-router";
-import { Truck, UserPlus, Pencil, Pause, Play, Plus } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router";
-import { Truck, UserPlus, Pencil, Pause, Play, Trash2 } from "lucide-react";
+import { Truck, UserPlus, Pencil, Pause, Play, Plus, Trash2 } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import {
   Back,
