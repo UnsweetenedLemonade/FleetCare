@@ -1,3 +1,4 @@
+import { DeadlineDateDialog, deadlineEdit } from "./deadline-editor";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
 import {
@@ -11,7 +12,6 @@ import {
   Square,
   List,
   CalendarDays,
-  Pencil,
 } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
@@ -648,7 +648,6 @@ export function DriverWorkspace() {
 export function DeadlinePage() {
   const { id } = useParams();
   const { s, show } = useFleet();
-  const edit = useEditors();
   const d = deadlines(s).find((d) => d.id === id);
   if (!d) return <Empty title="Termín není dostupný" />;
   const sourceTrip = s.trips.find((t) => d.path === `/trips/${t.id}`);
@@ -660,18 +659,14 @@ export function DeadlinePage() {
     sourceTrip?.driverId ||
     s.deadlines.find((r) => r.id === d.id)?.driverId ||
     (d.path.startsWith("/drivers/") ? d.path.split("/")[2] : null);
-  const record = s.deadlines.find((r) => r.id === d.id);
+  const editable = deadlineEdit(s, d);
   return (
     <>
       <Back to="/deadlines">Termíny a upozornění</Back>
       <PageHead
         title={d.title}
         actions={
-          record ? (
-            <Button onClick={() => edit("deadlines", record)}>
-              Upravit termín
-            </Button>
-          ) : sourceTrip && sourceTrip.endKm === null ? (
+          sourceTrip && sourceTrip.endKm === null ? (
             <Button
               onClick={() =>
                 show(<CompleteOdometerDialog tripId={sourceTrip.id} />)
@@ -679,12 +674,11 @@ export function DeadlinePage() {
             >
               Vyřešit
             </Button>
-          ) : (
-            <Link className="btn" to={d.path}>
-              <Pencil size={17} />
+          ) : editable ? (
+            <Button onClick={() => show(<DeadlineDateDialog deadline={d} />)}>
               Upravit termín
-            </Link>
-          )
+            </Button>
+          ) : null
         }
       />
       <Panel>
