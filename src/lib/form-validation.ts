@@ -12,3 +12,24 @@ export function documentDateField(type: Document["type"]): {
     label: type === "STK" ? "Platnost STK do" : "Platnost do",
   };
 }
+
+/** UI-only strict odometer check; missing values remain the required-field validator's job. */
+export function odometerErrors(
+  values: Record<string, unknown>,
+): Record<string, string> {
+  const parse = (value: unknown) =>
+    value == null || String(value).trim() === ""
+      ? null
+      : Number(String(value).replace(/\s/g, "").replace(",", "."));
+  const start = parse(values.startKm),
+    end = parse(values.endKm);
+  return start !== null &&
+    end !== null &&
+    Number.isFinite(start) &&
+    Number.isFinite(end) &&
+    end <= start
+    ? {
+        endKm: `Koncový tachometr musí být vyšší než počáteční (${new Intl.NumberFormat("cs-CZ").format(start)} km).`,
+      }
+    : {};
+}

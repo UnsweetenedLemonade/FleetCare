@@ -1,3 +1,4 @@
+import { odometerErrors } from "../lib/form-validation";
 import { z } from "zod";
 import { useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
@@ -723,6 +724,7 @@ export function EntityEditor({
       <div className="dialog-body">
         <Form
           fields={fields}
+          validate={collection === "trips" ? odometerErrors : undefined}
           initial={data}
           onDirty={setDirty}
           submit={startTrip ? "Zahájit jízdu" : "Uložit"}

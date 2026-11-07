@@ -35,3 +35,14 @@ it("requires VIN and STK for manual vehicle creation using the existing vehicle 
     )?.required,
   ).toBe(false);
 });
+
+import { odometerErrors } from "../src/lib/form-validation";
+it("requires the end odometer to be strictly greater and handles localized input", () => {
+  for (const endKm of [284519, 284520, "284 520"])
+    expect(odometerErrors({ startKm: 284520, endKm }).endKm).toContain(
+      "vyšší než počáteční",
+    );
+  expect(odometerErrors({ startKm: "284 520", endKm: "284521" })).toEqual({});
+  expect(odometerErrors({ startKm: 0, endKm: 0 }).endKm).toBeTruthy();
+  expect(odometerErrors({ startKm: 20, endKm: "" })).toEqual({});
+});
