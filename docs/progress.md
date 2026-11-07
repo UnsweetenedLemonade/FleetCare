@@ -164,3 +164,7 @@ Všechny nově vyjmenované prvky detailu vozidla jsou již odstraněné v `Vehi
 Práce na codex/ux-batch-2; audit a výsledky v docs/ux-batch-2.md. A1/A3 vyžadují rozhodnutí o Sheets integraci; model ani API nebyly změněny.
 
 UX dávka 2: implementovány společné komponenty, řidičské formuláře/úkoly, upozornění, sjednocení nájezdu a reportů. Podrobný stav A–F v docs/ux-batch-2.md. Kontroly: 50 testů prošlo, typecheck/lint/build prošly; Chromium ověřil dialog, upload a mobil. A1/A3 vyžadují potvrzenou integraci Sheets, jméno manažera není v Actor API. Finální větev codex/ux-batch-2-cloud.
+
+## FE audit — dávka 3
+
+Na aktuální větvi `work` dokončeny A1–A8 a B1/B3/B4 v samostatných commitech; B2 již hotovo. Report, příčina VIN, inventura historie a rozhodnutí: [fe-audit-3.md](fe-audit-3.md). Typecheck, lint a 61 testů prošly; Chromium ověřil formuláře, časy, historii a navigaci v šířkách 1440/390 px. Model ani API nezměněny, jediná doménová oprava se týká nezměněného VIN. Předání obsahuje závěrečný build/test a výsledek pushe na `origin/work`; veřejné demo se touto dávkou nenasazuje.
