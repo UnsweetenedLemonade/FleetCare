@@ -566,7 +566,9 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
         )}
         {step !== "form" && (
           <div aria-busy={saving}>
-            <h3>Chcete uložit jako šablonu?</h3>
+            <h3 className="service-plan-save-question">
+              Chcete uložit jako šablonu?
+            </h3>
             {saveError && <Notice error>{saveError}</Notice>}
             {step === "ask" ? (
               <div className="actions">
