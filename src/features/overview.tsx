@@ -1,3 +1,4 @@
+import { useHistory } from "../lib/history";
 import { DeadlineDateDialog, deadlineEdit } from "./deadline-editor";
 import { useState } from "react";
 import { Link, useParams } from "react-router";
@@ -281,11 +282,15 @@ export function DeadlinesPage() {
   const { s } = useFleet(),
     edit = useEditors();
   const [calendar, setCalendar] = useState(false),
-    [month, setMonth] = useState(today().slice(0, 7)),
-    [historical, setHistorical] = useState(false);
-  const all = deadlines(s)
-    .filter((d) => historical || d.state !== "Splněno")
-    .map((d) => ({ ...d, path: `/deadlines/${encodeURIComponent(d.id)}` }));
+    [month, setMonth] = useState(today().slice(0, 7));
+  const { rows, historical, setHistorical } = useHistory(
+    deadlines(s),
+    (d) => d.state === "Splněno",
+  );
+  const all = rows.map((d) => ({
+    ...d,
+    path: `/deadlines/${encodeURIComponent(d.id)}`,
+  }));
   const controls = (
     <>
       <ViewToggle

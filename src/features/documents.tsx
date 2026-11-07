@@ -1,3 +1,4 @@
+import { useHistory } from "../lib/history";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, useParams, useLocation } from "react-router";
@@ -191,18 +192,24 @@ export function DocumentList({
 }) {
   const { s, show, close, run } = useFleet(),
     open = useUpload();
-  const [historical, setHistorical] = useState(false);
-  const docs = s.documents.filter(
+  const prefix = `documents-${ownerType}-${ownerId}.`;
+  const {
+    rows: docs,
+    historical,
+    setHistorical,
+  } = useHistory(
+    s.documents.filter(
+      (d) =>
+        !d.deletedAt &&
+        ((d.ownerType === ownerType && d.ownerId === ownerId) ||
+          (ownerType === "vehicle" && d.vehicleId === ownerId) ||
+          relatedOwners.some(
+            (o) => o.ownerType === d.ownerType && o.ownerId === d.ownerId,
+          )),
+    ),
     (d) =>
-      !d.deletedAt &&
-      ((d.ownerType === ownerType && d.ownerId === ownerId) ||
-        (ownerType === "vehicle" && d.vehicleId === ownerId) ||
-        relatedOwners.some(
-          (o) => o.ownerType === d.ownerType && o.ownerId === d.ownerId,
-        )) &&
-      (historical ||
-        !d.validUntil ||
-        d.validUntil >= new Date().toISOString().slice(0, 10)),
+      !!d.validUntil && d.validUntil < new Date().toISOString().slice(0, 10),
+    prefix,
   );
   return (
     <>
@@ -221,7 +228,7 @@ export function DocumentList({
             <HistorySwitch checked={historical} onChange={setHistorical} />
           </>
         }
-        prefix={`documents-${ownerType}-${ownerId}.`}
+        prefix={prefix}
         rows={docs}
         path={(d) => `/documents/${d.id}`}
         search={(d) => d.name + " " + d.type}
