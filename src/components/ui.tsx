@@ -839,6 +839,7 @@ export function HistorySwitch({
   );
 }
 export function ViewToggle({
+  label = "Zobrazení",
   value,
   onChange,
   items,
@@ -846,9 +847,10 @@ export function ViewToggle({
   value: string;
   onChange: (value: string) => void;
   items: { value: string; label: string; icon?: ReactNode }[];
+  label?: string;
 }) {
   return (
-    <div className="view-toggle" role="group" aria-label="Zobrazení">
+    <div className="view-toggle" role="group" aria-label={label}>
       {items.map((i) => (
         <button
           key={i.value}

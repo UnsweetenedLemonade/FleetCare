@@ -19,6 +19,7 @@ import {
   Field,
   FilePicker,
   Form,
+  ViewToggle,
   type FieldSpec,
 } from "../components/ui";
 import { DomainError } from "../domain/rules";
@@ -483,6 +484,139 @@ function PlanItems({
     </div>
   );
 }
+export function validatePlanItems(items: Records["plans"]["items"]) {
+  const issues: z.core.$ZodIssue[] = [];
+  items.forEach((item, index) => {
+    if (!((item.intervalKm ?? 0) > 0 || (item.intervalMonths ?? 0) > 0))
+      for (const field of ["intervalKm", "intervalMonths"])
+        issues.push({
+          code: "custom",
+          path: ["items", index, field],
+          message: "Zadejte kladný interval v km nebo měsících.",
+        });
+  });
+  if (issues.length) throw new z.ZodError(issues);
+}
+
+function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
+  const { s, run, close } = useFleet();
+  const [mode, setMode] = useState<"template" | "individual">("template");
+  const [switchTo, setSwitchTo] = useState<"template" | "individual" | null>(
+    null,
+  );
+  const [templateId, setTemplateId] = useState("");
+  const [items, setItems] = useState<Records["plans"]["items"]>([]);
+  const [dirty, setDirty] = useState(false);
+  const [key] = useState(() => crypto.randomUUID());
+  const switchMode = (next: "template" | "individual") => {
+    setMode(next);
+    setTemplateId("");
+    setItems([]);
+    setSwitchTo(null);
+    setDirty(true);
+  };
+  return (
+    <Dialog
+      title="Přidat servisní plán"
+      dirty={!switchTo && dirty}
+      onClose={() => (switchTo ? setSwitchTo(null) : close())}
+    >
+      <div className="dialog-body">
+        {switchTo && (
+          <div>
+            <p>Přepnutím se zahodí rozpracované úkony. Pokračovat?</p>
+            <div className="actions">
+              <Button onClick={() => setSwitchTo(null)}>Zrušit</Button>
+              <Button danger onClick={() => switchMode(switchTo)}>
+                Pokračovat
+              </Button>
+            </div>
+          </div>
+        )}
+        <div hidden={!!switchTo}>
+          <ViewToggle
+            label="Způsob vytvoření servisního plánu"
+            value={mode}
+            items={[
+              { value: "template", label: "Šablona" },
+              { value: "individual", label: "Individuální plán" },
+            ]}
+            onChange={(value) => {
+              const next = value as typeof mode;
+              if (next === mode) return;
+              if (templateId || items.length) setSwitchTo(next);
+              else switchMode(next);
+            }}
+          />
+          <Form
+            fields={[]}
+            onDirty={setDirty}
+            onSubmit={async () => {
+              validatePlanItems(items);
+              await run(
+                {
+                  type: "save",
+                  collection: "plans",
+                  data: { vehicleId, templateId: templateId || null, items },
+                },
+                key,
+              );
+              close();
+            }}
+          >
+            {mode === "template" && (
+              <Field>
+                Šablona
+                <select
+                  value={templateId}
+                  onChange={(e) => {
+                    setTemplateId(e.target.value);
+                    const template = s.templates.find(
+                      (t) => t.id === e.target.value,
+                    );
+                    setItems(
+                      template
+                        ? template.items.map((i) => ({
+                            ...i,
+                            id: crypto.randomUUID(),
+                          }))
+                        : [],
+                    );
+                    setDirty(true);
+                  }}
+                >
+                  <option value="">
+                    {s.templates.length ? "Vyberte šablonu" : "Žádné šablony"}
+                  </option>
+                  {s.templates.map((t) => (
+                    <option key={t.id} value={t.id}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+            )}
+            {mode === "template" && !s.templates.length && (
+              <p>
+                Nejsou k dispozici žádné šablony. Přepněte na Individuální plán.
+              </p>
+            )}
+            {(mode === "individual" || !!templateId) && (
+              <PlanItems
+                value={items}
+                onChange={(next) => {
+                  setItems(next);
+                  setDirty(true);
+                }}
+              />
+            )}
+          </Form>
+        </div>
+      </div>
+    </Dialog>
+  );
+}
+
 function Stops({
   value,
   onChange,
@@ -787,21 +921,7 @@ export function EntityEditor({
             if (collection === "templates" || collection === "plans")
               values.items = items;
             if (collection === "templates" || collection === "plans") {
-              const issues: z.core.$ZodIssue[] = [];
-              items.forEach((item, index) => {
-                if (
-                  !(
-                    (item.intervalKm ?? 0) > 0 || (item.intervalMonths ?? 0) > 0
-                  )
-                )
-                  for (const field of ["intervalKm", "intervalMonths"])
-                    issues.push({
-                      code: "custom",
-                      path: ["items", index, field],
-                      message: "Zadejte kladný interval v km nebo měsících.",
-                    });
-              });
-              if (issues.length) throw new z.ZodError(issues);
+              validatePlanItems(items);
             }
             if (collection === "plans") values.templateId = templateId || null;
             if (collection === "orders") values.stops = stops;
@@ -1020,12 +1140,19 @@ export function useEditors() {
     startTrip = false,
   ) =>
     show(
-      <EntityEditor
-        key={crypto.randomUUID()}
-        collection={collection}
-        record={record}
-        defaults={defaults}
-        startTrip={startTrip}
-      />,
+      collection === "plans" && !record ? (
+        <AddServicePlanDialog
+          key={crypto.randomUUID()}
+          vehicleId={String(defaults?.vehicleId || "")}
+        />
+      ) : (
+        <EntityEditor
+          key={crypto.randomUUID()}
+          collection={collection}
+          record={record}
+          defaults={defaults}
+          startTrip={startTrip}
+        />
+      ),
     );
 }
