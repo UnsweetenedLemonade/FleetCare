@@ -359,6 +359,7 @@ export function Form({
   danger = false,
   onDirty,
   validate,
+  submitDisabled = false,
 }: {
   fields: FieldSpec[];
   initial?: Record<string, unknown>;
@@ -368,6 +369,7 @@ export function Form({
   danger?: boolean;
   onDirty?: (dirty: boolean) => void;
   validate?: (values: Record<string, unknown>) => Record<string, string>;
+  submitDisabled?: boolean;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
   const hasField = (key: string) =>
@@ -378,7 +380,7 @@ export function Form({
   const [failure, setFailure] = useState("");
   async function save(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    if (pending) return;
+    if (pending || submitDisabled) return;
     setErrors({});
     setFailure("");
     const invalid = nativeFieldErrors(e.currentTarget);
@@ -574,7 +576,7 @@ export function Form({
             primary={!danger}
             danger={danger}
             type="submit"
-            disabled={pending}
+            disabled={pending || submitDisabled}
           >
             {pending ? "Ukládání…" : submit}
           </Button>

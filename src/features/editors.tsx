@@ -618,6 +618,7 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
           />
           <Form
             fields={[]}
+            submitDisabled={mode === "individual" && items.length === 0}
             onDirty={(value) => {
               if (value) setDirty(true);
             }}
