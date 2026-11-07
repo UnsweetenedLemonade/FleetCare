@@ -1,6 +1,9 @@
+import {
+  individualPlanSave,
+  validatePlanItems,
+} from "../lib/service-plan-save";
 import { odometerErrors } from "../lib/form-validation";
-import { z } from "zod";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import {
   type Entity,
@@ -10,6 +13,7 @@ import {
   type Order,
   type Actor,
   tripStatus,
+  planItemSchema,
 } from "../domain/models";
 import type { EditableCollection } from "../data/contracts";
 import { useFleet } from "../app/context";
@@ -20,6 +24,7 @@ import {
   FilePicker,
   Form,
   ViewToggle,
+  Notice,
   type FieldSpec,
 } from "../components/ui";
 import { DomainError } from "../domain/rules";
@@ -484,20 +489,6 @@ function PlanItems({
     </div>
   );
 }
-export function validatePlanItems(items: Records["plans"]["items"]) {
-  const issues: z.core.$ZodIssue[] = [];
-  items.forEach((item, index) => {
-    if (!((item.intervalKm ?? 0) > 0 || (item.intervalMonths ?? 0) > 0))
-      for (const field of ["intervalKm", "intervalMonths"])
-        issues.push({
-          code: "custom",
-          path: ["items", index, field],
-          message: "Zadejte kladný interval v km nebo měsících.",
-        });
-  });
-  if (issues.length) throw new z.ZodError(issues);
-}
-
 function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
   const { s, run, close } = useFleet();
   const [mode, setMode] = useState<"template" | "individual">("template");
@@ -508,6 +499,39 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
   const [items, setItems] = useState<Records["plans"]["items"]>([]);
   const [dirty, setDirty] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
+  const [step, setStep] = useState<"form" | "ask" | "name">("form");
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState("");
+  const attempt = useRef<ReturnType<typeof individualPlanSave> | null>(null);
+  const persist = async (templateName?: string) => {
+    if (saving) return;
+    if (!attempt.current)
+      attempt.current = individualPlanSave({
+        key,
+        vehicleId,
+        category: s.vehicles.find((v) => v.id === vehicleId)?.category || "",
+        items,
+        templateName,
+      });
+    setSaving(true);
+    setSaveError("");
+    try {
+      await attempt.current.save(run);
+      close();
+    } catch (error) {
+      const progress = attempt.current.progress;
+      const warning = progress.templateSaved
+        ? "Šablona je uložená, ale uložení plánu nebylo potvrzeno. Opakujte uložení; další šablona se nevytvoří. "
+        : progress.templateAttempted
+          ? "Uložení nebylo dokončeno. Šablona již může být uložená. Opakováním dokončíte uložení bez vytvoření další šablony. "
+          : "";
+      setSaveError(
+        warning + (error instanceof Error ? error.message : "Uložení selhalo."),
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
   const switchMode = (next: "template" | "individual") => {
     setMode(next);
     setTemplateId("");
@@ -518,8 +542,15 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
   return (
     <Dialog
       title="Přidat servisní plán"
-      dirty={!switchTo && dirty}
-      onClose={() => (switchTo ? setSwitchTo(null) : close())}
+      dirty={
+        !saving && !switchTo && (step === "form" ? dirty : !!attempt.current)
+      }
+      onClose={() => {
+        if (saving) return;
+        if (switchTo) setSwitchTo(null);
+        else if (step !== "form" && !attempt.current) setStep("form");
+        else close();
+      }}
     >
       <div className="dialog-body">
         {switchTo && (
@@ -533,7 +564,44 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
             </div>
           </div>
         )}
-        <div hidden={!!switchTo}>
+        {step !== "form" && (
+          <div aria-busy={saving}>
+            <h3>Chcete uložit jako šablonu?</h3>
+            {saveError && <Notice error>{saveError}</Notice>}
+            {step === "ask" ? (
+              <div className="actions">
+                <Button
+                  disabled={saving || !!attempt.current}
+                  onClick={() => setStep("name")}
+                >
+                  Ano
+                </Button>
+                <Button
+                  primary
+                  disabled={saving}
+                  onClick={() => void persist()}
+                >
+                  Ne
+                </Button>
+              </div>
+            ) : (
+              <Form
+                fields={[
+                  {
+                    key: "name",
+                    label: "Název šablony",
+                    required: true,
+                    disabled: !!attempt.current,
+                  },
+                ]}
+                onSubmit={async (values) => {
+                  await persist(String(values.name));
+                }}
+              />
+            )}
+          </div>
+        )}
+        <div hidden={!!switchTo || step !== "form"}>
           <ViewToggle
             label="Způsob vytvoření servisního plánu"
             value={mode}
@@ -550,9 +618,16 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
           />
           <Form
             fields={[]}
-            onDirty={setDirty}
+            onDirty={(value) => {
+              if (value) setDirty(true);
+            }}
             onSubmit={async () => {
               validatePlanItems(items);
+              planItemSchema.array().parse(items);
+              if (mode === "individual") {
+                setStep("ask");
+                return;
+              }
               await run(
                 {
                   type: "save",
