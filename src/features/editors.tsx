@@ -786,7 +786,7 @@ export function EntityEditor({
             for (const k of nullable) if (values[k] === "") values[k] = null;
             if (collection === "drivers") {
               values.licences = licences;
-              values.qualifications = qualifications;
+              if (record) values.qualifications = qualifications;
             }
             if (collection === "templates" || collection === "plans")
               values.items = items;
@@ -892,11 +892,13 @@ export function EntityEditor({
                 value={licences}
                 onChange={change(setLicences)}
               />
-              <Entitlements
-                title="Kvalifikace"
-                value={qualifications}
-                onChange={change(setQualifications)}
-              />
+              {record && (
+                <Entitlements
+                  title="Kvalifikace"
+                  value={qualifications}
+                  onChange={change(setQualifications)}
+                />
+              )}
             </>
           )}
           {collection === "plans" && (
