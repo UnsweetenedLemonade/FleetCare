@@ -178,3 +178,7 @@ Na aktuální větvi `work` dokončeny A1–A8 a B1/B3/B4 v samostatných commit
 ## Oprava CI po sloučení dávky 3 do main
 
 Na `main` forku `UnsweetenedLemonade/FleetCare` reprodukována chyba TS2300: při sloučení zůstaly v `src/features/fleet.tsx` duplicitní importy z `react-router` a `lucide-react`. Importy sjednoceny při zachování `useNavigate`, `Plus` i `Trash2`; chování aplikace se nemění. Ověření: typecheck včetně serveru, lint, 61 testů, produkční build a regenerace kontraktů bez rozdílu vůči uloženým schématům. Oprava je určena k pushnutí na `origin/main` a následnému opakování kontroly PR do hlavního repozitáře.
+
+## FE audit — dávka 4
+
+1. Detail dokumentu vozidla po úspěšném smazání přesměruje na `/vehicles/:id/documents`; cíl je zachycen před smazáním a stávající `run` invaliduje workspace i souborovou cache. Dříve zůstal na detailu s hlášením „Dokument není dostupný“. Ostatní vlastníci (řidič, zakázka, výdaj, tankování, závada, CCS výpis, intake) zůstávají beze změny na detailu smazaného dokumentu; mazání ze seznamu dokumentů řidiče zůstává v seznamu. Bez změny toastu, API, modelu nebo backendu. Typecheck včetně serveru, lint a 61 testů prošly. Chromium 1440/390 px ověřil přesměrování, aktivní záložku, zmizení souboru po reloadu, zachování chybového dialogu při selhání zápisu i původní chování ostatních vlastníků.

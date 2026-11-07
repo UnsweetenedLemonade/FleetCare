@@ -1,7 +1,7 @@
 import { useHistory } from "../lib/history";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Link, useParams, useLocation } from "react-router";
+import { Link, useParams, useLocation, useNavigate } from "react-router";
 import { Upload, Download, Trash2, Pencil } from "lucide-react";
 import { useFleet, Confirm } from "../app/context";
 import type { Document } from "../domain/models";
@@ -326,8 +326,14 @@ export function DocumentList({
 export function DocumentPage() {
   const { id } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const { s, actor, repo, show, close, run } = useFleet();
   const doc = s.documents.find((d) => d.id === id && !d.deletedAt);
+  // Capture the owning vehicle before deletion removes the document from the workspace.
+  const deleteTarget =
+    doc?.ownerType === "vehicle"
+      ? `/vehicles/${doc.vehicleId || doc.ownerId}/documents`
+      : null;
   const client = useQueryClient();
   const fallback = doc
     ? {
@@ -458,9 +464,10 @@ export function DocumentPage() {
                         title="Smazat dokument"
                         description={`Opravdu smazat dokument „${doc.name}“?`}
                         onDone={close}
-                        action={() =>
-                          run({ type: "document.delete", id: doc.id })
-                        }
+                        action={async () => {
+                          await run({ type: "document.delete", id: doc.id });
+                          if (deleteTarget) navigate(deleteTarget);
+                        }}
                       />,
                     )
                   }
