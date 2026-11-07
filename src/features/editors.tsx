@@ -264,9 +264,6 @@ export function editorFields(
         { ...driver, required: false },
         f("date", "Datum termínu", "date", true),
         f("km", "Km hranice", "number"),
-        f("responsible", "Odpovědná osoba / role", "text", true, {
-          initial: "Fleet manažer",
-        }),
         f("priority", "Priorita", "select", true, {
           initial: "Střední",
           options: options(["Nízká", "Střední", "Vysoká"]),
@@ -731,6 +728,8 @@ export function EntityEditor({
           submit={startTrip ? "Zahájit jízdu" : "Uložit"}
           onSubmit={async (values) => {
             values = { ...defaults, ...values };
+            if (collection === "deadlines" && !record)
+              values.responsible = "Fleet manažer";
             if (driverMode && ["trips", "fuels"].includes(collection))
               values.driverId = actor.driverId;
             if (collection === "trips" && record) {
