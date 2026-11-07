@@ -501,14 +501,24 @@ function PlanItems({
     </div>
   );
 }
-function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
+function ServicePlanDialog({
+  vehicleId,
+  record,
+}: {
+  vehicleId: string;
+  record?: Records["plans"];
+}) {
   const { s, run, close } = useFleet();
-  const [mode, setMode] = useState<"template" | "individual">("template");
+  const [mode, setMode] = useState<"template" | "individual">(
+    record && !record.templateId ? "individual" : "template",
+  );
   const [switchTo, setSwitchTo] = useState<"template" | "individual" | null>(
     null,
   );
-  const [templateId, setTemplateId] = useState("");
-  const [items, setItems] = useState<Records["plans"]["items"]>([]);
+  const [templateId, setTemplateId] = useState(record?.templateId || "");
+  const [items, setItems] = useState<Records["plans"]["items"]>(
+    record?.items || [],
+  );
   const [dirty, setDirty] = useState(false);
   const [key] = useState(() => crypto.randomUUID());
   const [step, setStep] = useState<"form" | "ask" | "name">("form");
@@ -553,7 +563,7 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
   };
   return (
     <Dialog
-      title="Přidat servisní plán"
+      title={record ? "Upravit servisní plán" : "Přidat servisní plán"}
       dirty={
         !saving && !switchTo && (step === "form" ? dirty : !!attempt.current)
       }
@@ -633,14 +643,16 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
           <Form
             fields={[]}
             validate={planFormErrors}
-            submitDisabled={mode === "individual" && items.length === 0}
+            submitDisabled={
+              !record && mode === "individual" && items.length === 0
+            }
             onDirty={(value) => {
               if (value) setDirty(true);
             }}
             onSubmit={async () => {
               validatePlanItems(items);
               planItemSchema.array().parse(items);
-              if (mode === "individual") {
+              if (mode === "individual" && !record) {
                 setStep("ask");
                 return;
               }
@@ -648,6 +660,8 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
                 {
                   type: "save",
                   collection: "plans",
+                  id: record?.id,
+                  version: record?.version,
                   data: { vehicleId, templateId: templateId || null, items },
                 },
                 key,
@@ -886,9 +900,6 @@ export function EntityEditor({
         ? record.qualifications
         : []) as Driver["qualifications"],
     );
-  const [templateId, setTemplateId] = useState(
-    record && "templateId" in record ? String(record.templateId || "") : "",
-  );
   const [items, setItems] = useState(
     (record && "items" in record
       ? record.items
@@ -1020,7 +1031,6 @@ export function EntityEditor({
             if (collection === "templates" || collection === "plans") {
               validatePlanItems(items);
             }
-            if (collection === "plans") values.templateId = templateId || null;
             if (collection === "orders") values.stops = stops;
             if (collection === "expenses") {
               values.kind = record && "kind" in record ? record.kind : "Výdaj";
@@ -1113,35 +1123,6 @@ export function EntityEditor({
                 />
               )}
             </>
-          )}
-          {collection === "plans" && (
-            <Field>
-              Šablona
-              <select
-                value={templateId}
-                onChange={(e) => {
-                  setDirty(true);
-                  setTemplateId(e.target.value);
-                  const template = s.templates.find(
-                    (t) => t.id === e.target.value,
-                  );
-                  if (template)
-                    setItems(
-                      template.items.map((i) => ({
-                        ...i,
-                        id: crypto.randomUUID(),
-                      })),
-                    );
-                }}
-              >
-                <option value="">Individuální plán</option>
-                {s.templates.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
-                  </option>
-                ))}
-              </select>
-            </Field>
           )}
           {(collection === "templates" || collection === "plans") && (
             <PlanItems value={items} onChange={change(setItems)} />
@@ -1237,10 +1218,15 @@ export function useEditors() {
     startTrip = false,
   ) =>
     show(
-      collection === "plans" && !record ? (
-        <AddServicePlanDialog
+      collection === "plans" ? (
+        <ServicePlanDialog
           key={crypto.randomUUID()}
-          vehicleId={String(defaults?.vehicleId || "")}
+          vehicleId={String(
+            (record && "vehicleId" in record
+              ? record.vehicleId
+              : defaults?.vehicleId) || "",
+          )}
+          record={record as Records["plans"] | undefined}
         />
       ) : (
         <EntityEditor
