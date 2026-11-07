@@ -329,16 +329,14 @@ export function DocumentPage() {
   const navigate = useNavigate();
   const { s, actor, repo, show, close, run } = useFleet();
   const doc = s.documents.find((d) => d.id === id && !d.deletedAt);
-  // Capture the owning vehicle before deletion removes the document from the workspace.
-  const deleteTarget =
-    doc?.ownerType === "vehicle"
-      ? `/vehicles/${doc.vehicleId || doc.ownerId}/documents`
-      : null;
   const client = useQueryClient();
   const fallback = doc
     ? {
         vehicle: `/vehicles/${doc.ownerId}/documents`,
-        driver: `/drivers/${doc.ownerId}/documents`,
+        driver:
+          actor.role === "Řidič"
+            ? "/my/documents"
+            : `/drivers/${doc.ownerId}/documents`,
         order: `/orders/${doc.ownerId}`,
         expense: `/expenses/${doc.ownerId}`,
         fuel: `/fuels/${doc.ownerId}`,
@@ -353,6 +351,13 @@ export function DocumentPage() {
     !location.state.returnTo.startsWith("//")
       ? location.state.returnTo
       : fallback;
+  // Capture the destination before the successful delete removes the document.
+  const deleteTarget =
+    doc?.ownerType === "vehicle"
+      ? `/vehicles/${doc.vehicleId || doc.ownerId}/documents`
+      : /^\/documents(?:\/|[?#]|$)/.test(returnTo)
+        ? fallback
+        : returnTo;
   const labels: Record<string, string> = {
     vehicles: "Vozidla",
     drivers: "Řidiči",
@@ -466,7 +471,12 @@ export function DocumentPage() {
                         onDone={close}
                         action={async () => {
                           await run({ type: "document.delete", id: doc.id });
-                          if (deleteTarget) navigate(deleteTarget);
+                          navigate(deleteTarget, {
+                            replace: true,
+                            state: location.state?.parentState || {
+                              tableQueries: location.state?.tableQueries,
+                            },
+                          });
                         }}
                       />,
                     )
