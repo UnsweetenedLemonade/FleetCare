@@ -194,11 +194,6 @@ export function editorFields(
               }),
               f("serviceFrom", "Servis od", "datetime"),
               f("serviceTo", "Servis do", "datetime"),
-              f(
-                "unavailable",
-                "Vozidlo je v tomto období nedostupné",
-                "checkbox",
-              ),
               f("repair", "Popis opravy", "textarea"),
               f("actualMinor", "Skutečná cena (nenahrazuje výdaj)", "money"),
               currency,
