@@ -924,10 +924,6 @@ export function EntityEditor({
                   </option>
                 ))}
               </select>
-              <small>
-                Výběr šablony předvyplní úkony. Změny se uloží až potvrzením
-                formuláře.
-              </small>
             </Field>
           )}
           {(collection === "templates" || collection === "plans") && (
