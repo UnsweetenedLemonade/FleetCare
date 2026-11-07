@@ -411,11 +411,7 @@ export function DeadlinesPage() {
                 render: (d) => (
                   <>
                     <strong>{d.title}</strong>
-                    <small>
-                      {d.derived
-                        ? "Odvozený — úprava přes zdroj"
-                        : "Ruční termín"}
-                    </small>
+                    {!d.derived && <small>Ruční termín</small>}
                   </>
                 ),
               },
