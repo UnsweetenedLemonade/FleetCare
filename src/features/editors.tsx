@@ -384,7 +384,7 @@ function Entitlements({
                     title === "Oprávnění"
                       ? "Odebrat oprávnění?"
                       : "Odebrat kvalifikaci?",
-                  description: `Opravdu chcete odebrat položku „${item.name || title}“? Změna se uloží až potvrzením formuláře.`,
+                  description: `Opravdu chcete odebrat položku „${item.name || title}“?`,
                   label: "Odebrat",
                   action: remove,
                 });
@@ -448,7 +448,7 @@ function PlanItems({
                 if (persistedIds.includes(item.id))
                   confirmDelete({
                     title: "Odebrat úkon?",
-                    description: `Opravdu chcete odebrat úkon „${item.name || "Bez názvu"}“? Změna se uloží až potvrzením formuláře.`,
+                    description: `Opravdu chcete odebrat úkon „${item.name || "Bez názvu"}“?`,
                     label: "Odebrat",
                     action: remove,
                   });
@@ -1250,7 +1250,7 @@ export function EntityEditor({
                       if (savedBindings[i])
                         confirmDelete({
                           title: "Odebrat vazbu?",
-                          description: `Opravdu chcete odebrat vazbu karty „${String(data.number || "CCS")}“ na vozidlo „${s.vehicles.find((v) => v.id === b.vehicleId)?.spz || b.vehicleId}“? Změna se uloží až potvrzením formuláře.`,
+                          description: `Opravdu chcete odebrat vazbu karty „${String(data.number || "CCS")}“ na vozidlo „${s.vehicles.find((v) => v.id === b.vehicleId)?.spz || b.vehicleId}“?`,
                           label: "Odebrat",
                           action: remove,
                         });
