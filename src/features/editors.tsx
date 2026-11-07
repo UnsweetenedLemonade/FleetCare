@@ -61,7 +61,7 @@ export function editorFields(
     case "vehicles":
       return [
         f("spz", "SPZ", "text", true),
-        f("vin", "VIN", "text", false, { help: "Pokud je znám: 17 znaků." }),
+        f("vin", "VIN", "text", !existing, { help: "17 platných znaků." }),
         f("model", "Značka / model", "text", true),
         f("year", "Rok výroby", "number"),
         f("category", "Kategorie", "select", true, {
@@ -86,7 +86,7 @@ export function editorFields(
         f("dimensions", "Doložené rozměry (m)"),
         f("configuration", "Konfigurace soupravy"),
         f("equipment", "Vybavení oddělené čárkou"),
-        f("stkUntil", "Platnost STK do", "date"),
+        f("stkUntil", "Platnost STK do", "date", !existing),
         f("serviceId", "Nasmlouvaný servis", "select", false, {
           options: s.services.map((x) => [x.id, x.name]),
         }),
