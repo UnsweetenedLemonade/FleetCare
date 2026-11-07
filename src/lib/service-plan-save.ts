@@ -3,16 +3,46 @@ import { collections, meta, type Records } from "../domain/models";
 import type { Command } from "../data/contracts";
 import { DomainError } from "../domain/rules";
 
+export function planIntervalErrors(
+  km: unknown,
+  months: unknown,
+): Record<string, string> {
+  if (Number(km) > 0 || Number(months) > 0) return {};
+  return {
+    intervalKm:
+      "Zadejte interval v kilometrech větší než 0, nebo vyplňte interval v měsících.",
+    intervalMonths:
+      "Zadejte interval v měsících větší než 0, nebo vyplňte interval v kilometrech.",
+  };
+}
+
+export function planFormErrors(
+  values: Record<string, unknown>,
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  const rows = new Set(
+    Object.keys(values).flatMap(
+      (key) => key.match(/^items\.(\d+)\.interval(?:Km|Months)$/)?.[1] || [],
+    ),
+  );
+  for (const row of rows)
+    for (const [field, message] of Object.entries(
+      planIntervalErrors(
+        values[`items.${row}.intervalKm`],
+        values[`items.${row}.intervalMonths`],
+      ),
+    ))
+      errors[`items.${row}.${field}`] = message;
+  return errors;
+}
+
 export function validatePlanItems(items: Records["plans"]["items"]) {
   const issues: z.core.$ZodIssue[] = [];
   items.forEach((item, index) => {
-    if (!((item.intervalKm ?? 0) > 0 || (item.intervalMonths ?? 0) > 0))
-      for (const field of ["intervalKm", "intervalMonths"])
-        issues.push({
-          code: "custom",
-          path: ["items", index, field],
-          message: "Zadejte kladný interval v km nebo měsících.",
-        });
+    for (const [field, message] of Object.entries(
+      planIntervalErrors(item.intervalKm, item.intervalMonths),
+    ))
+      issues.push({ code: "custom", path: ["items", index, field], message });
   });
   if (issues.length) throw new z.ZodError(issues);
 }

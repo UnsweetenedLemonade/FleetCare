@@ -1,5 +1,6 @@
 import {
   individualPlanSave,
+  planFormErrors,
   validatePlanItems,
 } from "../lib/service-plan-save";
 import { odometerErrors } from "../lib/form-validation";
@@ -417,6 +418,7 @@ function PlanItems({
               <Trash2 size={17} />
             </Button>
           </div>
+          <p>Vyplňte alespoň jeden interval: kilometry nebo měsíce.</p>
           <div className="form-grid">
             {(
               [
@@ -428,7 +430,10 @@ function PlanItems({
                 "nextDate",
               ] as const
             ).map((key, k) => (
-              <Field key={key}>
+              <Field
+                key={key}
+                requiredMark={key === "intervalKm" || key === "intervalMonths"}
+              >
                 {
                   [
                     "Interval (km)",
@@ -443,6 +448,13 @@ function PlanItems({
                   name={`items.${i}.${key}`}
                   type={key.includes("Date") ? "date" : "text"}
                   inputMode={key.includes("Date") ? undefined : "numeric"}
+                  aria-required={
+                    key === "intervalKm"
+                      ? !(item.intervalMonths && item.intervalMonths > 0)
+                      : key === "intervalMonths"
+                        ? !(item.intervalKm && item.intervalKm > 0)
+                        : undefined
+                  }
                   value={item[key] ?? ""}
                   onChange={(e) =>
                     onChange(
@@ -620,6 +632,7 @@ function AddServicePlanDialog({ vehicleId }: { vehicleId: string }) {
           />
           <Form
             fields={[]}
+            validate={planFormErrors}
             submitDisabled={mode === "individual" && items.length === 0}
             onDirty={(value) => {
               if (value) setDirty(true);
@@ -936,7 +949,13 @@ export function EntityEditor({
       <div className="dialog-body">
         <Form
           fields={fields}
-          validate={collection === "trips" ? odometerErrors : undefined}
+          validate={
+            collection === "trips"
+              ? odometerErrors
+              : collection === "plans" || collection === "templates"
+                ? planFormErrors
+                : undefined
+          }
           initial={data}
           onDirty={setDirty}
           submit={startTrip ? "Zahájit jízdu" : "Uložit"}

@@ -404,7 +404,10 @@ export function Form({
             f.type === "money" && n !== null ? Math.round(n * 100) : n;
         } else values[f.key] = raw;
       }
-      Object.assign(invalid, validate?.(values));
+      Object.assign(
+        invalid,
+        validate?.({ ...Object.fromEntries(fd), ...values }),
+      );
       if (Object.keys(invalid).length) {
         setErrors(invalid);
         return;
@@ -904,8 +907,12 @@ const FieldErrors = createContext<Record<string, string>>({});
 export function Field({
   children,
   error: explicitError,
+  requiredMark,
   ...props
-}: LabelHTMLAttributes<HTMLLabelElement> & { error?: string }) {
+}: LabelHTMLAttributes<HTMLLabelElement> & {
+  error?: string;
+  requiredMark?: boolean;
+}) {
   const errors = useContext(FieldErrors);
   const generated = useId();
   let name = generated;
@@ -949,11 +956,14 @@ export function Field({
   return (
     <label {...props} className={`${props.className || ""} validated-field`}>
       <FieldLabel
-        required={Children.toArray(children).some(
-          (child) =>
-            isValidElement<InputHTMLAttributes<HTMLInputElement>>(child) &&
-            !!child.props.required,
-        )}
+        required={
+          requiredMark ??
+          Children.toArray(children).some(
+            (child) =>
+              isValidElement<InputHTMLAttributes<HTMLInputElement>>(child) &&
+              !!child.props.required,
+          )
+        }
       >
         {Children.toArray(children).filter(
           (child) =>

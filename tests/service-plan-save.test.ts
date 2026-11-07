@@ -100,3 +100,41 @@ it("reuses the same payload and idempotency key after a lost template response",
   expect(s.templates).toHaveLength(1);
   expect(s.plans).toHaveLength(1);
 });
+
+it("shows field-specific interval errors and clears both once either interval is positive", async () => {
+  const { planFormErrors, planIntervalErrors } = await import(
+    "../src/lib/service-plan-save"
+  );
+  const missing = planFormErrors({
+    "items.0.intervalKm": "",
+    "items.0.intervalMonths": "",
+  });
+  expect(missing["items.0.intervalKm"]).toMatch(
+    /^Zadejte interval v kilometrech/,
+  );
+  expect(missing["items.0.intervalMonths"]).toMatch(
+    /^Zadejte interval v měsících/,
+  );
+  expect(
+    planFormErrors({
+      "items.0.intervalKm": "257",
+      "items.0.intervalMonths": "76",
+    }),
+  ).toEqual({});
+  expect(planIntervalErrors(10000, null)).toEqual({});
+  expect(planIntervalErrors(null, 12)).toEqual({});
+  expect(
+    planFormErrors({
+      "items.0.intervalKm": "257",
+      "items.1.intervalKm": "0",
+      "items.1.intervalMonths": "",
+    }),
+  ).toEqual({
+    "items.1.intervalKm": expect.stringMatching(
+      /^Zadejte interval v kilometrech/,
+    ),
+    "items.1.intervalMonths": expect.stringMatching(
+      /^Zadejte interval v měsících/,
+    ),
+  });
+});
