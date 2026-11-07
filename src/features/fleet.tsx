@@ -181,6 +181,7 @@ export function VehiclePage() {
                   [v.engine, v.fuel].filter(Boolean).join(" · ") || null,
                 ],
                 ["Doložený nájezd", number(odometer(s, v.id), "km")],
+                ["Platnost STK", date(v.stkUntil)],
                 ["Požadované ŘP", v.licence || null],
                 ["Nosnost", number(v.capacityKg, "kg")],
                 ["Objem", number(v.volumeM3, "m³")],
@@ -625,6 +626,30 @@ export function DriverPage() {
                   ["Pracovní e-mail", d.email || null],
                   ["Pracovní telefon", d.phone || null],
                   ["Stav profilu", driverState(d)],
+                  [
+                    "Zdravotní způsobilost",
+                    `${d.medicalState} · do ${date(d.medicalUntil)}`,
+                  ],
+                  [
+                    "Řidičská oprávnění",
+                    d.licences.length
+                      ? d.licences
+                          .map((l) => `${l.name} do ${date(l.validUntil)}`)
+                          .join(", ")
+                      : null,
+                  ],
+                  [
+                    "Kvalifikace",
+                    d.qualifications.length
+                      ? d.qualifications
+                          .map((q) =>
+                            q.validUntil
+                              ? `${q.name} do ${date(q.validUntil)}`
+                              : q.name,
+                          )
+                          .join(", ")
+                      : null,
+                  ],
                 ]}
               />
             </>
