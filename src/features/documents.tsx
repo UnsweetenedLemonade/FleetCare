@@ -21,6 +21,7 @@ import {
 } from "../components/ui";
 import { date, number } from "../lib/format";
 import { fileLimits } from "../data/uploads";
+import { documentDateField } from "../lib/form-validation";
 const types: Record<Document["ownerType"], Document["type"][]> = {
   vehicle: ["STK", "Pojištění", "Servisní doklad", "Příloha"],
   driver: ["Řidičský průkaz", "Pracovní smlouva"],
@@ -50,6 +51,7 @@ export function UploadDialog({
     [validUntil, setValid] = useState(""),
     [dueAt, setDue] = useState("");
   const [key] = useState(() => crypto.randomUUID());
+  const dateField = documentDateField(docType);
   return (
     <Dialog
       title={type === "STK" ? "Nahrát STK" : "Přidat dokument"}
@@ -70,8 +72,9 @@ export function UploadDialog({
                 vehicleId,
                 type: docType,
                 files: selected,
-                validUntil: validUntil || null,
-                dueAt: dueAt || null,
+                validUntil:
+                  dateField.key === "validUntil" ? validUntil || null : null,
+                dueAt: dateField.key === "dueAt" ? dueAt || null : null,
                 idempotencyKey: key,
               });
               close();
@@ -99,19 +102,16 @@ export function UploadDialog({
               </Field>
             )}
             <Field>
-              Platnost do
+              {dateField.label}
               <input
                 type="date"
-                value={validUntil}
-                onChange={(e) => setValid(e.target.value)}
-              />
-            </Field>
-            <Field>
-              Splatnost
-              <input
-                type="date"
-                value={dueAt}
-                onChange={(e) => setDue(e.target.value)}
+                name={dateField.key}
+                value={dateField.key === "validUntil" ? validUntil : dueAt}
+                onChange={(e) =>
+                  (dateField.key === "validUntil" ? setValid : setDue)(
+                    e.target.value,
+                  )
+                }
               />
             </Field>
           </div>
@@ -594,8 +594,7 @@ function EditDocument({ doc }: { doc: Document }) {
         <Form
           fields={[
             { key: "name", label: "Název", required: true },
-            { key: "validUntil", label: "Platnost do", type: "date" },
-            { key: "dueAt", label: "Splatnost", type: "date" },
+            { ...documentDateField(doc.type), type: "date" },
           ]}
           initial={doc}
           onDirty={setDirty}
@@ -605,8 +604,14 @@ function EditDocument({ doc }: { doc: Document }) {
               id: doc.id,
               version: doc.version,
               name: String(v.name),
-              validUntil: String(v.validUntil) || null,
-              dueAt: String(v.dueAt) || null,
+              validUntil:
+                documentDateField(doc.type).key === "validUntil"
+                  ? String(v.validUntil) || null
+                  : doc.validUntil,
+              dueAt:
+                documentDateField(doc.type).key === "dueAt"
+                  ? String(v.dueAt) || null
+                  : doc.dueAt,
             });
             close();
           }}
