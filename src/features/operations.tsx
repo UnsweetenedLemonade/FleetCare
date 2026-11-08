@@ -1,3 +1,4 @@
+import { StatusChip } from "../components/status-chip";
 import {
   canNotifyTrip,
   tripNotificationReason,
@@ -10,7 +11,6 @@ import { Download, Pencil, Bell, Square, Plus } from "lucide-react";
 import { useFleet } from "../app/context";
 import {
   Back,
-  Badge,
   Button,
   DataGrid,
   Dialog,
@@ -102,7 +102,7 @@ export function OrderPage() {
             {o.stops.map((x) => x.place).join(" → ") || "Trasa není doložena"}
           </h2>
           <p>{o.cargo || "Náklad není doložen"}</p>
-          <Badge value={o.state} />
+          <StatusChip entity="order" value={o.state} />
         </div>
       </div>
       <section className="panel">
@@ -121,6 +121,7 @@ export function OrderPage() {
             <>
               <DataGrid
                 items={[
+                  ["Stav", <StatusChip entity="order" value={o.state} />],
                   ["Zákazník", o.customer],
                   ["Kontakt", o.contact || null],
                   ["Reference", o.reference || null],
@@ -448,11 +449,9 @@ export function TripPage() {
         </Notice>
       )}
       <Panel title="Skutečný průběh">
-        <div className="section-actions">
-          <Badge value={status} />
-        </div>
         <DataGrid
           items={[
+            ["Stav", <StatusChip entity="trip" value={status} />],
             ["Vozidlo", <VRef id={t.vehicleId} />],
             ["Řidič", <DRef id={t.driverId} />],
             [
@@ -541,11 +540,9 @@ export function FaultPage() {
         }
       />
       <Panel title="Hlášení a servis">
-        <p>
-          <Badge value={f.state} />
-        </p>
         <DataGrid
           items={[
+            ["Stav", <StatusChip entity="fault" value={f.state} />],
             ["Vozidlo", <VRef id={f.vehicleId} />],
             ["Nahlášeno", date(f.at, true)],
             ["Kategorie", f.category],
@@ -611,7 +608,7 @@ function NotificationRequests({ aggregateId }: { aggregateId: string }) {
                 {n.email || "Kontakt chybí"} · {n.reason}
               </small>
             </div>
-            <Badge value={n.state} />
+            <StatusChip entity="notification" value={n.state} />
             <Button
               disabled={["sent", "sending"].includes(n.state)}
               onClick={() => show(<RecipientDialog id={n.id} />)}

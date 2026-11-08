@@ -27,3 +27,25 @@ Před úpravou: pouze závada podporovala ruční notifikaci. Sdílené `NotifyD
 Používá stávající Form (pending blokace a červené chyby), notifikační úložiště, stavové chipy a Make e-mailový webhook; tlačítko má po uložení dvousekundovou blokaci. Úspěch potvrzuje uložení požadavku a odkazuje na skutečný stav doručení, nikoli na domnělé odeslání. V lokálním režimu je vidět Služba není připojena; výpadky HTTP zachovají chybový dialog. Změna příjemce zůstává ve stávajícím mechanismu.
 
 Nutný minimální zásah do API/BE: nový příkaz `trip.notify` v `src/data/contracts.ts`, `src/data/command-schema.ts`, handler v `src/domain/commands.ts`, zařazení do stávajícího odesílání v `server/sheets-gateway.ts` (včetně nalezení vozidla jízdy), regenerovaný `docs/openapi.json`. `fault.notify` vyžaduje existující závadu a termín servisu a nelze ho korektně použít pro jízdu. Modely a pole notifikací beze změny. Externí gateway mimo repozitář musí nový příkaz doplnit; skutečné doručení e-mailu bez připojené služby nelze ověřit.
+
+## 4. Sjednocení stavů — hotovo (shodné části již hotovo)
+
+Všechny stavové chipy používají `StatusChip`, stejnou třídu `.badge` a metadata `statusMaps` pro konkrétní entitu v `src/lib/status.ts`. Původní duplicitní `Badge` odstraněn. Existující barvy zůstávají; nepřidáváme stavy.
+
+| Entita | Před | Po |
+| --- | --- | --- |
+| Tankování | Seznam/detail již stejný `fuelState`, Stav v detailu již hotovo | Společný CCS chip/metadata pro všechny role; beze změny popisků aktuální nabídky |
+| CCS transakce | Raw stav, samostatný chip v detailu; řešení i bez neshody | Stejný vyhodnocený stav ve filtru/seznamu/detailu; Stav v mřížce; Rozdíl a řešení jen při spojené nevyřešené neshodě |
+| Přidělení vozidla/řidiče | Oba detaily již sdílely tabulku a stejné Aktivní/Plánováno/Ukončeno | Společná funkce `assignmentState` a metadata; dialog ukazuje Stav současného přidělení, pokud existuje |
+| Jízdy | Stejný popisek/barva již hotovo, chip nad mřížkou | Stejný chip, samostatná položka Stav |
+| Zakázky | Stejný popisek/barva již hotovo, chip jen v hero | Sdílený chip, navíc Stav v mřížce |
+| Závady | Stejný popisek/barva již hotovo, samostatný chip | Sdílený chip, Stav v mřížce |
+| Termíny | Seznam/detail včetně Stav již hotovo | Pouze převod na centrální komponentu/metadata |
+| Dokumenty | Seznam/detail stejné chipy souboru a extrakce již hotovo | Sdílený chip; v detailu Stav a Stav zpracování v mřížce |
+| CCS výpisy | Stav zpracování v seznamu; v detailu chyběl | Shodný chip ve Stav v nové mřížce metadat výpisu |
+| CCS karty | Aktivní/Neaktivní jako prostý text; editační dialog bez chipu | Sdílený chip v tabulce a Stav v dialogu; boolean otázka formuláře zůstává Ano/Ne |
+| Vozidla | Hero/seznam již shodné | Sdílený chip, navíc Stav v mřížce |
+| Řidiči | Hero/seznam shodné, v mřížce Stav profilu prostým textem | Sdílený chip i pod popiskem Stav v mřížce |
+| Notifikace | `queued`/`failed` používaly dokumentové popisky | Samostatná mapa: Čeká na odeslání / Odeslání selhalo, dokumenty ponechávají Čeká na zpracování / Zpracování selhalo |
+
+Záměrně nesloučeno: Trvá v datovém intervalu je otevřený konec, Aktivní je časově vyhodnocený stav; datum může být i budoucí. Zdravotní způsobilost řidiče není stav profilu. U dokumentů je uložení souboru jiný stav než extrakce, u CCS výpisů je úplnost jiná než zpracování. Stav tankování a stav transakce zůstávají dvě uložené hodnoty; zobrazení skutečné neshody má společné pravidlo důkazu. Typ Zakázka/Jízda v kombinované tabulce zůstává prostý text. Dialog přidělení nezavádí ruční stav: ukazuje stav existujícího aktuálního přidělení, nové se jako dosud odvozuje z dat od–do.

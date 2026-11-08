@@ -1,3 +1,4 @@
+import { StatusChip } from "../components/status-chip";
 import { useHistory } from "../lib/history";
 import { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -7,8 +8,8 @@ import { useFleet } from "../app/context";
 import type { Document } from "../domain/models";
 import {
   Back,
-  Badge,
   Button,
+  DataGrid,
   DataTable,
   Dialog,
   DeleteConfirmation,
@@ -293,9 +294,9 @@ export function DocumentList({
             label: "Uložení / zpracování",
             render: (d) => (
               <>
-                <Badge value={d.fileState} />
+                <StatusChip entity="file" value={d.fileState} />
                 <small>
-                  <Badge value={d.extraction} />
+                  <StatusChip entity="processing" value={d.extraction} />
                 </small>
               </>
             ),
@@ -529,12 +530,15 @@ export function DocumentPage() {
         </div>
         <div className="panel panel-body">
           <h2>Údaje o souboru</h2>
-          <p>
-            <Badge value={doc.fileState} />
-          </p>
-          <p>
-            <Badge value={doc.extraction} />
-          </p>
+          <DataGrid
+            items={[
+              ["Stav", <StatusChip entity="file" value={doc.fileState} />],
+              [
+                "Stav zpracování",
+                <StatusChip entity="processing" value={doc.extraction} />,
+              ],
+            ]}
+          />
           {job.error && (
             <Notice error>
               {job.error.message}

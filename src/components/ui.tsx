@@ -28,8 +28,6 @@ import {
   Plus,
 } from "lucide-react";
 import { z } from "zod";
-import { matchStates } from "../domain/models";
-import { ccsStatus } from "../lib/status";
 import { fileLimits } from "../data/uploads";
 import { DomainError } from "../domain/rules";
 import { normalize } from "../lib/format";
@@ -85,55 +83,6 @@ export function Notice({
     >
       {children}
     </div>
-  );
-}
-const tones: Record<string, string> = {
-  "V provozu": "green",
-  Aktivní: "green",
-  Potvrzena: "green",
-  Uzavřena: "gray",
-  Uzavřená: "gray",
-  Spárováno: "green",
-  Vyřešeno: "green",
-  Vyřešena: "green",
-  Dokončená: "green",
-  Splněno: "green",
-  Vhodné: "green",
-  Nevhodné: "red",
-  Pozastavený: "red",
-  Odstaveno: "red",
-  Rozdíl: "red",
-  "Vyžaduje řešení": "red",
-  failed: "red",
-  upload_failed: "red",
-  Probíhá: "blue",
-  "V servisu": "blue",
-  "Řeší se": "blue",
-  Přiřazená: "blue",
-  processing: "blue",
-};
-const labels: Record<string, string> = {
-  not_configured: "Služba není připojena",
-  not_required: "Bez extrakce",
-  stored: "Soubor uložen",
-  uploading: "Ukládání",
-  upload_failed: "Uložení selhalo",
-  queued: "Čeká na zpracování",
-  processing: "Zpracovává se",
-  completed: "Zpracováno",
-  incomplete: "Chybí údaje",
-  failed: "Zpracování selhalo",
-  sending: "Odesílá se",
-  sent: "Odesláno",
-  skipped_no_recipient: "Vynecháno — bez řidiče",
-};
-export function Badge({ value }: { value: string }) {
-  if ((matchStates as readonly string[]).includes(value))
-    value = ccsStatus(value);
-  return (
-    <span className={"badge " + (tones[value] || "amber")}>
-      {labels[value] || value}
-    </span>
   );
 }
 export function PageHead({

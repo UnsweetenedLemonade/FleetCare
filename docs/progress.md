@@ -225,3 +225,6 @@ Dávka 7 / bod 2: správní editor tankování má CCS stav; předvyplnění efe
 
 Dávka 7 / bod 3: sdílená notifikace jízdy/závady, podmínky neukončené/neúplné/nesrovnalé jízdy a správních rolí. Stejný Form, outbox a Make webhook; nový minimální příkaz trip.notify bez změny datových polí. Lokální stav nepředstírá odeslání. Podrobnosti: docs/fe-audit-7.md.
 Bod 3: typecheck, lint a 36 souvisejících testů prošly; kontrakty regenerovány.
+
+Dávka 7 / bod 4: jediný StatusChip a centrální mapy všech stavových entit, shodné popisky/barvy/typografie seznamu a detailu. Doplněny položky Stav do mřížek a sjednocena přidělení v dialogu; již shodné části pouze převedeny na společnou komponentu. Trvá je nadále otevřený konec období, typ Zakázka/Jízda zůstává text. Inventura před/po a záměrně odlišné významy: docs/fe-audit-7.md.
+Bod 4: typecheck, lint a 12 souvisejících testů prošly.

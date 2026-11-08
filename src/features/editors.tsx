@@ -1,3 +1,4 @@
+import { StatusChip } from "../components/status-chip";
 import { fuelState, validateFuelCCSState } from "../domain/ccs";
 import { ccsOptions } from "../lib/status";
 import {
@@ -23,6 +24,7 @@ import { useFleet } from "../app/context";
 import {
   Button,
   Dialog,
+  DataGrid,
   Field,
   FilePicker,
   Form,
@@ -1014,6 +1016,23 @@ export function EntityEditor({
       <div className="dialog-body">
         {confirmation}
         {notice && <Notice>{notice}</Notice>}
+        {collection === "cards" && record && (
+          <DataGrid
+            items={[
+              [
+                "Stav",
+                <StatusChip
+                  entity="card"
+                  value={
+                    (record as Records["cards"]).active
+                      ? "Aktivní"
+                      : "Neaktivní"
+                  }
+                />,
+              ],
+            ]}
+          />
+        )}
         <Form
           fields={fields}
           validate={

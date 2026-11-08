@@ -27,6 +27,16 @@ export function fuelState(s: Workspace, f: Fuel): Fuel["state"] {
       : "Čeká na výpis";
   return ccsStatus(f.state);
 }
+/** Transaction views obey the same evidence rule as their linked fuel record. */
+export function transactionState(
+  s: Workspace,
+  t: Workspace["transactions"][number],
+) {
+  const f = s.fuels.find((f) => f.id === t.fuelId);
+  if (f && fuelDifferences(s, f).some((x) => x.id === t.id)) return "Rozdíl";
+  if (t.state === "Rozdíl") return f ? "Spárováno" : "Čeká na výpis";
+  return ccsStatus(t.state);
+}
 /** Conservative matching: known card, exact time and litres; no fuzzy identity guess. */
 export function reconcileCCS(s: Workspace, statementId: string) {
   for (const t of s.transactions) {
