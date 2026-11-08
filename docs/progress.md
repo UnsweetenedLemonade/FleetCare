@@ -235,3 +235,5 @@ Bod 5: typecheck, lint a 25 souvisejících testů prošly. Chromium 1440/390 px
 Dávka 7 — závěr: všech 5 bodů dokončeno v 5 samostatných commitech na feat/fe-audit-7. Typecheck (i server), lint, všech 81 testů/22 souborů, build a opakovatelná regenerace kontraktů prošly. Chromium desktop/mobil ověřil také chybu služby, jeden pokus při dvojkliku, úspěšné opakování a krátkou blokaci notifikačního tlačítka. Konečný průchod bez běhových chyb. Datové modely a závislosti beze změny; jediným rozšířením API je nutný trip.notify. Podrobná inventura a kompatibilní výjimky: docs/fe-audit-7.md.
 
 Dávka 8: sdílený Back respektuje pevný cíl; dokumentový kontext přenesen do ověřeného URL parametru. Prokliky již používaly push. Typecheck, lint a navigační testy prošly; inventura a omezení obnovy stavu v docs/fe-audit-8-10.md.
+
+Dávka 9: přiřazení zakázky používá společný přístupný autocomplete, jen vhodné kandidáty a žádné pomocné podřádky. Výpočet vhodnosti a payload beze změny. Typecheck, lint a 26 souvisejících testů prošly; viz docs/fe-audit-8-10.md.

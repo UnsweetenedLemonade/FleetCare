@@ -25,3 +25,9 @@ Prokliky tabulek a odkazy mezi entitami již používaly push — již hotovo. T
 Přes aplikační šipku se zachování filtrů/stránky nově neimplementuje. Browser Back uchovává URL záložky a query filtrů/stránky; textové hledání je lokální stav tabulky a jeho obnovení po remountu není zaručené. Aplikace nemá vlastní správu scroll restoration, takže ani scroll nelze garantovat. Toto chování není rozšiřováno.
 
 Typecheck, lint a navigační testy prošly.
+
+## B1/B2 — hotovo
+
+Nový sdílený Autocomplete (původně neexistoval), pro SPZ a jméno. Bez podřádků a chipu vhodnosti; žádný nositel informace nezmizel, neboť se nyní nabízí pouze výsledek Vhodné. Nevhodné i Nelze vyhodnotit se nezobrazují. Výpočet suitability, příkaz order.assign a payload nezměněny. Vymazání/změna vozidla zruší volbu řidiče. Původní tlačítko zůstává disabled, dokud není vybrána vhodná dvojice.
+
+SPZ: prefix bez mezer/velikosti písmen, bez rozšíření na model. Řidič: začátky slov bez diakritiky. Prázdný výsledek Nic nenalezeno; klik, šipky, Enter, Esc a Tab; combobox/listbox ARIA a minimálně 14 px. Další vhodná místa pro pozdější využití: přidělení řidiče vozidlu a selecty vozidla/řidiče v editorech. Ty nebyly měněny. Typecheck, lint a 26 souvisejících testů prošly.

@@ -1,3 +1,4 @@
+import { Autocomplete } from "../components/autocomplete";
 import { StatusChip } from "../components/status-chip";
 import {
   canNotifyTrip,
@@ -172,7 +173,6 @@ export function OrderPage() {
     </>
   );
 }
-const suitabilityRank = { Vhodné: 0, "Nelze vyhodnotit": 1, Nevhodné: 2 };
 export function OrderAssignmentDialog({ orderId }: { orderId: string }) {
   const { s, actor, run, close } = useFleet();
   const o = s.orders.find((o) => o.id === orderId);
@@ -182,36 +182,17 @@ export function OrderAssignmentDialog({ orderId }: { orderId: string }) {
   const [busy, setBusy] = useState(false);
   if (!o || actor.role === "Řidič") return null;
   const vehicle = s.vehicles.find((v) => v.id === vehicleId) || null;
-  // Missing data does not block the assignment (the server rejects only
-  // "Nevhodné"); the manager sees exactly what could not be verified.
   const vehicles = s.vehicles
-    .filter((v) => v.state !== "Odstaveno" || v.id === o.vehicleId)
     .map((v) => ({ v, r: suitability(s, o, v, null) }))
-    .sort((a, b) => suitabilityRank[a.r.state] - suitabilityRank[b.r.state]);
-  const vehicleReasons = vehicle
-    ? suitability(s, o, vehicle, null).reasons
-    : [];
+    .filter((x) => x.r.state === "Vhodné");
   const drivers = vehicle
     ? s.drivers
-        .map((d) => {
-          const r = suitability(s, o, vehicle, d);
-          return {
-            d,
-            r,
-            own: r.reasons.filter((x) => !vehicleReasons.includes(x)),
-          };
-        })
-        .sort((a, b) => suitabilityRank[a.r.state] - suitabilityRank[b.r.state])
+        .map((d) => ({ d, r: suitability(s, o, vehicle, d) }))
+        .filter((x) => x.r.state === "Vhodné")
     : [];
-  const pickedVehicle = vehicles.find((x) => x.v.id === vehicleId);
-  const picked = drivers.find((x) => x.d.id === driverId);
   const valid =
-    !!pickedVehicle &&
-    pickedVehicle.r.state !== "Nevhodné" &&
-    !!picked &&
-    picked.r.state !== "Nevhodné";
-  const unverified =
-    valid && picked.r.state === "Nelze vyhodnotit" ? picked.r.reasons : [];
+    vehicles.some((x) => x.v.id === vehicleId) &&
+    drivers.some((x) => x.d.id === driverId);
   return (
     <Dialog
       title="Přiřadit vozidlo a řidiče"
@@ -223,62 +204,35 @@ export function OrderAssignmentDialog({ orderId }: { orderId: string }) {
       <div className="dialog-body">
         <div className="two-columns">
           <Panel title="Vozidlo">
-            {vehicles.map(({ v, r }) => (
-              <label className="candidate" key={v.id}>
-                <input
-                  type="radio"
-                  name="vehicle"
-                  checked={vehicleId === v.id}
-                  disabled={r.state === "Nevhodné"}
-                  onChange={() => {
-                    setVehicle(v.id);
-                    setDriver("");
-                  }}
-                />
-                <span>
-                  <strong>
-                    {v.spz} · {v.model}
-                  </strong>
-                  <small>
-                    {r.state}
-                    {r.reasons.length ? ": " + r.reasons.join(", ") : ""}
-                  </small>
-                </span>
-              </label>
-            ))}
-            {!vehicles.length && (
-              <p className="muted">Žádné vozidlo v provozu.</p>
-            )}
+            <Autocomplete
+              label="Vybrat vozidlo"
+              value={vehicleId}
+              options={vehicles.map(({ v }) => ({
+                value: v.id,
+                label: v.spz + " · " + v.model,
+                search: v.spz,
+              }))}
+              onChange={(id) => {
+                setVehicle(id);
+                setDriver("");
+              }}
+            />
           </Panel>
           <Panel title="Řidič zakázky">
-            {drivers.map(({ d, r, own }) => (
-              <label className="candidate" key={d.id}>
-                <input
-                  type="radio"
-                  name="driver"
-                  checked={driverId === d.id}
-                  disabled={r.state === "Nevhodné"}
-                  onChange={() => setDriver(d.id)}
-                />
-                <span>
-                  <strong>{d.name}</strong>
-                  {!!own.length && <small>{own.join(", ")}</small>}
-                </span>
-              </label>
-            ))}
-            {!drivers.length && (
-              <p className="muted">
-                {vehicle ? "Žádný řidič." : "Nejprve vyberte vozidlo."}
-              </p>
-            )}
+            <Autocomplete
+              label="Vybrat řidiče"
+              value={driverId}
+              words
+              disabled={!vehicleId}
+              options={drivers.map(({ d }) => ({
+                value: d.id,
+                label: d.name,
+                search: d.name,
+              }))}
+              onChange={setDriver}
+            />
           </Panel>
         </div>
-        {!!unverified.length && (
-          <Notice>
-            Vhodnost nelze plně ověřit: {unverified.join(", ")}. Přiřazení půjde
-            uložit, údaje doplňte v detailu vozidla, řidiče nebo zakázky.
-          </Notice>
-        )}
         {error && <Notice error>{error}</Notice>}
         <div className="form-actions">
           <Button
