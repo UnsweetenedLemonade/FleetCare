@@ -240,3 +240,5 @@ Dávka 9: přiřazení zakázky používá společný přístupný autocomplete,
 
 Dávka 10: v detailu tankování odstraněno přimíchávání CCS dokumentů do tabulky řidiče; samotný CCS panel už vlastní dokumenty neměl. Ostatní dokumentové pohledy, data a layout zachovány. Typecheck, lint a 8 souvisejících testů prošly; viz docs/fe-audit-8-10.md.
 Dávky 8–10 závěr: všech 85 testů, typecheck, lint a produkční build prošly. Chromium 1440/390 px ověřil hierarchické šipky versus browser Back, reload, dokumentový URL kontext, autocomplete včetně klávesnice a uložení i oddělení dokladů tankování. Bez běhových chyb. Backend/modely/API/závislosti nezměněny.
+
+Dávka 11 / bod 1: sdílené otevření PDF v detailu i tabulce CCS výpisů; poslední ikonový sloupec, disabled bez dokumentu, URL návrat na seznam. Typecheck, lint a související testy prošly. Podrobnosti: docs/fe-audit-11.md.
