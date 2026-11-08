@@ -1,3 +1,4 @@
+import { documentTarget, documentParent } from "../lib/navigation";
 import { StatusChip } from "../components/status-chip";
 import { useHistory } from "../lib/history";
 import { useEffect, useState } from "react";
@@ -179,6 +180,11 @@ export function DocumentLink(props: React.ComponentProps<typeof Link>) {
   return (
     <Link
       {...props}
+      to={
+        typeof props.to === "string"
+          ? documentTarget(props.to, location.pathname + location.search)
+          : props.to
+      }
       state={{
         returnTo: location.pathname + location.search,
         returnLabel:
@@ -357,12 +363,7 @@ export function DocumentPage() {
         intake: "/vehicles",
       }[doc.ownerType]
     : "/";
-  const returnTo =
-    typeof location.state?.returnTo === "string" &&
-    location.state.returnTo.startsWith("/") &&
-    !location.state.returnTo.startsWith("//")
-      ? location.state.returnTo
-      : fallback;
+  const returnTo = documentParent(location.search, fallback);
   // Capture the destination before the successful delete removes the document.
   const deleteTarget =
     doc?.ownerType === "vehicle"
@@ -407,10 +408,7 @@ export function DocumentPage() {
     >
       {parts[1] === "vehicles" && parts[2]
         ? "Detail vozidla"
-        : location.state?.returnLabel ||
-          previousName ||
-          labels[parts[1]] ||
-          "Přehled"}
+        : previousName || labels[parts[1]] || "Přehled"}
     </Back>
   );
   const job = useQuery({
