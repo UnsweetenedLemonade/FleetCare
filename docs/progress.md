@@ -228,3 +228,8 @@ Bod 3: typecheck, lint a 36 souvisejících testů prošly; kontrakty regenerov�
 
 Dávka 7 / bod 4: jediný StatusChip a centrální mapy všech stavových entit, shodné popisky/barvy/typografie seznamu a detailu. Doplněny položky Stav do mřížek a sjednocena přidělení v dialogu; již shodné části pouze převedeny na společnou komponentu. Trvá je nadále otevřený konec období, typ Zakázka/Jízda zůstává text. Inventura před/po a záměrně odlišné významy: docs/fe-audit-7.md.
 Bod 4: typecheck, lint a 12 souvisejících testů prošly.
+
+Dávka 7 / bod 5: společné srozumitelné názvy odvozených termínů z FE projekce, bez změny uložených dat. Platnost STK/pojištění/oprávnění/kvalifikace a hranice servisního plánu obsahují jasný účel a podmět; ruční názvy a Doplnit koncový tachometr beze změny. Kalendář má ellipsis a plný title. Hledání/řazení již sdílelo název. Podrobnosti: docs/fe-audit-7.md.
+Bod 5: typecheck, lint a 25 souvisejících testů prošly. Chromium 1440/390 px ověřil CCS editaci/validaci a cache, podmínky notifikace i skrytí správních polí řidiči, shodný chip přidělení a nové názvy termínů v seznamu/kalendáři/detailu bez běhových chyb.
+
+Dávka 7 — závěr: všech 5 bodů dokončeno v 5 samostatných commitech na feat/fe-audit-7. Typecheck (i server), lint, všech 81 testů/22 souborů, build a opakovatelná regenerace kontraktů prošly. Chromium desktop/mobil ověřil také chybu služby, jeden pokus při dvojkliku, úspěšné opakování a krátkou blokaci notifikačního tlačítka. Konečný průchod bez běhových chyb. Datové modely a závislosti beze změny; jediným rozšířením API je nutný trip.notify. Podrobná inventura a kompatibilní výjimky: docs/fe-audit-7.md.

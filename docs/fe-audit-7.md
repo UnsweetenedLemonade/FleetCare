@@ -49,3 +49,28 @@ Všechny stavové chipy používají `StatusChip`, stejnou třídu `.badge` a me
 | Notifikace | `queued`/`failed` používaly dokumentové popisky | Samostatná mapa: Čeká na odeslání / Odeslání selhalo, dokumenty ponechávají Čeká na zpracování / Zpracování selhalo |
 
 Záměrně nesloučeno: Trvá v datovém intervalu je otevřený konec, Aktivní je časově vyhodnocený stav; datum může být i budoucí. Zdravotní způsobilost řidiče není stav profilu. U dokumentů je uložení souboru jiný stav než extrakce, u CCS výpisů je úplnost jiná než zpracování. Stav tankování a stav transakce zůstávají dvě uložené hodnoty; zobrazení skutečné neshody má společné pravidlo důkazu. Typ Zakázka/Jízda v kombinované tabulce zůstává prostý text. Dialog přidělení nezavádí ruční stav: ukazuje stav existujícího aktuálního přidělení, nové se jako dosud odvozuje z dat od–do.
+
+## 5. Názvy termínů — hotovo
+
+Názvy odvozených termínů vznikají v FE funkci `deadlines()`; nyní přes společné `deadlineTitle` (`src/lib/deadline-titles.ts`). Uložené názvy, data, kategorie a API se nemění. Stejná projekce napájí dashboard, seznam, kalendář, detail a jejich navigační kontext. Hledání i řazení již používaly `d.title` — již hotovo, nyní přirozeně používají nové názvy.
+
+| Existující odvozený typ | Nový název |
+| --- | --- |
+| STK vozidla / STK dokumentu | Platnost STK – [SPZ] |
+| Pojištění dokumentu | Platnost pojištění – [SPZ] |
+| Řidičské oprávnění | Platnost řidičského oprávnění [kategorie] – [jméno] |
+| Kvalifikace | Platnost kvalifikace [název] – [jméno] |
+| Časová/km hranice položky servisního plánu | Servisní plán: [název úkonu] – [SPZ] |
+
+U servisních hranic zůstává konkrétní název úkonu (např. Výměna oleje), aby různé položky nesplynuly do nerozlišitelných prohlídek. Termín Servisní plán už aplikace používá. Při chybějícím vozidle zůstává název úkonu bez domýšlené SPZ; u dokumentu je zachován existující fallback na název dokumentu. Lékařskou platnost dosavadní generátor termínů nevytváří, proto nový typ nepřidáváme.
+
+Výjimky beze změny: vlastní ručně pojmenované termíny a Doplnit koncový tachometr. Kalendář má jednořádkové ellipsis a `title` s celým názvem. Žádné přejmenování dat ani změna zdrojových dokladů.
+
+## Závěrečné ověření
+
+- Typecheck včetně serveru, lint: prošly po každém bodu a nad celým výsledkem.
+- Celá sada: 22 souborů, 81 testů, vše prošlo. Produkční build prošel; stávající upozornění na velikost chunků zůstává.
+- Regenerace OpenAPI/event kontraktů je opakovatelná bez dalšího diffu.
+- Chromium / Playwright, 1440 × 900 a 390 × 900: skutečné uložení CCS stavu a obnovení seznamu, původní hodnota v selectu, šest voleb, červené pole a zpráva pro nepodložený Rozdíl, fallback historického stavu; podmínky notifikace všech tří problémových jízd a skrytí pro řádnou jízdu/řidiče; správný příjemce a situační zpráva; simulované selhání zápisu zachovává dialog a chybu, dvojklik spustí jen jednu probíhající operaci, následné opakování uloží jediný požadavek; dvousekundová blokace tlačítka; po uložení skutečný lokální stav Služba není připojena. Shodný chip přidělení v obou detailech a dialogu. Nový název termínu v seznamu, hledání, kalendáři s ellipsis/title a titulku detailu. Bez běhových chyb v konečném průchodu. Prohlížeč používá izolovaná fiktivní data v dočasném profilu.
+- Datové modely, dependency manifest/lockfile a trvalá provozní data nezměněny. Mimo nový příkaz notifikace zůstává API stejné. Sdílené párování CCS nyní vrací Neúplný podklad místo rušeného nejednoznačného stavu; nejde o změnu schématu. Načítání starých dat je zachováno.
+- Omezení: skutečné odeslání e-mailu přes Make bez připojené služby neověřeno. Externí API musí podporovat nový příkaz `trip.notify`. Tato dávka nepublikuje demo ani nezasahuje do větve main.

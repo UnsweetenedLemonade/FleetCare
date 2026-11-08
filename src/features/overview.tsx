@@ -379,7 +379,7 @@ export function DeadlinesPage() {
                           {all
                             .filter((x) => x.date === iso)
                             .map((x) => (
-                              <Link to={x.path} key={x.id}>
+                              <Link to={x.path} key={x.id} title={x.title}>
                                 {x.title}
                               </Link>
                             ))}
