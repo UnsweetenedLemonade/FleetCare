@@ -1,6 +1,10 @@
+import {
+  canNotifyTrip,
+  tripNotificationReason,
+} from "../domain/trip-notification";
 import { useHistory } from "../lib/history";
 import { dateKey } from "../lib/format";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router";
 import { Download, Pencil, Bell, Square, Plus } from "lucide-react";
 import { useFleet } from "../app/context";
@@ -270,9 +274,8 @@ export function OrderAssignmentDialog({ orderId }: { orderId: string }) {
         </div>
         {!!unverified.length && (
           <Notice>
-            Vhodnost nelze plně ověřit: {unverified.join(", ")}. Přiřazení
-            půjde uložit, údaje doplňte v detailu vozidla, řidiče nebo
-            zakázky.
+            Vhodnost nelze plně ověřit: {unverified.join(", ")}. Přiřazení půjde
+            uložit, údaje doplňte v detailu vozidla, řidiče nebo zakázky.
           </Notice>
         )}
         {error && <Notice error>{error}</Notice>}
@@ -386,6 +389,7 @@ export function TripPage() {
         subtitle={date(t.startAt, true)}
         actions={
           <>
+            {canNotifyTrip(actor, t) && <NotifyDriverAction tripId={t.id} />}
             {canEdit && (
               <Button
                 primary={status === "Probíhá"}
@@ -476,6 +480,7 @@ export function TripPage() {
           ]}
         />
       </Panel>
+      {actor.role !== "Řidič" && <NotificationRequests aggregateId={t.id} />}
     </>
   );
 }
@@ -510,7 +515,7 @@ export function FaultsPage() {
 }
 export function FaultPage() {
   const { id } = useParams();
-  const { s, actor, show } = useFleet(),
+  const { s, actor } = useFleet(),
     edit = useEditors();
   const f = s.faults.find((f) => f.id === id);
   if (!f) return <Empty title="Závada není dostupná" />;
@@ -530,10 +535,7 @@ export function FaultPage() {
                 <Pencil size={17} />
                 Upravit
               </Button>
-              <Button onClick={() => show(<NotifyDialog faultId={f.id} />)}>
-                <Bell size={17} />
-                Notifikovat řidiče
-              </Button>
+              <NotifyDriverAction faultId={f.id} />
             </>
           )
         }
@@ -570,35 +572,7 @@ export function FaultPage() {
       </Panel>
       {actor.role !== "Řidič" && (
         <>
-          <Panel title="Komunikační požadavky">
-            {s.notifications
-              .filter((n) => n.aggregateId === f.id)
-              .map((n) => (
-                <div className="list-item" key={n.id}>
-                  <div>
-                    <strong>
-                      {
-                        {
-                          driver: "Řidič",
-                          manager: "Fleet manažer",
-                          service: "Externí servis",
-                        }[n.recipientRole]
-                      }
-                    </strong>
-                    <small>
-                      {n.email || "Kontakt chybí"} · {n.reason}
-                    </small>
-                  </div>
-                  <Badge value={n.state} />
-                  <Button
-                    disabled={["sent", "sending"].includes(n.state)}
-                    onClick={() => show(<RecipientDialog id={n.id} />)}
-                  >
-                    Změnit příjemce
-                  </Button>
-                </div>
-              ))}
-          </Panel>
+          <NotificationRequests aggregateId={f.id} />
           <Panel title="Podklady ze servisu">
             <DocumentList
               ownerType="fault"
@@ -615,24 +589,102 @@ export function FaultPage() {
     </>
   );
 }
-function NotifyDialog({ faultId }: { faultId: string }) {
-  const { s, run, close } = useFleet();
-  const f = s.faults.find((f) => f.id === faultId)!;
-  const a = activeAssignment(s, f.vehicleId);
-  const d = s.drivers.find((d) => d.id === a?.driverId);
+function NotificationRequests({ aggregateId }: { aggregateId: string }) {
+  const { s, show } = useFleet();
   return (
-    <Dialog title="Notifikovat řidiče o servisu" onClose={close}>
+    <Panel title="Komunikační požadavky">
+      {s.notifications
+        .filter((n) => n.aggregateId === aggregateId)
+        .map((n) => (
+          <div className="list-item" key={n.id}>
+            <div>
+              <strong>
+                {
+                  {
+                    driver: "Řidič",
+                    manager: "Fleet manažer",
+                    service: "Externí servis",
+                  }[n.recipientRole]
+                }
+              </strong>
+              <small>
+                {n.email || "Kontakt chybí"} · {n.reason}
+              </small>
+            </div>
+            <Badge value={n.state} />
+            <Button
+              disabled={["sent", "sending"].includes(n.state)}
+              onClick={() => show(<RecipientDialog id={n.id} />)}
+            >
+              Změnit příjemce
+            </Button>
+          </div>
+        ))}
+    </Panel>
+  );
+}
+function NotifyDriverAction(
+  target:
+    | { faultId: string; tripId?: never }
+    | { tripId: string; faultId?: never },
+) {
+  const { show } = useFleet();
+  const [cooldown, setCooldown] = useState(false);
+  useEffect(() => {
+    if (!cooldown) return;
+    const timer = setTimeout(() => setCooldown(false), 2000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+  return (
+    <Button
+      disabled={cooldown}
+      onClick={() =>
+        show(<NotifyDialog {...target} onSubmitted={() => setCooldown(true)} />)
+      }
+    >
+      <Bell size={17} />
+      Notifikovat řidiče
+    </Button>
+  );
+}
+function NotifyDialog({
+  faultId,
+  tripId,
+  onSubmitted,
+}: {
+  faultId?: string;
+  tripId?: string;
+  onSubmitted: () => void;
+}) {
+  const { s, run, close, toast } = useFleet();
+  const fault = s.faults.find((f) => f.id === faultId);
+  const trip = s.trips.find((t) => t.id === tripId);
+  const driverId =
+    trip?.driverId || (fault && activeAssignment(s, fault.vehicleId)?.driverId);
+  const driver = s.drivers.find((d) => d.id === driverId);
+  if (!fault && !trip) return null;
+  return (
+    <Dialog
+      title={
+        trip ? "Notifikovat řidiče o jízdě" : "Notifikovat řidiče o servisu"
+      }
+      onClose={close}
+    >
       <div className="dialog-body">
         <Form
           fields={[
             { key: "email", label: "Příjemce", type: "email", required: true },
-            {
-              key: "serviceAt",
-              label: "Termín servisu",
-              type: "datetime",
-              required: true,
-            },
-            { key: "place", label: "Místo", required: true },
+            ...(fault
+              ? [
+                  {
+                    key: "serviceAt",
+                    label: "Termín servisu",
+                    type: "datetime" as const,
+                    required: true,
+                  },
+                  { key: "place", label: "Místo", required: true },
+                ]
+              : []),
             {
               key: "message",
               label: "Zpráva",
@@ -641,22 +693,38 @@ function NotifyDialog({ faultId }: { faultId: string }) {
             },
           ]}
           initial={{
-            email: d?.email || "",
-            serviceAt: f.serviceFrom ? localTime(f.serviceFrom) : "",
-            place: s.services.find((x) => x.id === f.serviceId)?.address || "",
-            message: `Vozidlo má domluven servis. Reference ${f.caseReference}.`,
+            email: driver?.email || "",
+            serviceAt: fault?.serviceFrom ? localTime(fault.serviceFrom) : "",
+            place:
+              s.services.find((x) => x.id === fault?.serviceId)?.address || "",
+            message: trip
+              ? `${tripNotificationReason(trip)} Jízda ${trip.from} → ${trip.to || "Na trase"}, ${date(trip.startAt, true)}.`
+              : `Vozidlo má domluven servis. Reference ${fault!.caseReference}.`,
           }}
           submit="Vytvořit požadavek na e-mail"
           onSubmit={async (v) => {
-            await run({
-              type: "fault.notify",
-              id: faultId,
-              email: String(v.email),
-              serviceAt: toPragueTimestamp(String(v.serviceAt)),
-              place: String(v.place),
-              message: String(v.message),
-            });
+            await run(
+              trip
+                ? {
+                    type: "trip.notify",
+                    id: trip.id,
+                    email: String(v.email),
+                    message: String(v.message),
+                  }
+                : {
+                    type: "fault.notify",
+                    id: fault!.id,
+                    email: String(v.email),
+                    serviceAt: toPragueTimestamp(String(v.serviceAt)),
+                    place: String(v.place),
+                    message: String(v.message),
+                  },
+            );
+            onSubmitted();
             close();
+            toast(
+              "Požadavek na e-mail je uložený. Stav odeslání najdete v komunikačních požadavcích.",
+            );
           }}
         />
       </div>

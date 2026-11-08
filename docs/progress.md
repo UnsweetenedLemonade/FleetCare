@@ -222,3 +222,6 @@ Drobné zkrácení textů potvrzení: na přání odstraněna věta „Změna se
 Dávka 7 / bod 1: centrální CCS nabídka, popisky a barvy; bezpečný fallback historických hodnot, nejednoznačné párování jako neúplný podklad. Sdílený stav tankování a položka Stav již existovaly. Kompatibilní model/API ponechány. Podrobnosti a výjimky: docs/fe-audit-7.md. Typecheck, lint a související testy prošly.
 
 Dávka 7 / bod 2: správní editor tankování má CCS stav; předvyplnění efektivním stavem a stejné sdílené volby, u řidiče pole není. Existující save/cache invalidace, bez nového datového pole. Odvozený skutečný rozdíl má přednost, nepodložený Rozdíl odmítá chyba pole. Typecheck, lint a 8 souvisejících testů prošly; viz docs/fe-audit-7.md.
+
+Dávka 7 / bod 3: sdílená notifikace jízdy/závady, podmínky neukončené/neúplné/nesrovnalé jízdy a správních rolí. Stejný Form, outbox a Make webhook; nový minimální příkaz trip.notify bez změny datových polí. Lokální stav nepředstírá odeslání. Podrobnosti: docs/fe-audit-7.md.
+Bod 3: typecheck, lint a 36 souvisejících testů prošly; kontrakty regenerovány.
