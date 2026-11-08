@@ -1,3 +1,4 @@
+import { ccsStatus } from "../lib/status";
 import { dateKey } from "../lib/format";
 import type { Workspace } from "./models";
 type Fuel = Workspace["fuels"][number];
@@ -17,7 +18,13 @@ export function fuelDifferences(s: Workspace, f: Fuel) {
 }
 /** One current CCS state for list and detail: the saved state unless an open difference exists. */
 export function fuelState(s: Workspace, f: Fuel): Fuel["state"] {
-  return fuelDifferences(s, f).length ? "Rozdíl" : f.state;
+  if (fuelDifferences(s, f).length) return "Rozdíl";
+  // A saved difference alone is not evidence of a mismatching linked transaction.
+  if (f.state === "Rozdíl")
+    return s.transactions.some((t) => t.fuelId === f.id)
+      ? "Spárováno"
+      : "Čeká na výpis";
+  return ccsStatus(f.state);
 }
 /** Conservative matching: known card, exact time and litres; no fuzzy identity guess. */
 export function reconcileCCS(s: Workspace, statementId: string) {
@@ -58,7 +65,7 @@ export function reconcileCCS(s: Workspace, statementId: string) {
         ),
     );
     if (candidates.length > 1) {
-      setState("Více kandidátů");
+      setState("Neúplný podklad");
       continue;
     }
     if (!candidates.length) {

@@ -1,3 +1,5 @@
+import { StatusChip } from "../components/status-chip";
+import { ccsOptions, ccsStatus } from "../lib/status";
 import { DocumentLink } from "./documents";
 import { fuelDifferences, fuelState } from "../domain/ccs";
 import { useState } from "react";
@@ -210,7 +212,7 @@ export function FuelPage() {
       <Panel title="Záznam řidiče">
         <DataGrid
           items={[
-            ["Stav", <Badge value={fuelState(s, f)} />],
+            ["Stav", <StatusChip value={fuelState(s, f)} />],
             ["Vozidlo", <VRef id={f.vehicleId} />],
             ["Řidič", <DRef id={f.driverId} />],
             ["Datum transakce", date(f.at, true)],
@@ -248,7 +250,7 @@ export function FuelPage() {
                     ["Výsledek", t.resolution || null],
                   ]}
                 />
-                <Badge value={t.state} />{" "}
+                <StatusChip value={t.state} />{" "}
                 <Link to={`/transactions/${t.id}`}>Detail transakce →</Link>
               </div>
             ))
@@ -341,21 +343,13 @@ function TransactionTable({ statementId }: { statementId: string }) {
     <DataTable
       rows={s.transactions.filter((t) => t.statementId === statementId)}
       path={(t) => `/transactions/${t.id}`}
-      search={(t) => t.externalId + " " + t.state}
+      search={(t) => t.externalId + " " + ccsStatus(t.state)}
       filters={[
         {
           key: "state",
           label: "Všechny stavy",
-          options: [
-            "Čeká na výpis",
-            "Spárováno",
-            "Rozdíl",
-            "Více kandidátů",
-            "Chybí záznam řidiče",
-            "Neúplný podklad",
-            "Vyřešeno",
-          ].map((x) => [x, x]),
-          value: (t) => t.state,
+          options: ccsOptions,
+          value: (t) => ccsStatus(t.state),
         },
       ]}
       columns={[
@@ -380,8 +374,8 @@ function TransactionTable({ statementId }: { statementId: string }) {
         {
           key: "state",
           label: "Párování",
-          sort: (t) => t.state,
-          render: (t) => <Badge value={t.state} />,
+          sort: (t) => ccsStatus(t.state),
+          render: (t) => <StatusChip value={t.state} />,
         },
       ]}
     />
@@ -418,7 +412,7 @@ export function TransactionPage() {
       <div className="two-columns">
         <Panel title="CCS transakce">
           <p>
-            <Badge value={t.state} />
+            <StatusChip value={t.state} />
           </p>
           <DataGrid
             items={[

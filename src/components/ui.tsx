@@ -28,6 +28,8 @@ import {
   Plus,
 } from "lucide-react";
 import { z } from "zod";
+import { matchStates } from "../domain/models";
+import { ccsStatus } from "../lib/status";
 import { fileLimits } from "../data/uploads";
 import { DomainError } from "../domain/rules";
 import { normalize } from "../lib/format";
@@ -126,6 +128,8 @@ const labels: Record<string, string> = {
   skipped_no_recipient: "Vynecháno — bez řidiče",
 };
 export function Badge({ value }: { value: string }) {
+  if ((matchStates as readonly string[]).includes(value))
+    value = ccsStatus(value);
   return (
     <span className={"badge " + (tones[value] || "amber")}>
       {labels[value] || value}

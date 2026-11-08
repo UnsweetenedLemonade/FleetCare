@@ -1,3 +1,5 @@
+import { StatusChip } from "../components/status-chip";
+import { ccsOptions } from "../lib/status";
 import type { ReactNode } from "react";
 import { Link } from "react-router";
 import { useFleet } from "../app/context";
@@ -603,15 +605,7 @@ export function FuelTable({
         {
           key: "state",
           label: "Všechny stavy",
-          options: optionPairs([
-            "Čeká na výpis",
-            "Spárováno",
-            "Rozdíl",
-            "Více kandidátů",
-            "Chybí záznam řidiče",
-            "Neúplný podklad",
-            "Vyřešeno",
-          ]),
+          options: ccsOptions,
           value: (f) => fuelState(s, f),
         },
       ]}
@@ -671,7 +665,7 @@ export function FuelTable({
           key: "state",
           label: "CCS stav",
           sort: (f) => fuelState(s, f),
-          render: (f) => <Badge value={fuelState(s, f)} />,
+          render: (f) => <StatusChip value={fuelState(s, f)} />,
         },
       ]}
     />
