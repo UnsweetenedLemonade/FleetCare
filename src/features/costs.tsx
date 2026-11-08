@@ -283,19 +283,7 @@ export function FuelPage() {
         </Panel>
       )}
       <Panel title="Dokumenty">
-        <DocumentList
-          ownerType="fuel"
-          ownerId={f.id}
-          vehicleId={f.vehicleId}
-          relatedOwners={
-            actor.role !== "Řidič"
-              ? transactions.map((t) => ({
-                  ownerType: "statement" as const,
-                  ownerId: t.statementId,
-                }))
-              : []
-          }
-        />
+        <DocumentList ownerType="fuel" ownerId={f.id} vehicleId={f.vehicleId} />
       </Panel>
     </>
   );

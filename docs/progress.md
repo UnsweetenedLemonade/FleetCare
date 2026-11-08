@@ -237,3 +237,6 @@ Dávka 7 — závěr: všech 5 bodů dokončeno v 5 samostatných commitech na f
 Dávka 8: sdílený Back respektuje pevný cíl; dokumentový kontext přenesen do ověřeného URL parametru. Prokliky již používaly push. Typecheck, lint a navigační testy prošly; inventura a omezení obnovy stavu v docs/fe-audit-8-10.md.
 
 Dávka 9: přiřazení zakázky používá společný přístupný autocomplete, jen vhodné kandidáty a žádné pomocné podřádky. Výpočet vhodnosti a payload beze změny. Typecheck, lint a 26 souvisejících testů prošly; viz docs/fe-audit-8-10.md.
+
+Dávka 10: v detailu tankování odstraněno přimíchávání CCS dokumentů do tabulky řidiče; samotný CCS panel už vlastní dokumenty neměl. Ostatní dokumentové pohledy, data a layout zachovány. Typecheck, lint a 8 souvisejících testů prošly; viz docs/fe-audit-8-10.md.
+Dávky 8–10 závěr: všech 85 testů, typecheck, lint a produkční build prošly. Chromium 1440/390 px ověřil hierarchické šipky versus browser Back, reload, dokumentový URL kontext, autocomplete včetně klávesnice a uložení i oddělení dokladů tankování. Bez běhových chyb. Backend/modely/API/závislosti nezměněny.

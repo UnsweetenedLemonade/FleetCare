@@ -882,7 +882,10 @@ export function DataTable<T extends { id: string }>({
                     {i === 0 && path ? (
                       <Link
                         className="row-link"
-                        to={documentTarget(path(row), location.pathname + location.search)}
+                        to={documentTarget(
+                          path(row),
+                          location.pathname + location.search,
+                        )}
                         state={returnState}
                       >
                         {c.render(row)}

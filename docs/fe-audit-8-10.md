@@ -31,3 +31,13 @@ Typecheck, lint a navigační testy prošly.
 Nový sdílený Autocomplete (původně neexistoval), pro SPZ a jméno. Bez podřádků a chipu vhodnosti; žádný nositel informace nezmizel, neboť se nyní nabízí pouze výsledek Vhodné. Nevhodné i Nelze vyhodnotit se nezobrazují. Výpočet suitability, příkaz order.assign a payload nezměněny. Vymazání/změna vozidla zruší volbu řidiče. Původní tlačítko zůstává disabled, dokud není vybrána vhodná dvojice.
 
 SPZ: prefix bez mezer/velikosti písmen, bez rozšíření na model. Řidič: začátky slov bez diakritiky. Prázdný výsledek Nic nenalezeno; klik, šipky, Enter, Esc a Tab; combobox/listbox ARIA a minimálně 14 px. Další vhodná místa pro pozdější využití: přidělení řidiče vozidlu a selecty vozidla/řidiče v editorech. Ty nebyly měněny. Typecheck, lint a 26 souvisejících testů prošly.
+
+## C1 — hotovo, vlastní CCS panel již hotovo
+
+FuelPage / Srovnání s CCS již nemělo vlastní DocumentList, tlačítko, historii ani prázdný dokumentový stav. Spodní společný DocumentList ovšem přibíral dokumenty výpisů přes relatedOwners. Odstraněno pouze toto přimíchání a jeho mapování. Dokumenty fuel zůstávají se všemi akcemi; transakční částka, rozdíl, stav a proklik zůstávají nezměněné. Rozložení a oddělovače nezměněny, žádná prázdná sekce nevznikla.
+
+Další výskyty zachovány: TransactionPage má dokumenty vlastníka statement na CCS straně a dokumenty fuel na straně řidiče; StatementPage nabízí původní PDF přes DocumentLink. Jde o samostatné pohledy, nikoli sdílenou část FuelPage. U role Řidič již relatedOwners bylo prázdné — již hotovo. Sdílené DocumentList/useUpload a datové vazby se nemažou; po odstranění nezbyl nepoužitý import/hook. Typecheck, lint a 8 souvisejících testů prošly.
+
+## Závěrečné ověření
+
+Typecheck včetně serveru, lint, všech 85 testů / 24 souborů a produkční build prošly. Build pouze upozorňuje na velikost chunků jako dosud. Chromium/Playwright 1440 × 900 a 390 × 900: detail řidiče → proklik zakázky → browser Back obnoví detail řidiče; aplikační šipka vede na Zakázky; pevné cíle a reload detailů; autocomplete SPZ/jména, prefix bez diakritiky, Nic nenalezeno, šipky/Enter a úspěšné uložení; tankování obsahuje účtenku a ne dokument výpisu; dokument má from v URL a po reloadu správný návrat; tankování bez transakce se vykreslí. Konečný průchod bez pageerror. Fiktivní data pouze v dočasném profilu prohlížeče. Backend, modely, API, manifesty a lockfile beze změny.
