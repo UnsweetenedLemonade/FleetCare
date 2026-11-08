@@ -13,3 +13,9 @@ Kompatibilní výjimka z odstranění textu: starý literál zůstává výhradn
 Rozdíl se zobrazuje pouze při existující spojené transakci s nevyřešenými rozdíly. Samotná stará uložená hodnota Rozdíl bez důkazu se zobrazí jako Čeká na výpis (bez spojení) / Spárováno (se spojením). Rozhodnutí o rozdílu nemění kanonický náklad.
 
 Kontroly: typecheck, lint a související CCS/UX testy.
+
+## 2. Editace tankování — hotovo
+
+Před úpravou: správní dialog neměl CCS select. Nyní Upravit údaje otevře společný editor s předvyplněným efektivním CCS stavem a nabídkou z bodu 1. Pole je pouze pro Fleet manažera a Vedení; Řidič stav již viděl v seznamu/detailu, ale neupravoval ho, proto mu nové správní pole nepřidáváme. Při založení tankování se chování nemění.
+
+Ruční změna používá existující `FuelRecord.state` a příkaz `save`, ne nové pole. Uložená hodnota je výchozí; existující nevyřešený rozdíl spojené transakce má v UI vždy přednost. Zvolit Rozdíl bez odpovídajícího spojení/neshody editor odmítne červenou chybou pole. Ruční volba nemění stav transakce, neřeší finanční neshodu a neobchází samostatné CCS rozhodnutí. Existující invalidace workspace po `run` již hotovo; detail i tabulka čtou stejný zdroj. Bez změny API/modelu/serveru. Kontroly: typecheck, lint, 8 souvisejících testů.

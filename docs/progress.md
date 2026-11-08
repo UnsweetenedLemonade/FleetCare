@@ -220,3 +220,5 @@ Dávka 6 — dokončení: uložené úkony plánu/šablony, oprávnění/kvalifi
 Drobné zkrácení textů potvrzení: na přání odstraněna věta „Změna se uloží až potvrzením formuláře.“ ze všech tří sdílených popisů (úkony plánů/šablon, oprávnění/kvalifikace, vazby CCS karet). Potvrzení i ukládání beze změny. Ověřeno typecheckem, lintem, 67 testy, buildem a Chromium kontrolou odebrání uložených řádků na desktopu i mobilu.
 
 Dávka 7 / bod 1: centrální CCS nabídka, popisky a barvy; bezpečný fallback historických hodnot, nejednoznačné párování jako neúplný podklad. Sdílený stav tankování a položka Stav již existovaly. Kompatibilní model/API ponechány. Podrobnosti a výjimky: docs/fe-audit-7.md. Typecheck, lint a související testy prošly.
+
+Dávka 7 / bod 2: správní editor tankování má CCS stav; předvyplnění efektivním stavem a stejné sdílené volby, u řidiče pole není. Existující save/cache invalidace, bez nového datového pole. Odvozený skutečný rozdíl má přednost, nepodložený Rozdíl odmítá chyba pole. Typecheck, lint a 8 souvisejících testů prošly; viz docs/fe-audit-7.md.

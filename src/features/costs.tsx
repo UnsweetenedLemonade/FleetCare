@@ -205,7 +205,7 @@ export function FuelPage() {
         subtitle={date(f.at, true)}
         actions={
           <Button onClick={() => edit("fuels", f)}>
-            Doplnit / opravit záznam
+            Upravit údaje
           </Button>
         }
       />

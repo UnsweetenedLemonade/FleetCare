@@ -1,4 +1,5 @@
 import { ccsStatus } from "../lib/status";
+import { DomainError } from "./rules";
 import { dateKey } from "../lib/format";
 import type { Workspace } from "./models";
 type Fuel = Workspace["fuels"][number];
@@ -87,4 +88,13 @@ export function reconcileCCS(s: Workspace, statementId: string) {
     f.version++;
     t.updatedAt = f.updatedAt = new Date().toISOString();
   }
+}
+
+/** Manual edits cannot invent a financial difference without linked evidence. */
+export function validateFuelCCSState(s: Workspace, f: Fuel) {
+  if (f.state === "Rozdíl" && !fuelDifferences(s, f).length)
+    throw new DomainError(
+      "Stav Rozdíl lze zvolit jen u spárovaného tankování s nevyřešeným rozdílem.",
+      "state",
+    );
 }
