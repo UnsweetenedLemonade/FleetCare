@@ -423,11 +423,6 @@ export function TransactionPage() {
               ["Odůvodnění", t.resolution || null],
             ]}
           />
-          <DocumentList
-            ownerType="statement"
-            ownerId={t.statementId}
-            add={false}
-          />
         </Panel>
         <Panel title="Záznam řidiče">
           {f ? (
